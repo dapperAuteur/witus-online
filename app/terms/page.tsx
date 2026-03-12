@@ -71,10 +71,10 @@ export default function TermsPage() {
           <p>
             Questions about these terms can be directed to{" "}
             <a
-              href="mailto:hello@badcba.com"
+              href="mailto:admin@centenarianos.com"
               className="text-slate-300 hover:text-white transition-colors"
             >
-              hello@badcba.com
+              admin@CentenarianOS.com
             </a>
             .
           </p>

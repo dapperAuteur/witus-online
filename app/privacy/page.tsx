@@ -18,10 +18,10 @@ export default function PrivacyPage() {
             WitUS.online and all associated platforms (CentenarianOS, Work.WitUS) are operated by
             B4C LLC / AwesomeWebStore.com, based in Indianapolis, Indiana. Contact us at{" "}
             <a
-              href="mailto:hello@badcba.com"
+              href="mailto:admin@centenarianos.com"
               className="text-slate-300 hover:text-white transition-colors"
             >
-              hello@badcba.com
+              admin@CentenarianOS.com
             </a>
             .
           </p>
@@ -75,10 +75,10 @@ export default function PrivacyPage() {
             You can export your data, request deletion of your account, or update your information
             at any time from within the platform settings. For data requests, contact{" "}
             <a
-              href="mailto:hello@badcba.com"
+              href="mailto:admin@centenarianos.com"
               className="text-slate-300 hover:text-white transition-colors"
             >
-              hello@badcba.com
+              admin@CentenarianOS.com
             </a>
             .
           </p>

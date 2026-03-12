@@ -18,7 +18,7 @@ export default function AboutPage() {
 
       <div className="prose prose-invert max-w-none text-slate-400 leading-relaxed space-y-6">
         <p>
-          Most productivity tools are built around a single dimension of your life — your work,
+          Most productivity tools are built around a single dimension of your life. It may be your work,
           your health, or your money. You end up juggling five apps that don&apos;t talk to each
           other, and none of them understand the big picture.
         </p>
@@ -37,13 +37,13 @@ export default function AboutPage() {
       <div className="prose prose-invert max-w-none text-slate-400 leading-relaxed space-y-6">
         <p>
           That philosophy became two products. <strong className="text-white">CentenarianOS</strong>{" "}
-          is a multi-decade personal operating system — covering nutrition, fitness, focus, finance,
+          is a multi-decade personal operating system. CentenarianOS covers nutrition, fitness, focus, finance,
           travel, and planning in one integrated, private dashboard. It&apos;s for people who think
           in decades, not days.
         </p>
         <p>
           <strong className="text-white">Work.WitUS</strong> is a contractor management platform
-          for independent workers — job tracking, time logging, invoice generation, document
+          for independent workers. Work.WitUS allows job tracking, time logging, invoice generation, document
           scanning, and more. It&apos;s for people who work for themselves and want to run their
           work life as professionally as possible.
         </p>
@@ -60,7 +60,7 @@ export default function AboutPage() {
         <h2 className="text-2xl font-bold text-white mb-4">Brand Anthony McDonald</h2>
         <p className="text-slate-400 leading-relaxed mb-4">
           BAM is a developer advocate, voiceover artist, business consultant, and content creator
-          based in Indianapolis, Indiana. He built WitUS to solve his own problems — tracking
+          based in Indianapolis, Indiana. He built WitUS to solve his own problems with tracking
           contractor work while staying intentional about health and longevity.
         </p>
         <p className="text-slate-400 leading-relaxed mb-6">
