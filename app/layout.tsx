@@ -13,6 +13,10 @@ export const metadata: Metadata = {
   title: "WitUS — Live Long. Work Free.",
   description:
     "WitUS is the platform connecting longevity and independent work. Home of CentenarianOS and Work.WitUS.",
+  icons: {
+    icon: "/flywitus-platypus-logo.png",
+    apple: "/flywitus-platypus-logo.png",
+  },
   openGraph: {
     title: "WitUS — Live Long. Work Free.",
     description:
