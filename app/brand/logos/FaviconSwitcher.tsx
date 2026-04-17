@@ -8,6 +8,7 @@ const OPTIONS: Option[] = [
   { slug: "01-orbit", label: "Option 1 — Orbit mark" },
   { slug: "02-duality", label: "Option 2 — Duality W" },
   { slug: "03-type-dot", label: "Option 3 — Type + dot" },
+  { slug: "04-orbit-type", label: "Option 4 — Orbit + W hybrid" },
 ];
 
 export default function FaviconSwitcher() {
