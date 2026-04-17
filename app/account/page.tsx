@@ -123,7 +123,7 @@ export default function AccountPage() {
       />
 
       <div className="max-w-3xl mx-auto px-6 py-16 sm:py-20">
-        <p className="text-sm font-semibold tracking-widest text-slate-500 uppercase mb-4">
+        <p className="text-sm font-semibold tracking-widest text-slate-400 uppercase mb-4">
           Your Accounts
         </p>
         <h1 className="text-3xl sm:text-4xl font-extrabold text-white mb-4 leading-tight">
@@ -167,7 +167,7 @@ export default function AccountPage() {
                     {product.name}
                   </span>
                 </span>
-                <span className="text-xs text-slate-500 group-hover:text-slate-400 transition-colors">
+                <span className="text-xs text-slate-400 group-hover:text-slate-400 transition-colors">
                   Sign in at {new URL(product.signInHref!).host} &rarr;
                 </span>
               </a>

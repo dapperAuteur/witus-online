@@ -60,7 +60,7 @@ const LIVE_OPTION_SLUG = "04-orbit-type";
 export default function LogoPreviewPage() {
   return (
     <div className="max-w-5xl mx-auto px-6 py-12 sm:py-16">
-      <p className="text-sm font-semibold tracking-widest text-slate-500 uppercase mb-4">
+      <p className="text-sm font-semibold tracking-widest text-slate-400 uppercase mb-4">
         Internal review
       </p>
       <h1 className="text-3xl sm:text-4xl font-extrabold text-white mb-4 leading-tight">
@@ -95,7 +95,7 @@ export default function LogoPreviewPage() {
           <p className="text-slate-400 mb-8 max-w-2xl">{option.summary}</p>
 
           {/* Size ladder */}
-          <h3 className="text-xs font-semibold tracking-widest text-slate-500 uppercase mb-4">
+          <h3 className="text-xs font-semibold tracking-widest text-slate-400 uppercase mb-4">
             Logomark: size ladder
           </h3>
           <div className="flex flex-wrap items-end gap-6 mb-10">
@@ -110,13 +110,13 @@ export default function LogoPreviewPage() {
                   style={{ width: size, height: size }}
                   className="block"
                 />
-                <span className="text-[10px] text-slate-500">{size}px</span>
+                <span className="text-[10px] text-slate-400">{size}px</span>
               </div>
             ))}
           </div>
 
           {/* Wordmark in header context */}
-          <h3 className="text-xs font-semibold tracking-widest text-slate-500 uppercase mb-4">
+          <h3 className="text-xs font-semibold tracking-widest text-slate-400 uppercase mb-4">
             Wordmark in a header strip
           </h3>
           <div className="rounded-xl border border-slate-800 bg-slate-950 px-6 py-4 flex items-center justify-between mb-10">
@@ -136,7 +136,7 @@ export default function LogoPreviewPage() {
           </div>
 
           {/* Favicon in simulated browser tab */}
-          <h3 className="text-xs font-semibold tracking-widest text-slate-500 uppercase mb-4">
+          <h3 className="text-xs font-semibold tracking-widest text-slate-400 uppercase mb-4">
             Favicon in a simulated browser tab
           </h3>
           <div className="rounded-t-xl bg-slate-800/80 p-3 flex gap-2 items-center max-w-md mb-10">
@@ -159,7 +159,7 @@ export default function LogoPreviewPage() {
           </div>
 
           {/* Accent neutrality grid */}
-          <h3 className="text-xs font-semibold tracking-widest text-slate-500 uppercase mb-4">
+          <h3 className="text-xs font-semibold tracking-widest text-slate-400 uppercase mb-4">
             Accent neutrality test
           </h3>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 mb-2">
@@ -186,14 +186,14 @@ export default function LogoPreviewPage() {
               </div>
             ))}
           </div>
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-slate-400">
             Look for: does the mark stay legible and recognizably WitUS on every
             product accent? Anywhere it clashes disqualifies the option.
           </p>
         </section>
       ))}
 
-      <p className="text-sm text-slate-500">
+      <p className="text-sm text-slate-400">
         All four options stay shipped. The active one is wired into the site
         chrome via <code className="text-slate-300">app/layout.tsx</code> and{" "}
         <code className="text-slate-300">components/Header.tsx</code>.

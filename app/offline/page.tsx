@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 export default function OfflinePage() {
   return (
     <div className="max-w-2xl mx-auto px-6 py-16 sm:py-20">
-      <p className="text-sm font-semibold tracking-widest text-slate-500 uppercase mb-4">
+      <p className="text-sm font-semibold tracking-widest text-slate-400 uppercase mb-4">
         No connection
       </p>
       <h1 className="text-3xl sm:text-4xl font-extrabold text-white mb-6 leading-tight">
@@ -63,7 +63,7 @@ export default function OfflinePage() {
         </li>
       </ul>
 
-      <p className="text-sm text-slate-500">
+      <p className="text-sm text-slate-400">
         If a cached page still won&rsquo;t open, reload once your network is back.
       </p>
     </div>

@@ -29,14 +29,14 @@ const accentStyles: Record<Accent, AccentStyle> = {
   fuchsia: {
     border: "border-fuchsia-500/30 hover:border-fuchsia-500/60",
     badge: "bg-fuchsia-500/10 text-fuchsia-300 border border-fuchsia-500/20",
-    button: "bg-fuchsia-500 hover:bg-fuchsia-400 text-white",
+    button: "bg-fuchsia-500 hover:bg-fuchsia-400 text-slate-950",
     dot: "bg-fuchsia-400",
     focus: "focus-visible:outline-fuchsia-300",
   },
   violet: {
     border: "border-violet-500/30 hover:border-violet-500/60",
     badge: "bg-violet-500/10 text-violet-300 border border-violet-500/20",
-    button: "bg-violet-500 hover:bg-violet-400 text-white",
+    button: "bg-violet-500 hover:bg-violet-400 text-slate-950",
     dot: "bg-violet-400",
     focus: "focus-visible:outline-violet-300",
   },
@@ -57,7 +57,7 @@ const accentStyles: Record<Accent, AccentStyle> = {
   rose: {
     border: "border-rose-500/30 hover:border-rose-500/60",
     badge: "bg-rose-500/10 text-rose-300 border border-rose-500/20",
-    button: "bg-rose-500 hover:bg-rose-400 text-white",
+    button: "bg-rose-500 hover:bg-rose-400 text-slate-950",
     dot: "bg-rose-400",
     focus: "focus-visible:outline-rose-300",
   },
@@ -86,7 +86,7 @@ const statusLabel: Record<ProductStatus, string> = {
 const statusBadge: Record<ProductStatus, string> = {
   live: "bg-slate-800 text-slate-300 border border-slate-700",
   beta: "bg-amber-500/10 text-amber-300 border border-amber-500/20",
-  "coming-soon": "bg-slate-900 text-slate-500 border border-slate-800",
+  "coming-soon": "bg-slate-900 text-slate-400 border border-slate-800",
 };
 
 export default function ProductCard({
@@ -103,7 +103,7 @@ export default function ProductCard({
 
   const ctaClasses = `min-h-11 inline-flex items-center justify-center text-center text-sm font-semibold px-5 py-2.5 rounded-lg transition-colors focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 ${styles.focus} ${styles.button}`;
   const disabledClasses =
-    "min-h-11 inline-flex items-center justify-center text-center text-sm font-semibold px-5 py-2.5 rounded-lg bg-slate-800 text-slate-500 cursor-not-allowed";
+    "min-h-11 inline-flex items-center justify-center text-center text-sm font-semibold px-5 py-2.5 rounded-lg bg-slate-800 text-slate-400 cursor-not-allowed";
 
   return (
     <article

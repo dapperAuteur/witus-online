@@ -40,7 +40,7 @@ export default function CurriculumPage() {
         &larr; Back to Learn.WitUS
       </Link>
 
-      <p className="text-sm font-semibold tracking-widest text-slate-500 uppercase mb-4">
+      <p className="text-sm font-semibold tracking-widest text-slate-400 uppercase mb-4">
         Curriculum
       </p>
       <h1 className="text-3xl sm:text-4xl font-extrabold text-white mb-6 leading-tight">

@@ -47,7 +47,7 @@ const workWitUSItems = [
 export default function RoadmapPage() {
   return (
     <div className="max-w-5xl mx-auto px-6 py-20">
-      <p className="text-sm font-semibold tracking-widest text-slate-500 uppercase mb-4">
+      <p className="text-sm font-semibold tracking-widest text-slate-400 uppercase mb-4">
         Platform Roadmap
       </p>
       <h1 className="text-4xl font-extrabold text-white mb-4 leading-tight">
@@ -87,7 +87,7 @@ export default function RoadmapPage() {
       </div>
 
       {/* Legend */}
-      <div className="mt-10 flex flex-wrap gap-5 text-xs text-slate-500">
+      <div className="mt-10 flex flex-wrap gap-5 text-xs text-slate-400">
         <span className="flex items-center gap-1.5">
           <span className="w-2 h-2 rounded-full bg-emerald-400" /> Shipped
         </span>

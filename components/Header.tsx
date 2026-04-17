@@ -17,28 +17,28 @@ export default function Header() {
             className="h-7 w-auto block"
           />
         </Link>
-        <nav aria-label="Primary" className="flex items-center gap-4 sm:gap-6 text-sm text-slate-400">
+        <nav aria-label="Primary" className="flex items-center gap-1 sm:gap-3 text-sm text-slate-300">
           <Link
             href="/about"
-            className="hover:text-white transition-colors focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white rounded"
+            className="inline-flex items-center min-h-11 px-3 hover:text-white transition-colors focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white rounded"
           >
             About
           </Link>
           <Link
             href="/learn"
-            className="hover:text-white transition-colors focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white rounded"
+            className="inline-flex items-center min-h-11 px-3 hover:text-white transition-colors focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white rounded"
           >
             Learn
           </Link>
           <Link
             href="/roadmap"
-            className="hover:text-white transition-colors focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white rounded"
+            className="inline-flex items-center min-h-11 px-3 hover:text-white transition-colors focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white rounded"
           >
             Roadmap
           </Link>
           <Link
             href="/account"
-            className="hover:text-white transition-colors focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white rounded"
+            className="inline-flex items-center min-h-11 px-3 hover:text-white transition-colors focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white rounded"
           >
             Sign in
           </Link>
