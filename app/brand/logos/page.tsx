@@ -32,6 +32,12 @@ const OPTIONS: Option[] = [
     summary:
       'A "WitUS" wordmark with a neutral dot trailing the S. Monogram "W." at favicon size. Minimal, modern, safe.',
   },
+  {
+    slug: "04-orbit-type",
+    title: "Option 4 — Orbit + W hybrid",
+    summary:
+      "Bold W centered inside 8 satellite dots in the product accent colors. Merges Option 1's ecosystem story with Option 3's type-first legibility. Favicon keeps the W + 4 compass dots.",
+  },
 ];
 
 const ACCENT_SWATCHES: { name: string; className: string; isLight?: boolean }[] = [
