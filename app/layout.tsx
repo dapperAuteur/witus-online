@@ -3,6 +3,7 @@ import { Geist } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { SITE_URL } from "@/lib/products";
 
 const geist = Geist({
   variable: "--font-geist-sans",
@@ -10,19 +11,39 @@ const geist = Geist({
 });
 
 export const metadata: Metadata = {
-  title: "WitUS — Live Long. Work Free.",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: "WitUS — Live Long. Work Free.",
+    template: "%s · WitUS",
+  },
   description:
-    "WitUS is the platform connecting longevity and independent work. Home of CentenarianOS and Work.WitUS.",
+    "WitUS is the ecosystem connecting longevity and independent work. Home of CentenarianOS, Work.WitUS, Tour Manager OS, Wanderlearn, Fly.WitUS, FlashLearnAI, Learn.WitUS, and AwesomeWebStore.",
   icons: {
     icon: "/flywitus-platypus-logo.png",
     apple: "/flywitus-platypus-logo.png",
   },
   openGraph: {
+    type: "website",
+    siteName: "WitUS",
     title: "WitUS — Live Long. Work Free.",
     description:
-      "The platform connecting longevity and independent work. Home of CentenarianOS and Work.WitUS.",
-    url: "https://witus.online",
-    siteName: "WitUS",
+      "The ecosystem connecting longevity and independent work.",
+    url: SITE_URL,
+    images: [
+      {
+        url: "/og/home.png",
+        width: 1200,
+        height: 630,
+        alt: "WitUS — Live Long. Work Free.",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "WitUS — Live Long. Work Free.",
+    description:
+      "The ecosystem connecting longevity and independent work.",
+    images: ["/og/home.png"],
   },
 };
 
@@ -34,8 +55,16 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${geist.variable} antialiased min-h-screen flex flex-col`}>
+        <a
+          href="#main"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-white focus:text-slate-950 focus:font-semibold focus:rounded-lg"
+        >
+          Skip to content
+        </a>
         <Header />
-        <main className="flex-1">{children}</main>
+        <main id="main" className="flex-1">
+          {children}
+        </main>
         <Footer />
       </body>
     </html>
