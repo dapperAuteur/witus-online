@@ -1,59 +1,126 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import ProductCard from "@/components/ProductCard";
+import { products, SITE_URL } from "@/lib/products";
+
+export const metadata: Metadata = {
+  title: "WitUS — Live Long. Work Free.",
+  description:
+    "The WitUS ecosystem: 8 tools for health, livelihood, learning, and flight. One brand, one philosophy.",
+  alternates: { canonical: `${SITE_URL}/` },
+  openGraph: {
+    title: "WitUS — Live Long. Work Free.",
+    description:
+      "8 tools for health, livelihood, learning, and flight.",
+    url: `${SITE_URL}/`,
+    images: [
+      {
+        url: "/og/home.png",
+        width: 1200,
+        height: 630,
+        alt: "WitUS — Live Long. Work Free.",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "WitUS — Live Long. Work Free.",
+    description:
+      "8 tools for health, livelihood, learning, and flight.",
+    images: ["/og/home.png"],
+  },
+};
+
+const organizationJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "WitUS",
+  url: SITE_URL,
+  logo: `${SITE_URL}/flywitus-platypus-logo.png`,
+  sameAs: [
+    "https://brandanthonymcdonald.com",
+    "https://awesomewebstore.com",
+  ],
+};
+
+const itemListJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  itemListElement: products.map((product, index) => ({
+    "@type": "ListItem",
+    position: index + 1,
+    url: product.href,
+    name: product.name,
+    description: product.tagline,
+  })),
+};
 
 export default function HomePage() {
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListJsonLd) }}
+      />
+
       {/* Hero */}
-      <section className="max-w-5xl mx-auto px-6 pt-24 pb-16">
+      <section className="max-w-5xl mx-auto px-6 pt-20 sm:pt-24 pb-12 sm:pb-16">
         <p className="text-sm font-semibold tracking-widest text-slate-500 uppercase mb-4">
           WitUS.online
         </p>
-        <h1 className="text-5xl sm:text-6xl font-extrabold text-white leading-tight mb-6">
+        <h1 className="text-4xl sm:text-6xl font-extrabold text-white leading-tight mb-6">
           Live Long.
           <br />
           Work Free.
         </h1>
-        <p className="text-lg text-slate-400 max-w-xl leading-relaxed mb-8">
+        <p className="text-base sm:text-lg text-slate-400 max-w-xl leading-relaxed mb-8">
           WitUS is a platform built on a single belief: your health and your livelihood
           are not separate goals. We build tools for people who want to own both.
         </p>
-        <div className="flex flex-wrap gap-4">
+        <div className="flex flex-wrap gap-3 sm:gap-4">
           <Link
             href="/about"
-            className="px-6 py-3 rounded-lg bg-white text-slate-950 font-semibold text-sm hover:bg-slate-200 transition-colors"
+            className="min-h-[44px] inline-flex items-center px-6 py-3 rounded-lg bg-white text-slate-950 font-semibold text-sm hover:bg-slate-200 transition-colors focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
           >
             Read the Philosophy
           </Link>
           <Link
             href="/roadmap"
-            className="px-6 py-3 rounded-lg border border-slate-700 text-slate-300 font-semibold text-sm hover:border-slate-500 hover:text-white transition-colors"
+            className="min-h-[44px] inline-flex items-center px-6 py-3 rounded-lg border border-slate-700 text-slate-300 font-semibold text-sm hover:border-slate-500 hover:text-white transition-colors focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
           >
             View Roadmap
           </Link>
         </div>
       </section>
 
-      {/* Product Cards */}
-      <section className="max-w-5xl mx-auto px-6 pb-20">
-        <p className="text-xs font-semibold tracking-widest text-slate-600 uppercase mb-6">
+      {/* Product Directory */}
+      <section
+        aria-labelledby="products-heading"
+        className="max-w-5xl mx-auto px-6 pb-20"
+      >
+        <h2
+          id="products-heading"
+          className="text-xs font-semibold tracking-widest text-slate-400 uppercase mb-6"
+        >
           The Platform
-        </p>
-        <div className="grid sm:grid-cols-2 gap-6">
-          <ProductCard
-            name="CentenarianOS"
-            tagline="The multi-decade personal operating system"
-            description="Plan your roadmap, track nutrition, log workouts, analyze your finances, manage travel, and connect it all through cross-module analytics. Your entire life, in one private dashboard."
-            href="https://centenarianos.com"
-            accentColor="fuchsia"
-          />
-          <ProductCard
-            name="Work.WitUS"
-            tagline="Job tracking and business tools for independent contractors"
-            description="Create jobs, log time, auto-generate invoices, scan pay stubs with AI, track mileage, and manage your schedule. Built for contractors who work for themselves."
-            href="https://work.witus.online"
-            accentColor="amber"
-          />
+        </h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {products.map((product) => (
+            <ProductCard
+              key={product.slug}
+              name={product.name}
+              tagline={product.tagline}
+              description={product.description}
+              href={product.href}
+              accentColor={product.accent}
+              status={product.status}
+              external={product.external}
+            />
+          ))}
         </div>
       </section>
 
@@ -69,7 +136,7 @@ export default function HomePage() {
           </div>
           <Link
             href="/account"
-            className="shrink-0 px-5 py-2.5 rounded-lg border border-slate-700 text-slate-300 text-sm font-semibold hover:border-slate-500 hover:text-white transition-colors"
+            className="shrink-0 min-h-[44px] inline-flex items-center px-5 py-2.5 rounded-lg border border-slate-700 text-slate-300 text-sm font-semibold hover:border-slate-500 hover:text-white transition-colors focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
           >
             Learn more
           </Link>
@@ -87,8 +154,9 @@ export default function HomePage() {
             className="text-slate-400 hover:text-white transition-colors"
           >
             Brand Anthony McDonald
-          </a>{" "}
-          &mdash; developer advocate, voiceover artist, business consultant, and content creator.
+          </a>
+          {" "}&mdash; developer advocate, voiceover artist, business consultant, and content creator.
+          <span className="sr-only"> (opens in new tab)</span>
         </p>
       </section>
     </>
