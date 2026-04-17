@@ -84,13 +84,13 @@ export default function HomePage() {
         <div className="flex flex-wrap gap-3 sm:gap-4">
           <Link
             href="/about"
-            className="min-h-[44px] inline-flex items-center px-6 py-3 rounded-lg bg-white text-slate-950 font-semibold text-sm hover:bg-slate-200 transition-colors focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+            className="min-h-11 inline-flex items-center px-6 py-3 rounded-lg bg-white text-slate-950 font-semibold text-sm hover:bg-slate-200 transition-colors focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
           >
             Read the Philosophy
           </Link>
           <Link
             href="/roadmap"
-            className="min-h-[44px] inline-flex items-center px-6 py-3 rounded-lg border border-slate-700 text-slate-300 font-semibold text-sm hover:border-slate-500 hover:text-white transition-colors focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+            className="min-h-11 inline-flex items-center px-6 py-3 rounded-lg border border-slate-700 text-slate-300 font-semibold text-sm hover:border-slate-500 hover:text-white transition-colors focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
           >
             View Roadmap
           </Link>
@@ -124,21 +124,33 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* One Account */}
-      <section className="border-y border-slate-800 bg-slate-900/40">
+      {/* One Account — roadmap framing, honest about today */}
+      <section
+        aria-labelledby="one-account-heading"
+        className="border-y border-slate-800 bg-slate-900/40"
+      >
         <div className="max-w-5xl mx-auto px-6 py-14 flex flex-col sm:flex-row items-start sm:items-center gap-6">
           <div className="flex-1">
-            <h2 className="text-xl font-bold text-white mb-2">One account. Two platforms.</h2>
+            <span className="inline-block text-[10px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700 mb-3">
+              On the roadmap
+            </span>
+            <h2
+              id="one-account-heading"
+              className="text-xl font-bold text-white mb-2"
+            >
+              One WitUS account. Coming soon.
+            </h2>
             <p className="text-slate-400 text-sm leading-relaxed max-w-lg">
-              Your WitUS account works across CentenarianOS and Work.WitUS. Sign up once and
-              access both — your health data and your work life, unified under a single login.
+              Today, each WitUS tool has its own sign-in. A unified WitUS account —
+              one login across the whole ecosystem — is on the roadmap. When it
+              ships, your existing accounts migrate in.
             </p>
           </div>
           <Link
             href="/account"
-            className="shrink-0 min-h-[44px] inline-flex items-center px-5 py-2.5 rounded-lg border border-slate-700 text-slate-300 text-sm font-semibold hover:border-slate-500 hover:text-white transition-colors focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+            className="shrink-0 min-h-11 inline-flex items-center px-5 py-2.5 rounded-lg border border-slate-700 text-slate-300 text-sm font-semibold hover:border-slate-500 hover:text-white transition-colors focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
           >
-            Learn more
+            Sign-in doors
           </Link>
         </div>
       </section>

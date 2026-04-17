@@ -1,89 +1,192 @@
 import type { Metadata } from "next";
+import { products, SITE_URL, type Accent } from "@/lib/products";
 
 export const metadata: Metadata = {
-  title: "Account — WitUS",
-  description: "Your WitUS account works across CentenarianOS and Work.WitUS.",
+  title: "Accounts",
+  description:
+    "Sign-in links for every WitUS product. A unified WitUS account is on the roadmap.",
+  alternates: { canonical: `${SITE_URL}/account` },
+  openGraph: {
+    title: "Accounts · WitUS",
+    description:
+      "Sign-in links for every WitUS product. A unified WitUS account is on the roadmap.",
+    url: `${SITE_URL}/account`,
+    images: [
+      {
+        url: "/og/home.png",
+        width: 1200,
+        height: 630,
+        alt: "WitUS — Live Long. Work Free.",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Accounts · WitUS",
+    description:
+      "Sign-in links for every WitUS product. A unified WitUS account is on the roadmap.",
+    images: ["/og/home.png"],
+  },
+};
+
+const tileStyles: Record<Accent, { border: string; dot: string; focus: string }> = {
+  amber: {
+    border: "border-amber-500/30 hover:border-amber-500/60",
+    dot: "bg-amber-400",
+    focus: "focus-visible:outline-amber-300",
+  },
+  fuchsia: {
+    border: "border-fuchsia-500/30 hover:border-fuchsia-500/60",
+    dot: "bg-fuchsia-400",
+    focus: "focus-visible:outline-fuchsia-300",
+  },
+  violet: {
+    border: "border-violet-500/30 hover:border-violet-500/60",
+    dot: "bg-violet-400",
+    focus: "focus-visible:outline-violet-300",
+  },
+  sky: {
+    border: "border-sky-500/30 hover:border-sky-500/60",
+    dot: "bg-sky-400",
+    focus: "focus-visible:outline-sky-300",
+  },
+  emerald: {
+    border: "border-emerald-500/30 hover:border-emerald-500/60",
+    dot: "bg-emerald-400",
+    focus: "focus-visible:outline-emerald-300",
+  },
+  rose: {
+    border: "border-rose-500/30 hover:border-rose-500/60",
+    dot: "bg-rose-400",
+    focus: "focus-visible:outline-rose-300",
+  },
+  teal: {
+    border: "border-teal-500/30 hover:border-teal-500/60",
+    dot: "bg-teal-400",
+    focus: "focus-visible:outline-teal-300",
+  },
+  lime: {
+    border: "border-lime-500/30 hover:border-lime-500/60",
+    dot: "bg-lime-400",
+    focus: "focus-visible:outline-lime-300",
+  },
 };
 
 const faqs = [
   {
-    q: "Do I need two accounts?",
-    a: "No. One WitUS account gives you access to both CentenarianOS and Work.WitUS. Sign up on either app and your credentials work on both.",
+    q: "Do I need a separate account for each app?",
+    a: "Yes, for now. Each WitUS app manages its own accounts and subscriptions. A unified WitUS account is on the roadmap.",
   },
   {
-    q: "Is my data shared between the apps?",
-    a: "Your account credentials are shared. Your data (health records, job logs, invoices) lives in each app separately and is never mixed or exposed between platforms without your explicit action.",
+    q: "When will the unified account ship?",
+    a: "There's no firm date. It depends on each app migrating to a common auth library. Progress shows up on the roadmap page.",
   },
   {
-    q: "What email address should I use?",
-    a: "Use any email you like. The same email and password will authenticate you on both platforms.",
+    q: "Will my existing accounts transfer?",
+    a: "Yes. When the unified WitUS account ships, we'll migrate existing per-app accounts, not force you to start over.",
   },
   {
-    q: "What if I forget my password?",
-    a: "Use the password reset flow on whichever app you're trying to access. The reset applies to your shared WitUS account and will work on both.",
+    q: "What email should I use?",
+    a: "Whatever you like. If you plan to use multiple WitUS apps, using the same email on each will make the eventual migration easier.",
   },
   {
-    q: "Is my account free?",
-    a: "Creating a WitUS account is free. Each app has its own subscription tier — see the pricing pages on CentenarianOS and Work.WitUS for details.",
+    q: "Does each app bill separately?",
+    a: "Yes. Each app has its own subscription with its own pricing. See individual product pages for details.",
+  },
+  {
+    q: "What if I forget a password?",
+    a: "Use the password-reset flow on the app you're signing into. Each app's reset is independent today.",
   },
 ];
 
+const faqJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: faqs.map((faq) => ({
+    "@type": "Question",
+    name: faq.q,
+    acceptedAnswer: {
+      "@type": "Answer",
+      text: faq.a,
+    },
+  })),
+};
+
 export default function AccountPage() {
+  const signInProducts = products.filter((p) => p.signInHref);
+
   return (
-    <div className="max-w-3xl mx-auto px-6 py-20">
-      <p className="text-sm font-semibold tracking-widest text-slate-500 uppercase mb-4">
-        Your Account
-      </p>
-      <h1 className="text-4xl font-extrabold text-white mb-4 leading-tight">
-        One account, two platforms
-      </h1>
-      <p className="text-slate-400 leading-relaxed mb-12 max-w-xl">
-        Your WitUS account is the key to the entire ecosystem. Sign up or log in once and
-        access both CentenarianOS and Work.WitUS without managing separate credentials.
-      </p>
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+      />
 
-      {/* App Links */}
-      <div className="grid sm:grid-cols-2 gap-4 mb-16">
-        <a
-          href="https://centenarianos.com/login"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex flex-col p-6 rounded-xl border border-fuchsia-500/30 hover:border-fuchsia-500/60 bg-slate-900/50 transition-colors group"
-        >
-          <span className="flex items-center gap-2 mb-2">
-            <span className="w-2 h-2 rounded-full bg-fuchsia-400" />
-            <span className="text-sm font-semibold text-white">CentenarianOS</span>
-          </span>
-          <span className="text-xs text-slate-500 group-hover:text-slate-400 transition-colors">
-            Sign in at centenarianos.com &rarr;
-          </span>
-        </a>
-        <a
-          href="https://work.witus.online/login"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex flex-col p-6 rounded-xl border border-amber-500/30 hover:border-amber-500/60 bg-slate-900/50 transition-colors group"
-        >
-          <span className="flex items-center gap-2 mb-2">
-            <span className="w-2 h-2 rounded-full bg-amber-400" />
-            <span className="text-sm font-semibold text-white">Work.WitUS</span>
-          </span>
-          <span className="text-xs text-slate-500 group-hover:text-slate-400 transition-colors">
-            Sign in at work.witus.online &rarr;
-          </span>
-        </a>
-      </div>
+      <div className="max-w-3xl mx-auto px-6 py-16 sm:py-20">
+        <p className="text-sm font-semibold tracking-widest text-slate-500 uppercase mb-4">
+          Your Accounts
+        </p>
+        <h1 className="text-3xl sm:text-4xl font-extrabold text-white mb-4 leading-tight">
+          Your WitUS accounts
+        </h1>
+        <p className="text-slate-400 leading-relaxed mb-12 max-w-xl">
+          Each WitUS tool is its own app with its own account and its own subscription.
+          A unified WitUS account is on the roadmap — until then, this page collects
+          the sign-in doors in one place.
+        </p>
 
-      {/* FAQ */}
-      <h2 className="text-xl font-bold text-white mb-6">Frequently asked questions</h2>
-      <div className="space-y-6">
-        {faqs.map((faq) => (
-          <div key={faq.q} className="border-b border-slate-800 pb-6 last:border-0">
-            <p className="text-sm font-semibold text-white mb-2">{faq.q}</p>
-            <p className="text-sm text-slate-400 leading-relaxed">{faq.a}</p>
-          </div>
-        ))}
+        <h2
+          id="sign-in-heading"
+          className="text-xs font-semibold tracking-widest text-slate-400 uppercase mb-4"
+        >
+          Sign in
+        </h2>
+        <div
+          aria-labelledby="sign-in-heading"
+          role="list"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-16"
+        >
+          {signInProducts.map((product) => {
+            const styles = tileStyles[product.accent];
+            return (
+              <a
+                key={product.slug}
+                role="listitem"
+                href={product.signInHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={`Sign in to ${product.name} (opens in new tab)`}
+                className={`flex flex-col min-h-11 p-6 rounded-xl border bg-slate-900/50 transition-colors group focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 ${styles.border} ${styles.focus}`}
+              >
+                <span className="flex items-center gap-2 mb-2">
+                  <span
+                    className={`w-2 h-2 rounded-full ${styles.dot}`}
+                    aria-hidden="true"
+                  />
+                  <span className="text-sm font-semibold text-white">
+                    {product.name}
+                  </span>
+                </span>
+                <span className="text-xs text-slate-500 group-hover:text-slate-400 transition-colors">
+                  Sign in at {new URL(product.signInHref!).host} &rarr;
+                </span>
+              </a>
+            );
+          })}
+        </div>
+
+        <h2 className="text-xl font-bold text-white mb-6">
+          Frequently asked questions
+        </h2>
+        <dl className="space-y-6">
+          {faqs.map((faq) => (
+            <div key={faq.q} className="border-b border-slate-800 pb-6 last:border-0">
+              <dt className="text-sm font-semibold text-white mb-2">{faq.q}</dt>
+              <dd className="text-sm text-slate-400 leading-relaxed">{faq.a}</dd>
+            </div>
+          ))}
+        </dl>
       </div>
-    </div>
+    </>
   );
 }

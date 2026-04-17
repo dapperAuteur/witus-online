@@ -101,9 +101,9 @@ export default function ProductCard({
   const styles = accentStyles[accentColor];
   const isDisabled = status === "coming-soon";
 
-  const ctaClasses = `min-h-[44px] inline-flex items-center justify-center text-center text-sm font-semibold px-5 py-2.5 rounded-lg transition-colors focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 ${styles.focus} ${styles.button}`;
+  const ctaClasses = `min-h-11 inline-flex items-center justify-center text-center text-sm font-semibold px-5 py-2.5 rounded-lg transition-colors focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 ${styles.focus} ${styles.button}`;
   const disabledClasses =
-    "min-h-[44px] inline-flex items-center justify-center text-center text-sm font-semibold px-5 py-2.5 rounded-lg bg-slate-800 text-slate-500 cursor-not-allowed";
+    "min-h-11 inline-flex items-center justify-center text-center text-sm font-semibold px-5 py-2.5 rounded-lg bg-slate-800 text-slate-500 cursor-not-allowed";
 
   return (
     <article

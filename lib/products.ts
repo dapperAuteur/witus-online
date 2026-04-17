@@ -19,6 +19,7 @@ export interface Product {
   accent: Accent;
   status: ProductStatus;
   external: boolean;
+  signInHref?: string;
 }
 
 export const SITE_URL = "https://witus.online";
@@ -34,6 +35,7 @@ export const products: Product[] = [
     accent: "fuchsia",
     status: "live",
     external: true,
+    signInHref: "https://centenarianos.com/login",
   },
   {
     slug: "work-witus",
@@ -45,6 +47,7 @@ export const products: Product[] = [
     accent: "amber",
     status: "live",
     external: true,
+    signInHref: "https://work.witus.online/login",
   },
   {
     slug: "tour-witus",
@@ -56,6 +59,7 @@ export const products: Product[] = [
     accent: "violet",
     status: "beta",
     external: true,
+    signInHref: "https://tour.witus.online/login",
   },
   {
     slug: "wanderlearn",
@@ -67,6 +71,7 @@ export const products: Product[] = [
     accent: "sky",
     status: "beta",
     external: true,
+    signInHref: "https://wanderlearn.witus.online/login",
   },
   {
     slug: "fly-witus",
