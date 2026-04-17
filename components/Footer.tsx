@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { products } from "@/lib/products";
+import { learnSubRoutes } from "@/lib/learn";
 
 export default function Footer() {
   return (
@@ -10,7 +11,7 @@ export default function Footer() {
           <p>A B4C LLC / AwesomeWebStore.com brand</p>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-8 w-full sm:w-auto">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-8 w-full sm:w-auto">
           <div>
             <p className="text-slate-400 font-medium mb-2">Products</p>
             <ul className="space-y-1">
@@ -52,9 +53,32 @@ export default function Footer() {
               </li>
               <li>
                 <Link href="/account" className="hover:text-white transition-colors">
-                  Account
+                  Sign in
                 </Link>
               </li>
+            </ul>
+          </div>
+          <div>
+            <p className="text-slate-400 font-medium mb-2">Learn</p>
+            <ul className="space-y-1">
+              <li>
+                <Link
+                  href="/learn"
+                  className="hover:text-white transition-colors focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white rounded"
+                >
+                  Overview
+                </Link>
+              </li>
+              {learnSubRoutes.map((route) => (
+                <li key={route.slug}>
+                  <Link
+                    href={`/learn/${route.slug}`}
+                    className="hover:text-white transition-colors focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white rounded"
+                  >
+                    {route.name}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
           <div>
