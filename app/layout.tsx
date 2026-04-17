@@ -1,8 +1,9 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import ServiceWorkerRegister from "@/components/ServiceWorkerRegister";
 import { SITE_URL } from "@/lib/products";
 
 const geist = Geist({
@@ -10,8 +11,19 @@ const geist = Geist({
   subsets: ["latin"],
 });
 
+export const viewport: Viewport = {
+  themeColor: "#020617",
+  colorScheme: "dark",
+};
+
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
+  applicationName: "WitUS",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "WitUS",
+  },
   title: {
     default: "WitUS. Live Long. Work Free.",
     template: "%s · WitUS",
@@ -70,6 +82,7 @@ export default function RootLayout({
           {children}
         </main>
         <Footer />
+        <ServiceWorkerRegister />
       </body>
     </html>
   );
