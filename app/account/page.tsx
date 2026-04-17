@@ -16,7 +16,7 @@ export const metadata: Metadata = {
         url: "/og/home.png",
         width: 1200,
         height: 630,
-        alt: "WitUS — Live Long. Work Free.",
+        alt: "WitUS. Live Long. Work Free.",
       },
     ],
   },
@@ -131,7 +131,7 @@ export default function AccountPage() {
         </h1>
         <p className="text-slate-400 leading-relaxed mb-12 max-w-xl">
           Each WitUS tool is its own app with its own account and its own subscription.
-          A unified WitUS account is on the roadmap — until then, this page collects
+          A unified WitUS account is on the roadmap. Until then, this page collects
           the sign-in doors in one place.
         </p>
 

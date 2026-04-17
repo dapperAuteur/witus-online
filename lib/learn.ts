@@ -9,13 +9,13 @@ export const learnSubRoutes: readonly LearnSubRoute[] = [
     slug: "bio",
     name: "Bio",
     description:
-      "BAM's practitioner-scholar background — developer relations, fitness credentials, voiceover, MBA.",
+      "BAM's practitioner-scholar background. Developer relations, fitness credentials, voiceover, MBA.",
   },
   {
     slug: "curriculum",
     name: "BVC Curriculum",
     description:
-      "The curriculum framework BAM teaches through — Foundations of Fitness, Intervention Design, and more.",
+      "The curriculum framework BAM teaches through. Covers Foundations of Fitness, Intervention Design, and more.",
   },
   {
     slug: "research",

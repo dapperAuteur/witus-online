@@ -5,7 +5,7 @@ import { SITE_URL } from "@/lib/products";
 export const metadata: Metadata = {
   title: "BVC Curriculum · Learn.WitUS",
   description:
-    "The curriculum framework BAM teaches through — Foundations of Fitness, Intervention Design, and the broader BVC program. Courses delivered on the Centenarian Academy LMS.",
+    "The curriculum framework BAM teaches through. Foundations of Fitness, Intervention Design, and the broader BVC program. Courses delivered on the Centenarian Academy LMS.",
   alternates: { canonical: `${SITE_URL}/learn/curriculum` },
   openGraph: {
     title: "BVC Curriculum · Learn.WitUS",
@@ -17,14 +17,14 @@ export const metadata: Metadata = {
         url: "/og/home.png",
         width: 1200,
         height: 630,
-        alt: "WitUS — Live Long. Work Free.",
+        alt: "WitUS. Live Long. Work Free.",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
     title: "BVC Curriculum · Learn.WitUS",
-    description: "BAM's curriculum framework — delivered through the Academy.",
+    description: "BAM's curriculum framework, delivered through the Academy.",
     images: ["/og/home.png"],
   },
 };
@@ -46,8 +46,8 @@ export default function CurriculumPage() {
         BVC Curriculum
       </h1>
       <p className="text-slate-300 text-lg leading-relaxed mb-6 max-w-2xl">
-        BVC is BAM&rsquo;s practitioner-scholar curriculum framework &mdash; the
-        lens through which BAM teaches fitness, longevity, and intervention
+        BVC is BAM&rsquo;s practitioner-scholar curriculum framework. It&rsquo;s
+        the lens through which BAM teaches fitness, longevity, and intervention
         design across the WitUS ecosystem.
       </p>
       <p className="text-slate-400 leading-relaxed mb-12 max-w-2xl">

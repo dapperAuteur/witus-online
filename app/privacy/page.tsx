@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy — WitUS",
+  title: "Privacy Policy",
 };
 
 export default function PrivacyPage() {
@@ -47,7 +47,7 @@ export default function PrivacyPage() {
             <li>To authenticate your account across platforms</li>
             <li>To process payments via Stripe</li>
             <li>To send transactional and account-related emails</li>
-            <li>To generate AI-assisted features (Gemini API) — never used to train models</li>
+            <li>To generate AI-assisted features (Gemini API). Never used to train models</li>
           </ul>
         </section>
 

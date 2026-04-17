@@ -5,10 +5,10 @@ import { SITE_URL } from "@/lib/products";
 export const metadata: Metadata = {
   title: "Bio · Learn.WitUS",
   description:
-    "Brand Anthony McDonald (BAM) — developer relations specialist, software developer, fitness professional (CPT, CNC, CES), voiceover artist, and MBA.",
+    "Brand Anthony McDonald (BAM). Developer relations specialist, software developer, fitness professional (CPT, CNC, CES), voiceover artist, and MBA.",
   alternates: { canonical: `${SITE_URL}/learn/bio` },
   openGraph: {
-    title: "Bio — Brand Anthony McDonald · WitUS",
+    title: "Bio · Brand Anthony McDonald · WitUS",
     description:
       "Developer relations, software, fitness (CPT/CNC/CES), voiceover, MBA. 25+ years in business.",
     url: `${SITE_URL}/learn/bio`,
@@ -17,13 +17,13 @@ export const metadata: Metadata = {
         url: "/og/home.png",
         width: 1200,
         height: 630,
-        alt: "WitUS — Live Long. Work Free.",
+        alt: "WitUS. Live Long. Work Free.",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Bio — Brand Anthony McDonald · WitUS",
+    title: "Bio · Brand Anthony McDonald · WitUS",
     description:
       "Developer relations, software, fitness (CPT/CNC/CES), voiceover, MBA.",
     images: ["/og/home.png"],
@@ -57,13 +57,13 @@ const personJsonLd = {
   },
   alumniOf: {
     "@type": "CollegeOrUniversity",
-    name: "Arizona State University — W. P. Carey School of Business",
+    name: "Arizona State University, W. P. Carey School of Business",
   },
   hasCredential: [
     { "@type": "EducationalOccupationalCredential", name: "MBA (Arizona State, W. P. Carey)" },
-    { "@type": "EducationalOccupationalCredential", name: "CPT — Certified Personal Trainer" },
-    { "@type": "EducationalOccupationalCredential", name: "CNC — Certified Nutrition Coach" },
-    { "@type": "EducationalOccupationalCredential", name: "CES — Corrective Exercise Specialist" },
+    { "@type": "EducationalOccupationalCredential", name: "CPT (Certified Personal Trainer)" },
+    { "@type": "EducationalOccupationalCredential", name: "CNC (Certified Nutrition Coach)" },
+    { "@type": "EducationalOccupationalCredential", name: "CES (Corrective Exercise Specialist)" },
   ],
   knowsLanguage: ["en", "es"],
 };
@@ -97,8 +97,8 @@ export default function BioPage() {
         </p>
         <p className="text-slate-400 leading-relaxed mb-12 max-w-2xl">
           Based in San Francisco. Operates through B4C LLC (dba BAM Sports) and
-          AwesomeWebStore.com. Writes, codes, teaches, and narrates —
-          &ldquo;building tools and documenting the journey to become the world&rsquo;s
+          AwesomeWebStore.com. Writes, codes, teaches, and narrates.
+          &ldquo;Building tools and documenting the journey to become the world&rsquo;s
           fastest centenarian.&rdquo;
         </p>
 
@@ -107,8 +107,8 @@ export default function BioPage() {
           <li>• Developer relations &amp; technical educator</li>
           <li>• Software developer (FlashLearnAI, Fitness Assessment App, more)</li>
           <li>• AI adviser &amp; business consultant</li>
-          <li>• Voiceover artist &mdash; audiobooks, commercial, e-learning narration</li>
-          <li>• Content creator &mdash; daily morning show, blog, curriculum</li>
+          <li>• Voiceover artist for audiobooks, commercial, and e-learning narration</li>
+          <li>• Content creator across a daily morning show, blog, and curriculum</li>
           <li>• Founder of the WitUS ecosystem</li>
         </ul>
 
@@ -117,7 +117,7 @@ export default function BioPage() {
           <div>
             <dt className="text-sm font-semibold text-white">MBA</dt>
             <dd className="text-sm text-slate-400">
-              Arizona State University &mdash; W. P. Carey School of Business
+              Arizona State University, W. P. Carey School of Business
             </dd>
           </div>
           <div>
@@ -146,7 +146,7 @@ export default function BioPage() {
               brandanthonymcdonald.com
               <span className="sr-only"> (opens in new tab)</span>
             </a>
-            <span className="text-slate-500 text-sm"> &mdash; full portfolio, services, blog</span>
+            <span className="text-slate-500 text-sm"> &middot; full portfolio, services, blog</span>
           </li>
           <li>
             <a
@@ -158,7 +158,7 @@ export default function BioPage() {
               LinkedIn
               <span className="sr-only"> (opens in new tab)</span>
             </a>
-            <span className="text-slate-500 text-sm"> &mdash; professional history</span>
+            <span className="text-slate-500 text-sm"> &middot; professional history</span>
           </li>
           <li>
             <a

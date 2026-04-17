@@ -5,7 +5,7 @@ import { SITE_URL } from "@/lib/products";
 export const metadata: Metadata = {
   title: "Partnerships · Learn.WitUS",
   description:
-    "Community leadership, teaching roles, and institutional collaborations — FreeCodeCamp, BAM Sports clients, brand-ambassador engagements, and venue partners.",
+    "Community leadership, teaching roles, and institutional collaborations. FreeCodeCamp, BAM Sports clients, brand-ambassador engagements, and venue partners.",
   alternates: { canonical: `${SITE_URL}/learn/partnerships` },
   openGraph: {
     title: "Partnerships · Learn.WitUS",
@@ -17,7 +17,7 @@ export const metadata: Metadata = {
         url: "/og/home.png",
         width: 1200,
         height: 630,
-        alt: "WitUS — Live Long. Work Free.",
+        alt: "WitUS. Live Long. Work Free.",
       },
     ],
   },
@@ -48,8 +48,8 @@ export default function PartnershipsPage() {
       </h1>
       <p className="text-slate-300 text-lg leading-relaxed mb-12 max-w-2xl">
         Learn.WitUS is not a solo project. BAM&rsquo;s work moves through
-        communities, clients, and institutional partners &mdash; and the WitUS
-        ecosystem is shaped by those collaborations.
+        communities, clients, and institutional partners. The WitUS ecosystem is
+        shaped by those collaborations.
       </p>
 
       <h2 className="text-xl font-bold text-white mb-4">Community &amp; teaching</h2>
@@ -96,8 +96,8 @@ export default function PartnershipsPage() {
           </h3>
           <p className="text-sm text-slate-400 leading-relaxed">
             Work.WitUS maintains a venue knowledge base that grows with each
-            contracted job &mdash; a standing resource for independent
-            contractors working similar rooms.
+            contracted job. A standing resource for independent contractors
+            working similar rooms.
           </p>
         </li>
       </ul>

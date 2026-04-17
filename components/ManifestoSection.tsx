@@ -10,7 +10,7 @@ export default function ManifestoSection({ quote, attribution }: ManifestoSectio
         &ldquo;{quote}&rdquo;
       </p>
       {attribution && (
-        <p className="mt-4 text-sm text-slate-500">&mdash; {attribution}</p>
+        <p className="mt-4 text-sm text-slate-500">{attribution}</p>
       )}
     </div>
   );

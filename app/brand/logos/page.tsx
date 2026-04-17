@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import FaviconSwitcher from "./FaviconSwitcher";
 
 export const metadata: Metadata = {
-  title: "Logo options — internal preview",
-  description: "Side-by-side review of three WitUS logo + favicon directions.",
+  title: "Logo options (internal preview)",
+  description: "Side-by-side review of four WitUS logo + favicon directions.",
   robots: { index: false, follow: false },
 };
 
@@ -16,25 +16,25 @@ type Option = {
 const OPTIONS: Option[] = [
   {
     slug: "01-orbit",
-    title: "Option 1 — Orbit mark",
+    title: "Option 1: Orbit mark",
     summary:
       "Core + 8 satellite dots in product accent colors. Tells the ecosystem story literally. Favicon simplifies to core + 4 compass-point dots.",
   },
   {
     slug: "02-duality",
-    title: "Option 2 — Duality W",
+    title: "Option 2: Duality W",
     summary:
       "A W built from two diagonals (Live in fuchsia, Work in amber) meeting at a white center pillar. Encodes 'Live Long. Work Free.'",
   },
   {
     slug: "03-type-dot",
-    title: "Option 3 — Type + dot",
+    title: "Option 3: Type + dot",
     summary:
       'A "WitUS" wordmark with a neutral dot trailing the S. Monogram "W." at favicon size. Minimal, modern, safe.',
   },
   {
     slug: "04-orbit-type",
-    title: "Option 4 — Orbit + W hybrid",
+    title: "Option 4: Orbit + W hybrid",
     summary:
       "Bold W centered inside 8 satellite dots in the product accent colors. Merges Option 1's ecosystem story with Option 3's type-first legibility. Favicon keeps the W + 4 compass dots.",
   },
@@ -65,9 +65,8 @@ export default function LogoPreviewPage() {
         Logo + favicon options
       </h1>
       <p className="text-slate-400 leading-relaxed mb-8 max-w-2xl">
-        Three distinct directions, each with a logomark, wordmark, favicon set, and
-        accent-neutrality test. Pick one and the other two get deleted in a follow-up
-        plan.
+        Four distinct directions, each with a logomark, wordmark, favicon set, and
+        accent-neutrality test. Any of them can be made the live brand mark.
       </p>
 
       <FaviconSwitcher />
@@ -88,7 +87,7 @@ export default function LogoPreviewPage() {
 
           {/* Size ladder */}
           <h3 className="text-xs font-semibold tracking-widest text-slate-500 uppercase mb-4">
-            Logomark — size ladder
+            Logomark: size ladder
           </h3>
           <div className="flex flex-wrap items-end gap-6 mb-10">
             {LOGO_SIZES.map((size) => (
@@ -109,7 +108,7 @@ export default function LogoPreviewPage() {
 
           {/* Wordmark in header context */}
           <h3 className="text-xs font-semibold tracking-widest text-slate-500 uppercase mb-4">
-            Wordmark — header context
+            Wordmark in a header strip
           </h3>
           <div className="rounded-xl border border-slate-800 bg-slate-950 px-6 py-4 flex items-center justify-between mb-10">
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -123,13 +122,13 @@ export default function LogoPreviewPage() {
               <span>About</span>
               <span>Learn</span>
               <span>Roadmap</span>
-              <span>Account</span>
+              <span>Sign in</span>
             </nav>
           </div>
 
           {/* Favicon in simulated browser tab */}
           <h3 className="text-xs font-semibold tracking-widest text-slate-500 uppercase mb-4">
-            Favicon — simulated browser tab
+            Favicon in a simulated browser tab
           </h3>
           <div className="rounded-t-xl bg-slate-800/80 p-3 flex gap-2 items-center max-w-md mb-10">
             <span className="w-2.5 h-2.5 rounded-full bg-rose-400" aria-hidden="true"/>
@@ -145,14 +144,14 @@ export default function LogoPreviewPage() {
                 className="block shrink-0"
               />
               <span className="text-xs text-slate-200 truncate">
-                WitUS — Live Long. Work Free.
+                WitUS. Live Long. Work Free.
               </span>
             </div>
           </div>
 
           {/* Accent neutrality grid */}
           <h3 className="text-xs font-semibold tracking-widest text-slate-500 uppercase mb-4">
-            Accent neutrality — logomark on every product accent
+            Accent neutrality test
           </h3>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 mb-2">
             {ACCENT_SWATCHES.map((sw) => (
@@ -186,9 +185,9 @@ export default function LogoPreviewPage() {
       ))}
 
       <p className="text-sm text-slate-500">
-        When you pick a winner, the losers get deleted and the choice gets promoted
-        to <code className="text-slate-300">plans/future/favicon-and-logo.md</code> for
-        a follow-up rollout plan.
+        All four options stay shipped. The active one is wired into the site
+        chrome via <code className="text-slate-300">app/layout.tsx</code> and{" "}
+        <code className="text-slate-300">components/Header.tsx</code>.
       </p>
     </div>
   );

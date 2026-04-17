@@ -4,12 +4,12 @@ import ProductCard from "@/components/ProductCard";
 import { products, SITE_URL } from "@/lib/products";
 
 export const metadata: Metadata = {
-  title: "WitUS — Live Long. Work Free.",
+  title: "WitUS. Live Long. Work Free.",
   description:
     "The WitUS ecosystem: 8 tools for health, livelihood, learning, and flight. One brand, one philosophy.",
   alternates: { canonical: `${SITE_URL}/` },
   openGraph: {
-    title: "WitUS — Live Long. Work Free.",
+    title: "WitUS. Live Long. Work Free.",
     description:
       "8 tools for health, livelihood, learning, and flight.",
     url: `${SITE_URL}/`,
@@ -18,13 +18,13 @@ export const metadata: Metadata = {
         url: "/og/home.png",
         width: 1200,
         height: 630,
-        alt: "WitUS — Live Long. Work Free.",
+        alt: "WitUS. Live Long. Work Free.",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "WitUS — Live Long. Work Free.",
+    title: "WitUS. Live Long. Work Free.",
     description:
       "8 tools for health, livelihood, learning, and flight.",
     images: ["/og/home.png"],
@@ -124,7 +124,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* One Account — roadmap framing, honest about today */}
+      {/* One Account: roadmap framing, honest about today */}
       <section
         aria-labelledby="one-account-heading"
         className="border-y border-slate-800 bg-slate-900/40"
@@ -141,8 +141,8 @@ export default function HomePage() {
               One WitUS account. Coming soon.
             </h2>
             <p className="text-slate-400 text-sm leading-relaxed max-w-lg">
-              Today, each WitUS tool has its own sign-in. A unified WitUS account —
-              one login across the whole ecosystem — is on the roadmap. When it
+              Today, each WitUS tool has its own sign-in. A unified WitUS account,
+              one login across the whole ecosystem, is on the roadmap. When it
               ships, your existing accounts migrate in.
             </p>
           </div>
@@ -167,7 +167,7 @@ export default function HomePage() {
           >
             Brand Anthony McDonald
           </a>
-          {" "}&mdash; developer advocate, voiceover artist, business consultant, and content creator.
+          , developer advocate, voiceover artist, business consultant, and content creator.
           <span className="sr-only"> (opens in new tab)</span>
         </p>
       </section>

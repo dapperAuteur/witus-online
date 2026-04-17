@@ -13,7 +13,7 @@ const geist = Geist({
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: "WitUS — Live Long. Work Free.",
+    default: "WitUS. Live Long. Work Free.",
     template: "%s · WitUS",
   },
   description:
@@ -25,7 +25,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     siteName: "WitUS",
-    title: "WitUS — Live Long. Work Free.",
+    title: "WitUS. Live Long. Work Free.",
     description:
       "The ecosystem connecting longevity and independent work.",
     url: SITE_URL,
@@ -34,13 +34,13 @@ export const metadata: Metadata = {
         url: "/og/home.png",
         width: 1200,
         height: 630,
-        alt: "WitUS — Live Long. Work Free.",
+        alt: "WitUS. Live Long. Work Free.",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "WitUS — Live Long. Work Free.",
+    title: "WitUS. Live Long. Work Free.",
     description:
       "The ecosystem connecting longevity and independent work.",
     images: ["/og/home.png"],

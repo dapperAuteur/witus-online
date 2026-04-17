@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import ManifestoSection from "@/components/ManifestoSection";
 
 export const metadata: Metadata = {
-  title: "About — WitUS",
-  description: "The philosophy behind WitUS: why longevity and independent work belong together.",
+  title: "About",
+  description: "The philosophy behind WitUS. Why longevity and independent work belong together.",
 };
 
 export default function AboutPage() {
