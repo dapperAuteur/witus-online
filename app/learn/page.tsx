@@ -104,9 +104,9 @@ export default function LearnIndexPage() {
             Courses live on the Academy.
           </h2>
           <p className="text-slate-400 text-sm leading-relaxed mb-4 max-w-xl">
-            Learn.WitUS is the profile. Actual courses (BVC, Foundations of
-            Fitness, Intervention Design) are delivered through the Centenarian
-            Academy LMS.
+            Learn.WitUS is the profile. Actual courses (Better Vice Club,
+            Foundations of Fitness, Intervention Design) are delivered through
+            the Centenarian Academy LMS.
           </p>
           <a
             href="https://centenarianos.com/academy"

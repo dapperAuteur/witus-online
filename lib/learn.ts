@@ -13,9 +13,9 @@ export const learnSubRoutes: readonly LearnSubRoute[] = [
   },
   {
     slug: "curriculum",
-    name: "BVC Curriculum",
+    name: "Better Vice Club",
     description:
-      "The curriculum framework BAM teaches through. Covers Foundations of Fitness, Intervention Design, and more.",
+      "BVC. Honest relationships with coffee, sugar, alcohol, and the other vices that run everyday life.",
   },
   {
     slug: "research",

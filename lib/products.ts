@@ -100,7 +100,7 @@ export const products: Product[] = [
     name: "Learn.WitUS",
     tagline: "Practitioner-scholar profile and curriculum",
     description:
-      "BAM's research, the BVC curriculum, and academy partnerships. The teaching layer of the WitUS ecosystem.",
+      "BAM's research, the Better Vice Club curriculum, and academy partnerships. The teaching layer of the WitUS ecosystem.",
     href: "https://centenarianos.com/academy",
     accent: "teal",
     status: "live",
