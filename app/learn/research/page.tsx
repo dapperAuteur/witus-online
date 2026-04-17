@@ -17,7 +17,7 @@ export const metadata: Metadata = {
         url: "/og/home.png",
         width: 1200,
         height: 630,
-        alt: "WitUS — Live Long. Work Free.",
+        alt: "WitUS. Live Long. Work Free.",
       },
     ],
   },
@@ -79,7 +79,7 @@ export default function ResearchPage() {
           </h3>
           <p className="text-sm text-slate-400 leading-relaxed">
             FlashLearnAI is the test-bed: can spaced recall move professional
-            knowledge &mdash; not just vocabulary &mdash; into long-term memory?
+            knowledge (not just vocabulary) into long-term memory?
           </p>
         </li>
         <li className="border-l-2 border-teal-500/40 pl-4">

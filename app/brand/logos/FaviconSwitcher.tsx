@@ -5,10 +5,10 @@ import { useEffect, useState } from "react";
 type Option = { slug: string; label: string };
 
 const OPTIONS: Option[] = [
-  { slug: "01-orbit", label: "Option 1 — Orbit mark" },
-  { slug: "02-duality", label: "Option 2 — Duality W" },
-  { slug: "03-type-dot", label: "Option 3 — Type + dot" },
-  { slug: "04-orbit-type", label: "Option 4 — Orbit + W hybrid" },
+  { slug: "01-orbit", label: "Option 1: Orbit mark" },
+  { slug: "02-duality", label: "Option 2: Duality W" },
+  { slug: "03-type-dot", label: "Option 3: Type + dot" },
+  { slug: "04-orbit-type", label: "Option 4: Orbit + W hybrid" },
 ];
 
 export default function FaviconSwitcher() {
@@ -54,7 +54,7 @@ export default function FaviconSwitcher() {
         onChange={(e) => setSelected(e.target.value)}
         className="min-h-11 px-3 py-2 rounded-lg bg-slate-950 text-slate-100 border border-slate-700 focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
       >
-        <option value="">— Keep current —</option>
+        <option value="">Keep current</option>
         {OPTIONS.map((o) => (
           <option key={o.slug} value={o.slug}>
             {o.label}

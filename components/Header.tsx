@@ -6,9 +6,16 @@ export default function Header() {
       <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between gap-4">
         <Link
           href="/"
-          className="text-xl font-bold tracking-tight text-white focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white rounded"
+          aria-label="WitUS home"
+          className="inline-flex items-center focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white rounded"
         >
-          WitUS
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/brand/04-orbit-type/wordmark.svg"
+            alt=""
+            aria-hidden="true"
+            className="h-7 w-auto block"
+          />
         </Link>
         <nav aria-label="Primary" className="flex items-center gap-4 sm:gap-6 text-sm text-slate-400">
           <Link

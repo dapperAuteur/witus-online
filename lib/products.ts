@@ -54,7 +54,7 @@ export const products: Product[] = [
     name: "Tour Manager OS",
     tagline: "Music touring operations, end to end",
     description:
-      "Advance shows, manage crew, track tour finances with split payments, and keep fans close — everything a touring act needs in one OS.",
+      "Advance shows, manage crew, track tour finances with split payments, and keep fans close. Everything a touring act needs in one OS.",
     href: "https://tour.witus.online",
     accent: "violet",
     status: "beta",
@@ -100,7 +100,7 @@ export const products: Product[] = [
     name: "Learn.WitUS",
     tagline: "Practitioner-scholar profile and curriculum",
     description:
-      "BAM's research, the BVC curriculum, and academy partnerships — the teaching layer of the WitUS ecosystem.",
+      "BAM's research, the Better Vice Club curriculum, and academy partnerships. The teaching layer of the WitUS ecosystem.",
     href: "https://centenarianos.com/academy",
     accent: "teal",
     status: "live",

@@ -6,19 +6,19 @@ import { learnSubRoutes } from "@/lib/learn";
 export const metadata: Metadata = {
   title: "Learn.WitUS",
   description:
-    "BAM's practitioner-scholar profile — bio, BVC curriculum, research, and education partnerships behind the WitUS ecosystem.",
+    "BAM's practitioner-scholar profile. Bio, BVC curriculum, research, and education partnerships behind the WitUS ecosystem.",
   alternates: { canonical: `${SITE_URL}/learn` },
   openGraph: {
     title: "Learn.WitUS · WitUS",
     description:
-      "BAM's practitioner-scholar profile — bio, BVC curriculum, research, and education partnerships.",
+      "BAM's practitioner-scholar profile. Bio, BVC curriculum, research, and education partnerships.",
     url: `${SITE_URL}/learn`,
     images: [
       {
         url: "/og/home.png",
         width: 1200,
         height: 630,
-        alt: "WitUS — Live Long. Work Free.",
+        alt: "WitUS. Live Long. Work Free.",
       },
     ],
   },
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Learn.WitUS · WitUS",
     description:
-      "BAM's practitioner-scholar profile — bio, BVC curriculum, research, partnerships.",
+      "BAM's practitioner-scholar profile. Bio, BVC curriculum, research, partnerships.",
     images: ["/og/home.png"],
   },
 };
@@ -37,7 +37,7 @@ const collectionJsonLd = {
   name: "Learn.WitUS",
   url: `${SITE_URL}/learn`,
   description:
-    "BAM's practitioner-scholar profile — bio, BVC curriculum, research, and education partnerships.",
+    "BAM's practitioner-scholar profile. Bio, BVC curriculum, research, and education partnerships.",
   hasPart: learnSubRoutes.map((r) => ({
     "@type": "WebPage",
     name: r.name,
@@ -64,7 +64,7 @@ export default function LearnIndexPage() {
         <p className="text-slate-300 text-lg leading-relaxed mb-6 max-w-2xl">
           Brand Anthony McDonald (BAM) builds tools and documents the journey to
           become the world's fastest centenarian. The WitUS ecosystem is the
-          platform he builds on — this section is the teaching layer behind it.
+          platform he builds on. This section is the teaching layer behind it.
         </p>
         <p className="text-slate-400 leading-relaxed mb-12 max-w-2xl">
           Twenty-five years in business, spanning developer relations, fitness
@@ -104,9 +104,9 @@ export default function LearnIndexPage() {
             Courses live on the Academy.
           </h2>
           <p className="text-slate-400 text-sm leading-relaxed mb-4 max-w-xl">
-            Learn.WitUS is the profile. Actual courses — BVC, Foundations of
-            Fitness, Intervention Design — are delivered through the Centenarian
-            Academy LMS.
+            Learn.WitUS is the profile. Actual courses (Better Vice Club,
+            Foundations of Fitness, Intervention Design) are delivered through
+            the Centenarian Academy LMS.
           </p>
           <a
             href="https://centenarianos.com/academy"
