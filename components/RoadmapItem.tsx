@@ -36,7 +36,7 @@ export default function RoadmapItem({ title, description, status }: RoadmapItemP
             {config.label}
           </span>
         </div>
-        {description && <p className="text-xs text-slate-500 mt-0.5">{description}</p>}
+        {description && <p className="text-xs text-slate-400 mt-0.5">{description}</p>}
       </div>
     </div>
   );

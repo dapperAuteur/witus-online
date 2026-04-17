@@ -84,7 +84,7 @@ export default function BioPage() {
           &larr; Back to Learn.WitUS
         </Link>
 
-        <p className="text-sm font-semibold tracking-widest text-slate-500 uppercase mb-4">
+        <p className="text-sm font-semibold tracking-widest text-slate-400 uppercase mb-4">
           Bio
         </p>
         <h1 className="text-3xl sm:text-4xl font-extrabold text-white mb-6 leading-tight">
@@ -146,7 +146,7 @@ export default function BioPage() {
               brandanthonymcdonald.com
               <span className="sr-only"> (opens in new tab)</span>
             </a>
-            <span className="text-slate-500 text-sm"> &middot; full portfolio, services, blog</span>
+            <span className="text-slate-400 text-sm"> &middot; full portfolio, services, blog</span>
           </li>
           <li>
             <a
@@ -158,7 +158,7 @@ export default function BioPage() {
               LinkedIn
               <span className="sr-only"> (opens in new tab)</span>
             </a>
-            <span className="text-slate-500 text-sm"> &middot; professional history</span>
+            <span className="text-slate-400 text-sm"> &middot; professional history</span>
           </li>
           <li>
             <a

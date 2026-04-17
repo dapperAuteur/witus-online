@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 export default function AboutPage() {
   return (
     <div className="max-w-3xl mx-auto px-6 py-20">
-      <p className="text-sm font-semibold tracking-widest text-slate-500 uppercase mb-4">
+      <p className="text-sm font-semibold tracking-widest text-slate-400 uppercase mb-4">
         About WitUS
       </p>
       <h1 className="text-4xl font-extrabold text-white mb-8 leading-tight">
@@ -54,7 +54,7 @@ export default function AboutPage() {
 
       {/* BAM Section */}
       <div className="mt-16 pt-10 border-t border-slate-800">
-        <p className="text-sm font-semibold tracking-widest text-slate-500 uppercase mb-4">
+        <p className="text-sm font-semibold tracking-widest text-slate-400 uppercase mb-4">
           The Builder
         </p>
         <h2 className="text-2xl font-bold text-white mb-4">Brand Anthony McDonald</h2>

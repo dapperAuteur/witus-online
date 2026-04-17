@@ -69,7 +69,7 @@ export default function HomePage() {
 
       {/* Hero */}
       <section className="max-w-5xl mx-auto px-6 pt-20 sm:pt-24 pb-12 sm:pb-16">
-        <p className="text-sm font-semibold tracking-widest text-slate-500 uppercase mb-4">
+        <p className="text-sm font-semibold tracking-widest text-slate-400 uppercase mb-4">
           WitUS.online
         </p>
         <h1 className="text-4xl sm:text-6xl font-extrabold text-white leading-tight mb-6">
@@ -157,13 +157,13 @@ export default function HomePage() {
 
       {/* Attribution */}
       <section className="max-w-5xl mx-auto px-6 py-16">
-        <p className="text-slate-600 text-sm">
+        <p className="text-slate-400 text-sm">
           Built by{" "}
           <a
             href="https://brandanthonymcdonald.com"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-slate-400 hover:text-white transition-colors"
+            className="text-white hover:text-slate-200 underline underline-offset-2 transition-colors focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white rounded"
           >
             Brand Anthony McDonald
           </a>
