@@ -19,8 +19,12 @@ export const metadata: Metadata = {
   description:
     "WitUS is the ecosystem connecting longevity and independent work. Home of CentenarianOS, Work.WitUS, Tour Manager OS, Wanderlearn, Fly.WitUS, FlashLearnAI, Learn.WitUS, and AwesomeWebStore.",
   icons: {
-    icon: "/flywitus-platypus-logo.png",
-    apple: "/flywitus-platypus-logo.png",
+    icon: [
+      { url: "/brand/04-orbit-type/favicon.svg", type: "image/svg+xml" },
+      { url: "/brand/04-orbit-type/favicon-32.png", sizes: "32x32", type: "image/png" },
+      { url: "/brand/04-orbit-type/favicon-16.png", sizes: "16x16", type: "image/png" },
+    ],
+    apple: "/brand/04-orbit-type/favicon-180.png",
   },
   openGraph: {
     type: "website",

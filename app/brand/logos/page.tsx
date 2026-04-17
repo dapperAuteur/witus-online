@@ -55,6 +55,8 @@ const ACCENT_SWATCHES: { name: string; className: string; isLight?: boolean }[] 
 
 const LOGO_SIZES = [16, 32, 64, 128, 256];
 
+const LIVE_OPTION_SLUG = "04-orbit-type";
+
 export default function LogoPreviewPage() {
   return (
     <div className="max-w-5xl mx-auto px-6 py-12 sm:py-16">
@@ -77,12 +79,19 @@ export default function LogoPreviewPage() {
           aria-labelledby={`${option.slug}-heading`}
           className="mb-16 pb-16 border-b border-slate-800 last:border-0"
         >
-          <h2
-            id={`${option.slug}-heading`}
-            className="text-2xl font-bold text-white mb-2"
-          >
-            {option.title}
-          </h2>
+          <div className="flex flex-wrap items-center gap-3 mb-2">
+            <h2
+              id={`${option.slug}-heading`}
+              className="text-2xl font-bold text-white"
+            >
+              {option.title}
+            </h2>
+            {option.slug === LIVE_OPTION_SLUG && (
+              <span className="text-[10px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded-full bg-teal-500/15 text-teal-300 border border-teal-500/30">
+                Currently live
+              </span>
+            )}
+          </div>
           <p className="text-slate-400 mb-8 max-w-2xl">{option.summary}</p>
 
           {/* Size ladder */}
