@@ -15,7 +15,7 @@ export const metadata: Metadata = {
     url: `${SITE_URL}/learn`,
     images: [
       {
-        url: "/og/home.png",
+        url: "/og/learn",
         width: 1200,
         height: 630,
         alt: "WitUS. Live Long. Work Free.",
@@ -27,7 +27,7 @@ export const metadata: Metadata = {
     title: "Learn.WitUS · WitUS",
     description:
       "BAM's practitioner-scholar profile. Bio, BVC curriculum, research, partnerships.",
-    images: ["/og/home.png"],
+    images: ["/og/learn"],
   },
 };
 

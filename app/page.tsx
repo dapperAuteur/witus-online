@@ -15,7 +15,7 @@ export const metadata: Metadata = {
     url: `${SITE_URL}/`,
     images: [
       {
-        url: "/og/home.png",
+        url: "/og/home",
         width: 1200,
         height: 630,
         alt: "WitUS. Live Long. Work Free.",
@@ -27,7 +27,7 @@ export const metadata: Metadata = {
     title: "WitUS. Live Long. Work Free.",
     description:
       "8 tools for health, livelihood, learning, and flight.",
-    images: ["/og/home.png"],
+    images: ["/og/home"],
   },
 };
 
