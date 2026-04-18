@@ -14,7 +14,7 @@ export const metadata: Metadata = {
     url: `${SITE_URL}/learn/partnerships`,
     images: [
       {
-        url: "/og/home.png",
+        url: "/og/learn-partnerships",
         width: 1200,
         height: 630,
         alt: "WitUS. Live Long. Work Free.",
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
     title: "Partnerships · Learn.WitUS",
     description:
       "Community leadership, teaching, and institutional collaborations.",
-    images: ["/og/home.png"],
+    images: ["/og/learn-partnerships"],
   },
 };
 

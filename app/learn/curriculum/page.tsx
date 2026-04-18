@@ -14,7 +14,7 @@ export const metadata: Metadata = {
     url: `${SITE_URL}/learn/curriculum`,
     images: [
       {
-        url: "/og/home.png",
+        url: "/og/learn-curriculum",
         width: 1200,
         height: 630,
         alt: "WitUS. Live Long. Work Free.",
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
     title: "BVC Curriculum · Learn.WitUS",
     description:
       "Better Vice Club. Honest relationships with the vices that run everyday life.",
-    images: ["/og/home.png"],
+    images: ["/og/learn-curriculum"],
   },
 };
 

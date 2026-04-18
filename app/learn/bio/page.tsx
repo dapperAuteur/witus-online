@@ -14,7 +14,7 @@ export const metadata: Metadata = {
     url: `${SITE_URL}/learn/bio`,
     images: [
       {
-        url: "/og/home.png",
+        url: "/og/learn-bio",
         width: 1200,
         height: 630,
         alt: "WitUS. Live Long. Work Free.",
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
     title: "Bio · Brand Anthony McDonald · WitUS",
     description:
       "Developer relations, software, NASM-certified fitness (CPT/CNC/CES), voiceover, MBA.",
-    images: ["/og/home.png"],
+    images: ["/og/learn-bio"],
   },
 };
 

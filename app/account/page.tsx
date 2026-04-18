@@ -13,7 +13,7 @@ export const metadata: Metadata = {
     url: `${SITE_URL}/account`,
     images: [
       {
-        url: "/og/home.png",
+        url: "/og/account",
         width: 1200,
         height: 630,
         alt: "WitUS. Live Long. Work Free.",
@@ -25,7 +25,7 @@ export const metadata: Metadata = {
     title: "Accounts · WitUS",
     description:
       "Sign-in links for every WitUS product. A unified WitUS account is on the roadmap.",
-    images: ["/og/home.png"],
+    images: ["/og/account"],
   },
 };
 
