@@ -99,10 +99,10 @@ const MapTabs: FC = () => {
             >
               <div
                 style={{
-                  fontSize: "14px",
-                  fontWeight: isActive ? 600 : 500,
-                  color: isActive ? "#f1f5f9" : "#cbd5e1",
-                  marginBottom: "2px",
+                  fontSize: "16px",
+                  fontWeight: isActive ? 700 : 600,
+                  color: isActive ? "#f8fafc" : "#e2e8f0",
+                  marginBottom: "3px",
                   transition: "color 0.15s",
                 }}
               >
@@ -110,8 +110,8 @@ const MapTabs: FC = () => {
               </div>
               <div
                 style={{
-                  fontSize: "11px",
-                  color: isActive ? "#94a3b8" : "#64748b",
+                  fontSize: "13px",
+                  color: isActive ? "#cbd5e1" : "#94a3b8",
                   transition: "color 0.15s",
                 }}
               >

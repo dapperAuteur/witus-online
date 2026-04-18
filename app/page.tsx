@@ -104,7 +104,7 @@ export default function HomePage() {
         aria-labelledby="explore-heading"
         className="max-w-5xl mx-auto px-6 pb-16 sm:pb-20"
       >
-        <p className="text-xs font-semibold tracking-widest text-slate-400 uppercase mb-3">
+        <p className="text-sm font-semibold tracking-widest text-slate-300 uppercase mb-3">
           21 episodes · 3 seasons · 4 subjects
         </p>
         <h2
@@ -113,7 +113,7 @@ export default function HomePage() {
         >
           Every episode starts somewhere on this map.
         </h2>
-        <p className="text-slate-400 max-w-2xl leading-relaxed mb-8">
+        <p className="text-slate-200 text-base sm:text-lg max-w-2xl leading-relaxed mb-8">
           Switch between episode origins and growing belts. Belt colors mix
           like paint: the darker a region, the more commodities share that
           latitude.

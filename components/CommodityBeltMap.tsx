@@ -32,6 +32,139 @@ export interface Belt {
   modeB: boolean;
 }
 
+/**
+ * Creates a GeoJSON polygon feature from [lonMin, latMin, lonMax, latMax].
+ *
+ * Vertex order: SW -> NW -> NE -> SE -> SW. This is clockwise on a
+ * north-up map, which is what d3-geo's spherical polygon clipping
+ * expects for a small outer ring (interior on the RIGHT as you walk).
+ * The "obvious" CCW order (SW -> SE -> NE -> NW -> SW) makes d3 render
+ * the complement — the entire globe except the intended bounding box.
+ * Guards against the bug the user reported in plan 12.
+ */
+function makePoly(
+  lonMin: number,
+  latMin: number,
+  lonMax: number,
+  latMax: number
+): GeoJSON.Feature {
+  return {
+    type: "Feature",
+    properties: {},
+    geometry: {
+      type: "Polygon",
+      coordinates: [
+        [
+          [lonMin, latMin],
+          [lonMin, latMax],
+          [lonMax, latMax],
+          [lonMax, latMin],
+          [lonMin, latMin],
+        ],
+      ],
+    },
+  };
+}
+
+/**
+ * Commercial production regions per commodity.
+ * Rectangular lon/lat bounding boxes are a practical approximation:
+ * specific enough to show where production concentrates (not covering
+ * oceans) without requiring exact country polygons from topojson.
+ * CCW winding is guaranteed by makePoly's corner order so d3-geo draws
+ * the intended small interior (not the whole-globe complement).
+ */
+const PRODUCTION_REGIONS: Record<string, GeoJSON.Feature[]> = {
+  coffee: [
+    makePoly(-75, -35, -35, 5), // Brazil — Minas Gerais, São Paulo, Paraná
+    makePoly(-82, -5, -65, 15), // Colombia — Andes highlands
+    makePoly(33, 3, 48, 15), // Ethiopia — Sidamo, Yirgacheffe, Harrar
+    makePoly(100, 8, 120, 25), // Vietnam — Central Highlands
+    makePoly(95, -8, 141, 8), // Indonesia — Sumatra, Java, Sulawesi
+    makePoly(-95, 12, -82, 20), // Guatemala, Honduras, Mexico highlands
+    makePoly(29, -7, 42, 7), // Uganda, Kenya — eastern Africa
+  ],
+  cacao: [
+    makePoly(-9, 3, -2, 11), // Côte d'Ivoire
+    makePoly(-4, 4, 2, 12), // Ghana
+    makePoly(5, 3, 15, 12), // Nigeria, Cameroon
+    makePoly(95, -10, 141, 5), // Indonesia
+    makePoly(-82, -5, -73, 3), // Ecuador
+    makePoly(-75, -20, -35, 5), // Brazil — Bahia, Pará
+  ],
+  tea: [
+    makePoly(106, 20, 125, 35), // China — Yunnan, Fujian, Zhejiang
+    makePoly(72, 8, 96, 28), // India — Assam, Darjeeling, Nilgiris
+    makePoly(79, 6, 82, 10), // Sri Lanka
+    makePoly(33, -5, 42, 5), // Kenya — Rift Valley
+    makePoly(98, 6, 106, 20), // Myanmar, Thailand northern highlands
+    makePoly(35, 35, 53, 43), // Georgia, Turkey, Azerbaijan (Black Sea coast)
+  ],
+  sugar: [
+    makePoly(-75, -35, -35, 5), // Brazil — São Paulo, Minas Gerais
+    makePoly(72, 18, 96, 28), // India — Uttar Pradesh, Maharashtra
+    makePoly(100, 12, 125, 25), // China — Guangxi, Yunnan
+    makePoly(143, -25, 155, -15), // Australia — Queensland
+    makePoly(-85, 15, -65, 25), // Caribbean — Cuba, Dominican Republic, Jamaica
+    makePoly(-65, -30, -55, -18), // Argentina — Tucumán
+    makePoly(30, -32, 35, -22), // South Africa — KwaZulu-Natal
+    makePoly(100, -8, 118, 8), // Thailand, Indonesia
+  ],
+  guayusa: [
+    makePoly(-80, -5, -73, 2), // Ecuador — Amazon basin
+    makePoly(-78, -8, -68, 2), // Peru — upper Amazon tributaries
+    makePoly(-76, -5, -68, 4), // Colombia — Amazon headwaters
+  ],
+  kola: [
+    makePoly(-15, 3, 5, 10), // Sierra Leone, Liberia, Côte d'Ivoire
+    makePoly(-5, 4, 10, 11), // Ghana, Togo, Benin
+    makePoly(3, 4, 15, 12), // Nigeria (primary producer)
+    makePoly(10, 3, 25, 10), // Cameroon, Congo
+  ],
+  tobacco: [
+    makePoly(-85, 33, -75, 42), // USA — Virginia, Kentucky, North Carolina
+    makePoly(103, 18, 125, 30), // China — Yunnan, Guizhou, Henan
+    makePoly(-55, -30, -35, -10), // Brazil — Rio Grande do Sul, Santa Catarina
+    makePoly(72, 14, 82, 24), // India — Andhra Pradesh, Gujarat
+    makePoly(29, -20, 36, -10), // Malawi, Zimbabwe, Zambia
+    makePoly(-79, -5, -73, 1), // Ecuador
+    makePoly(18, 41, 29, 47), // Bulgaria, Romania (Balkans)
+  ],
+  cannabis: [
+    makePoly(60, 28, 75, 42), // Afghanistan — primary illicit source
+    makePoly(92, 20, 102, 28), // Myanmar — Golden Triangle
+    makePoly(95, 18, 103, 25), // Thailand northern highlands
+    makePoly(-115, 30, -105, 42), // Mexico — Sinaloa, Durango
+    makePoly(-125, 32, -113, 42), // USA — California, Pacific Northwest
+    makePoly(-5, 30, 4, 36), // Morocco — Rif Mountains
+    makePoly(-80, 4, -72, 12), // Colombia — traditional and legal farms
+    makePoly(19, -30, 32, -20), // South Africa — Lesotho, Eastern Cape
+  ],
+  coca: [
+    makePoly(-78, -5, -68, 8), // Colombia — primary producer (Putumayo, Nariño)
+    makePoly(-80, -18, -68, -2), // Peru — VRAEM, Huallaga Valley
+    makePoly(-70, -22, -60, -10), // Bolivia — Chapare, Yungas
+  ],
+  khat: [
+    makePoly(38, 6, 46, 15), // Ethiopia — Harar, Oromia highlands
+    makePoly(34, -2, 42, 5), // Kenya — Meru County, Nyambene Hills
+    makePoly(43, 12, 50, 18), // Yemen — highland terraces
+    makePoly(40, 10, 50, 15), // Djibouti, Somaliland corridor
+  ],
+  poppy: [
+    makePoly(60, 28, 75, 38), // Afghanistan — Helmand, Kandahar (primary)
+    makePoly(92, 20, 102, 28), // Myanmar — Shan State (Golden Triangle)
+    makePoly(-115, 28, -105, 38), // Mexico — Sinaloa, Guerrero
+    makePoly(44, 34, 56, 40), // Iran — traditional areas
+    makePoly(65, 36, 75, 43), // Tajikistan, Kyrgyzstan (Central Asia)
+    makePoly(75, 28, 88, 36), // Pakistan, northern India
+  ],
+  peyote: [
+    // Most geographically specific — Chihuahuan Desert only
+    makePoly(-105, 22, -95, 32), // Texas (USA) + Tamaulipas, Coahuila (Mexico)
+  ],
+};
+
 export const BELTS: Belt[] = [
   {
     id: "coffee",
@@ -83,7 +216,7 @@ export const BELTS: Belt[] = [
     description:
       "Sugarcane grows across tropical and subtropical zones. The colonial sugar belt of the Caribbean and Brazil was the economic foundation of the Atlantic slave trade.",
     producers: "Brazil (39%), India (20%), China (6%), Thailand (5%)",
-    modeB: false,
+    modeB: true,
   },
   {
     id: "guayusa",
@@ -96,7 +229,7 @@ export const BELTS: Belt[] = [
     description:
       "Guayusa grows only in the Amazonian equatorial zone. The narrowest belt in the series. Requires dense canopy shade and year-round tropical conditions.",
     producers: "Ecuador (primary), Peru, Colombia",
-    modeB: false,
+    modeB: true,
   },
   {
     id: "kola",
@@ -109,7 +242,7 @@ export const BELTS: Belt[] = [
     description:
       "Kola nut grows in tropical West Africa between the equator and 15°N. It thrives in the same rainforest conditions as cacao. The two belts overlap significantly.",
     producers: "Nigeria (primary), Ghana, Côte d'Ivoire, Sierra Leone",
-    modeB: false,
+    modeB: true,
   },
   {
     id: "tobacco",
@@ -122,7 +255,7 @@ export const BELTS: Belt[] = [
     description:
       "Tobacco has the broadest growing belt (60°N to 40°S), which is part of what made it the first successful global colonial commodity. It grows almost anywhere temperate.",
     producers: "China (43%), Brazil (11%), India (9%), USA (5%)",
-    modeB: false,
+    modeB: true,
   },
   {
     id: "cannabis",
@@ -135,7 +268,7 @@ export const BELTS: Belt[] = [
     description:
       "Cannabis has one of the widest natural growing ranges in the series (50°N to 50°S). Its near-global range is part of why its Schedule I classification was driven by politics, not pharmacology.",
     producers: "Afghanistan, Morocco, Mexico, Colombia, USA (legal states)",
-    modeB: false,
+    modeB: true,
   },
   {
     id: "coca",
@@ -148,7 +281,7 @@ export const BELTS: Belt[] = [
     description:
       "Coca grows in Andean highland tropical zones. Concentrated but not identical to the Cacao Belt. Requires elevations of 500-2,000m, humid conditions, and well-drained volcanic soil.",
     producers: "Colombia (primary), Peru, Bolivia",
-    modeB: false,
+    modeB: true,
   },
   {
     id: "khat",
@@ -161,7 +294,7 @@ export const BELTS: Belt[] = [
     description:
       "Khat grows in tropical highland conditions (elevations of 1,500-2,500m, temperatures of 15-25°C). Its belt overlaps with coffee, cacao, and tea in the East African highlands.",
     producers: "Ethiopia (primary), Kenya (miraa), Yemen",
-    modeB: false,
+    modeB: true,
   },
   {
     id: "poppy",
@@ -174,7 +307,7 @@ export const BELTS: Belt[] = [
     description:
       "The opium poppy belt runs through temperate regions from 25°N to 55°N. It's the only major BVC belt in the northern temperate zone. Produces where coffee, cacao, and tea cannot grow.",
     producers: "Afghanistan (85% of illicit supply), Myanmar, Mexico",
-    modeB: false,
+    modeB: true,
   },
   {
     id: "peyote",
@@ -188,7 +321,7 @@ export const BELTS: Belt[] = [
       "Peyote's range is the most geographically specific in the series. The Chihuahuan Desert of Texas and northern Mexico, a narrow band from 22°N to 32°N between 95°W and 105°W.",
     producers:
       "Texas (USA), Tamaulipas, Coahuila (Mexico). Endangered; 10-15 years to maturity",
-    modeB: false,
+    modeB: true,
   },
 ];
 
@@ -252,14 +385,14 @@ function BeltToggleButton({
         display: "flex",
         alignItems: "center",
         gap: "6px",
-        padding: "6px 12px",
+        padding: "8px 14px",
         borderRadius: "6px",
-        border: active ? `1.5px solid ${belt.color}` : "1px solid #334155",
+        border: active ? `1.5px solid ${belt.color}` : "1px solid #475569",
         background: active ? `${belt.color}20` : "transparent",
         cursor: "pointer",
-        fontSize: "12px",
+        fontSize: "14px",
         fontWeight: active ? 600 : 500,
-        color: active ? "#f1f5f9" : "#cbd5e1",
+        color: active ? "#f8fafc" : "#e2e8f0",
         transition: "all 0.15s",
         whiteSpace: "nowrap",
         minHeight: 36,
@@ -293,9 +426,9 @@ function OverlapLegend() {
     >
       <div
         style={{
-          fontSize: "11px",
+          fontSize: "13px",
           fontWeight: 600,
-          color: "#f1f5f9",
+          color: "#f8fafc",
           marginBottom: "10px",
           letterSpacing: "0.06em",
           textTransform: "uppercase",
@@ -322,7 +455,7 @@ function OverlapLegend() {
                 marginBottom: "4px",
               }}
             />
-            <div style={{ fontSize: "10px", color: "#cbd5e1" }}>{s.label}</div>
+            <div style={{ fontSize: "12px", color: "#e2e8f0" }}>{s.label}</div>
           </div>
         ))}
         <div style={{ textAlign: "center", flex: 1 }}>
@@ -341,10 +474,10 @@ function OverlapLegend() {
               marginBottom: "4px",
             }}
           />
-          <div style={{ fontSize: "10px", color: "#cbd5e1" }}>5+ belts</div>
+          <div style={{ fontSize: "12px", color: "#e2e8f0" }}>5+ belts</div>
         </div>
       </div>
-      <div style={{ fontSize: "11px", color: "#94a3b8", lineHeight: 1.55 }}>
+      <div style={{ fontSize: "13px", color: "#cbd5e1", lineHeight: 1.55 }}>
         Belt colors mix like paint. Yellow + blue = green. Red + blue = purple.
         All primary colors together = near black. Darker regions have more
         overlapping growing belts. Click any region to see which belts are
@@ -354,51 +487,111 @@ function OverlapLegend() {
   );
 }
 
-function BeltInfoPanel({
-  activeBelts,
-  clickLat,
-}: {
-  activeBelts: Belt[];
-  clickLat: number | null;
-}) {
-  if (clickLat === null) {
-    return (
+interface ClickPoint {
+  lat: number;
+  lon: number;
+}
+
+function regionsAtPoint(activeBelts: Belt[], point: ClickPoint): Belt[] {
+  const hits: Belt[] = [];
+  for (const belt of activeBelts) {
+    const regions = PRODUCTION_REGIONS[belt.id];
+    if (!regions?.length) continue;
+    const covers = regions.some((feat) =>
+      d3.geoContains(feat, [point.lon, point.lat])
+    );
+    if (covers) hits.push(belt);
+  }
+  return hits;
+}
+
+function IdlePanel({ hint }: { hint: string }) {
+  return (
+    <div
+      style={{
+        marginTop: "12px",
+        padding: "14px 16px",
+        borderRadius: "10px",
+        border: "0.5px solid #334155",
+        minHeight: "72px",
+        display: "flex",
+        alignItems: "center",
+        gap: "12px",
+        background: "#0f172a",
+      }}
+    >
       <div
         style={{
-          marginTop: "12px",
-          padding: "14px 16px",
-          borderRadius: "10px",
-          border: "0.5px solid #334155",
-          minHeight: "72px",
-          display: "flex",
-          alignItems: "center",
-          gap: "12px",
-          background: "#0f172a",
+          width: "10px",
+          height: "10px",
+          borderRadius: "50%",
+          background: "#475569",
+          flexShrink: 0,
         }}
-      >
-        <div
-          style={{
-            width: "10px",
-            height: "10px",
-            borderRadius: "50%",
-            background: "#475569",
-            flexShrink: 0,
-          }}
-        />
-        <span style={{ fontSize: "13px", color: "#94a3b8" }}>
-          Click anywhere on the map to see which belts overlap at that latitude.
-        </span>
-      </div>
+      />
+      <span style={{ fontSize: "14px", color: "#cbd5e1" }}>{hint}</span>
+    </div>
+  );
+}
+
+function BeltInfoPanel({
+  viewMode,
+  activeBelts,
+  clickPoint,
+}: {
+  viewMode: ViewMode;
+  activeBelts: Belt[];
+  clickPoint: ClickPoint | null;
+}) {
+  if (clickPoint === null) {
+    return (
+      <IdlePanel
+        hint={
+          viewMode === "bands"
+            ? "Click anywhere on the map to see which belts overlap at that latitude."
+            : "Click inside a colored region to see which commodities grow there."
+        }
+      />
     );
   }
 
-  const overlapping = activeBelts.filter(
-    (b) => clickLat >= b.latMin && clickLat <= b.latMax
-  );
+  // A single list of belts that cover the clicked point, computed per mode.
+  const overlapping =
+    viewMode === "bands"
+      ? activeBelts.filter(
+          (b) => clickPoint.lat >= b.latMin && clickPoint.lat <= b.latMax
+        )
+      : regionsAtPoint(activeBelts, clickPoint);
+
+  const overlapColors = overlapping.map((b) => b.color);
   const blendedColor =
-    overlapping.length > 0
-      ? multiplyBlend(overlapping.map((b) => b.color))
-      : "#334155";
+    overlapColors.length > 0 ? multiplyBlend(overlapColors) : "#334155";
+
+  const coordLabel =
+    viewMode === "bands"
+      ? `${Math.abs(Math.round(clickPoint.lat))}°${
+          clickPoint.lat >= 0 ? "N" : "S"
+        } latitude`
+      : `${Math.abs(Math.round(clickPoint.lat))}°${
+          clickPoint.lat >= 0 ? "N" : "S"
+        }, ${Math.abs(Math.round(clickPoint.lon))}°${
+          clickPoint.lon >= 0 ? "E" : "W"
+        }`;
+
+  let headline: string;
+  if (overlapping.length === 0) {
+    headline =
+      viewMode === "bands"
+        ? "No active belts at this latitude"
+        : "No production regions at this location";
+  } else if (overlapping.length === 1) {
+    headline = `1 belt: ${overlapping[0].name}`;
+  } else {
+    headline =
+      viewMode === "bands"
+        ? `${overlapping.length} belts overlapping`
+        : `${overlapping.length} commodities grow here`;
+  }
 
   return (
     <div
@@ -407,7 +600,7 @@ function BeltInfoPanel({
         padding: "14px 16px",
         borderRadius: "10px",
         border: `0.5px solid ${
-          overlapping.length > 0 ? blendedColor + "88" : "#334155"
+          overlapColors.length > 0 ? blendedColor + "88" : "#334155"
         }`,
         background: "#0f172a",
       }}
@@ -426,29 +619,26 @@ function BeltInfoPanel({
         <div style={{ flex: 1, minWidth: 0 }}>
           <div
             style={{
-              fontSize: "11px",
+              fontSize: "13px",
               fontWeight: 600,
-              color: "#94a3b8",
-              marginBottom: "3px",
+              color: "#cbd5e1",
+              marginBottom: "4px",
               letterSpacing: "0.04em",
             }}
           >
-            {Math.abs(Math.round(clickLat))}°{clickLat >= 0 ? "N" : "S"} latitude
+            {coordLabel}
           </div>
           <div
             style={{
-              fontSize: "16px",
+              fontSize: "18px",
               fontWeight: 600,
-              color: "#f1f5f9",
+              color: "#f8fafc",
               marginBottom: "6px",
             }}
           >
-            {overlapping.length === 0
-              ? "No active belts at this latitude"
-              : overlapping.length === 1
-              ? `1 belt: ${overlapping[0].name}`
-              : `${overlapping.length} belts overlapping`}
+            {headline}
           </div>
+
           {overlapping.length > 1 && (
             <div
               style={{
@@ -465,12 +655,12 @@ function BeltInfoPanel({
                     display: "inline-flex",
                     alignItems: "center",
                     gap: "4px",
-                    padding: "3px 8px",
+                    padding: "4px 10px",
                     borderRadius: "4px",
                     border: `1px solid ${b.color}`,
                     background: `${b.color}24`,
-                    fontSize: "11px",
-                    color: "#f1f5f9",
+                    fontSize: "13px",
+                    color: "#f8fafc",
                   }}
                 >
                   <span
@@ -486,16 +676,17 @@ function BeltInfoPanel({
               ))}
             </div>
           )}
+
           {overlapping.length === 1 && (
-            <div style={{ fontSize: "12px", color: "#cbd5e1", lineHeight: 1.55 }}>
-              <strong style={{ color: "#f1f5f9", fontWeight: 600 }}>
+            <div style={{ fontSize: "14px", color: "#e2e8f0", lineHeight: 1.55 }}>
+              <strong style={{ color: "#f8fafc", fontWeight: 600 }}>
                 {overlapping[0].episode}
               </strong>{" "}
               · {overlapping[0].producers}
             </div>
           )}
           {overlapping.length > 1 && (
-            <div style={{ fontSize: "12px", color: "#94a3b8" }}>
+            <div style={{ fontSize: "13px", color: "#cbd5e1" }}>
               Episodes: {overlapping.map((b) => b.episode).join(", ")}
             </div>
           )}
@@ -513,7 +704,7 @@ const CommodityBeltMap: FC = () => {
     new Set(["coffee", "cacao", "tea"])
   );
   const [viewMode, setViewMode] = useState<ViewMode>("bands");
-  const [clickLat, setClickLat] = useState<number | null>(null);
+  const [clickPoint, setClickPoint] = useState<ClickPoint | null>(null);
 
   useEffect(() => {
     fetch(WORLD_ATLAS_URL)
@@ -609,25 +800,43 @@ const CommodityBeltMap: FC = () => {
       return [ring];
     };
 
-    activeBelts.forEach((belt) => {
-      const bandFeature: GeoJSON.Feature = {
-        type: "Feature",
-        properties: {},
-        geometry: {
-          type: "Polygon",
-          coordinates: buildBandCoords(belt.latMin, belt.latMax),
-        },
-      };
+    if (viewMode === "bands") {
+      activeBelts.forEach((belt) => {
+        const bandFeature: GeoJSON.Feature = {
+          type: "Feature",
+          properties: {},
+          geometry: {
+            type: "Polygon",
+            coordinates: buildBandCoords(belt.latMin, belt.latMax),
+          },
+        };
 
-      beltGroup
-        .append("path")
-        .datum(bandFeature as d3.GeoPermissibleObjects)
-        .attr("d", pathGen)
-        .attr("fill", belt.color)
-        .attr("opacity", 0.45)
-        .style("mix-blend-mode", "multiply")
-        .style("cursor", "pointer");
-    });
+        beltGroup
+          .append("path")
+          .datum(bandFeature as d3.GeoPermissibleObjects)
+          .attr("d", pathGen)
+          .attr("fill", belt.color)
+          .attr("opacity", 0.45)
+          .style("mix-blend-mode", "multiply")
+          .style("cursor", "pointer");
+      });
+    } else {
+      // regions mode — render approximate commercial growing polygons
+      activeBelts.forEach((belt) => {
+        const regions = PRODUCTION_REGIONS[belt.id];
+        if (!regions?.length) return;
+        regions.forEach((feat) => {
+          beltGroup
+            .append("path")
+            .datum(feat as d3.GeoPermissibleObjects)
+            .attr("d", pathGen)
+            .attr("fill", belt.color)
+            .attr("opacity", 0.45)
+            .style("mix-blend-mode", "multiply")
+            .style("cursor", "pointer");
+        });
+      });
+    }
 
     svg
       .append("path")
@@ -638,7 +847,7 @@ const CommodityBeltMap: FC = () => {
       .on("click", function (event) {
         const [px, py] = d3.pointer(event);
         const coords = proj.invert?.([px, py]);
-        if (coords) setClickLat(coords[1]);
+        if (coords) setClickPoint({ lon: coords[0], lat: coords[1] });
       });
 
     const refLats = [-35, -30, -20, 20, 25, 30, 35];
@@ -709,6 +918,10 @@ const CommodityBeltMap: FC = () => {
 
   const activeBeltsList = BELTS.filter((b) => active.has(b.id));
 
+  const beltsWithRegionsCount = BELTS.filter(
+    (b) => PRODUCTION_REGIONS[b.id]?.length
+  ).length;
+
   return (
     <div
       style={{
@@ -726,12 +939,17 @@ const CommodityBeltMap: FC = () => {
           flexWrap: "wrap",
         }}
       >
-        <span style={{ fontSize: "11px", color: "#94a3b8", fontWeight: 500 }}>
+        <span
+          style={{
+            fontSize: "14px",
+            color: "#e2e8f0",
+            fontWeight: 600,
+          }}
+        >
           View:
         </span>
         {(["bands", "regions"] as ViewMode[]).map((mode) => {
           const isActive = viewMode === mode;
-          const isDisabled = mode === "regions";
           const labels = {
             bands: "Latitude Bands",
             regions: "Production Regions",
@@ -739,47 +957,38 @@ const CommodityBeltMap: FC = () => {
           return (
             <button
               key={mode}
-              onClick={() => !isDisabled && setViewMode(mode)}
-              disabled={isDisabled}
+              onClick={() => setViewMode(mode)}
               style={{
-                padding: "6px 14px",
+                padding: "8px 16px",
                 borderRadius: "6px",
-                border: isActive ? "1.5px solid #475569" : "1px solid #334155",
-                background: isActive ? "#0f172a" : "transparent",
-                color: isActive
-                  ? "#f1f5f9"
-                  : isDisabled
-                  ? "#475569"
-                  : "#cbd5e1",
-                fontSize: "12px",
+                border: isActive ? "1.5px solid #94a3b8" : "1px solid #475569",
+                background: isActive ? "#1e293b" : "transparent",
+                color: isActive ? "#f8fafc" : "#e2e8f0",
+                fontSize: "14px",
                 fontWeight: isActive ? 600 : 500,
-                cursor: isDisabled ? "not-allowed" : "pointer",
-                minHeight: 36,
+                cursor: "pointer",
+                minHeight: 40,
                 display: "inline-flex",
                 alignItems: "center",
                 gap: 6,
               }}
             >
               {labels[mode]}
-              {isDisabled && (
-                <span
-                  style={{
-                    fontSize: "9px",
-                    background: "#1e293b",
-                    color: "#94a3b8",
-                    border: "1px solid #334155",
-                    padding: "1px 6px",
-                    borderRadius: "4px",
-                    verticalAlign: "middle",
-                    letterSpacing: "0.04em",
-                  }}
-                >
-                  coming soon
-                </span>
-              )}
             </button>
           );
         })}
+        {viewMode === "regions" && (
+          <span
+            style={{
+              fontSize: "13px",
+              color: "#cbd5e1",
+              marginLeft: "4px",
+            }}
+          >
+            Production regions mapped for {beltsWithRegionsCount} of{" "}
+            {BELTS.length} commodities.
+          </span>
+        )}
       </div>
 
       {/* Filter row */}
@@ -817,11 +1026,12 @@ const CommodityBeltMap: FC = () => {
           style={{
             background: "none",
             border: "none",
-            fontSize: "12px",
-            color: "#2dd4bf",
+            fontSize: "14px",
+            color: "#5eead4",
             cursor: "pointer",
-            padding: 0,
+            padding: "4px 2px",
             textDecoration: "underline",
+            fontWeight: 600,
           }}
         >
           Show all
@@ -831,11 +1041,12 @@ const CommodityBeltMap: FC = () => {
           style={{
             background: "none",
             border: "none",
-            fontSize: "12px",
-            color: "#94a3b8",
+            fontSize: "14px",
+            color: "#cbd5e1",
             cursor: "pointer",
-            padding: 0,
+            padding: "4px 2px",
             textDecoration: "underline",
+            fontWeight: 600,
           }}
         >
           Clear all
@@ -843,11 +1054,11 @@ const CommodityBeltMap: FC = () => {
         <span
           style={{
             marginLeft: "auto",
-            fontSize: "11px",
-            color: active.size > 0 ? "#cbd5e1" : "#475569",
+            fontSize: "13px",
+            color: active.size > 0 ? "#e2e8f0" : "#64748b",
             background: active.size > 0 ? "#1e293b" : "transparent",
-            border: active.size > 0 ? "1px solid #334155" : "none",
-            padding: "3px 10px",
+            border: active.size > 0 ? "1px solid #475569" : "none",
+            padding: "4px 12px",
             borderRadius: "12px",
             fontWeight: 600,
           }}
@@ -858,7 +1069,9 @@ const CommodityBeltMap: FC = () => {
 
       <OverlapLegend />
 
-      {/* Map — SVG interior stays light (required by multiply blend mode) */}
+      {/* Map — SVG interior stays light (required by multiply blend mode).
+          isolation: isolate scopes the mix-blend-mode to this container so
+          multiply doesn't blend with the dark app background. */}
       <div
         style={{
           width: "100%",
@@ -866,6 +1079,7 @@ const CommodityBeltMap: FC = () => {
           overflow: "hidden",
           border: "0.5px solid #1e293b",
           background: "#f0f4f8",
+          isolation: "isolate",
         }}
       >
         {error ? (
@@ -901,7 +1115,11 @@ const CommodityBeltMap: FC = () => {
         )}
       </div>
 
-      <BeltInfoPanel activeBelts={activeBeltsList} clickLat={clickLat} />
+      <BeltInfoPanel
+        viewMode={viewMode}
+        activeBelts={activeBeltsList}
+        clickPoint={clickPoint}
+      />
 
       {active.size > 0 && (
         <div
@@ -914,43 +1132,54 @@ const CommodityBeltMap: FC = () => {
             borderTop: "0.5px solid #1e293b",
           }}
         >
-          {activeBeltsList.map((b) => (
-            <div
-              key={b.id}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "6px",
-                fontSize: "11px",
-                color: "#cbd5e1",
-              }}
-            >
-              <span
+          {activeBeltsList.map((b) => {
+            const regionCount = PRODUCTION_REGIONS[b.id]?.length ?? 0;
+            const trailing =
+              viewMode === "regions"
+                ? regionCount > 0
+                  ? `${regionCount} region${regionCount === 1 ? "" : "s"}`
+                  : "no regions yet"
+                : `${
+                    b.latMin < 0 ? `${Math.abs(b.latMin)}°S` : `${b.latMin}°N`
+                  } – ${
+                    b.latMax < 0 ? `${Math.abs(b.latMax)}°S` : `${b.latMax}°N`
+                  }`;
+            return (
+              <div
+                key={b.id}
                 style={{
-                  width: "10px",
-                  height: "10px",
-                  borderRadius: "2px",
-                  background: b.color,
-                  flexShrink: 0,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  fontSize: "13px",
+                  color: "#e2e8f0",
                 }}
-              />
-              {b.name}
-              <span style={{ color: "#475569" }}>·</span>
-              <span style={{ fontSize: "10px", color: "#94a3b8" }}>
-                {b.latMin < 0 ? `${Math.abs(b.latMin)}°S` : `${b.latMin}°N`}
-                {" – "}
-                {b.latMax < 0 ? `${Math.abs(b.latMax)}°S` : `${b.latMax}°N`}
-              </span>
-            </div>
-          ))}
+              >
+                <span
+                  style={{
+                    width: "12px",
+                    height: "12px",
+                    borderRadius: "3px",
+                    background: b.color,
+                    flexShrink: 0,
+                  }}
+                />
+                {b.name}
+                <span style={{ color: "#64748b" }}>·</span>
+                <span style={{ fontSize: "12px", color: "#cbd5e1" }}>
+                  {trailing}
+                </span>
+              </div>
+            );
+          })}
         </div>
       )}
 
       <div
         style={{
           marginTop: "12px",
-          fontSize: "10px",
-          color: "#475569",
+          fontSize: "12px",
+          color: "#64748b",
           textAlign: "right",
         }}
       >

@@ -146,7 +146,7 @@ function InfoPanel({ panel }: { panel: PanelState | null }) {
       <div style={{ flex: 1, minWidth: 0 }}>
         <div
           style={{
-            fontSize: "11px",
+            fontSize: "13px",
             fontWeight: 600,
             color,
             letterSpacing: "0.08em",
@@ -158,9 +158,9 @@ function InfoPanel({ panel }: { panel: PanelState | null }) {
         </div>
         <div
           style={{
-            fontSize: "18px",
-            fontWeight: 600,
-            color: "#f1f5f9",
+            fontSize: "20px",
+            fontWeight: 700,
+            color: "#f8fafc",
             marginBottom: "4px",
           }}
         >
@@ -168,8 +168,8 @@ function InfoPanel({ panel }: { panel: PanelState | null }) {
         </div>
         <div
           style={{
-            fontSize: "12px",
-            color: "#94a3b8",
+            fontSize: "14px",
+            color: "#cbd5e1",
             marginBottom: "6px",
           }}
         >
@@ -361,9 +361,9 @@ const CommodityMap: FC = () => {
 
       <p
         style={{
-          fontSize: "12px",
-          color: "#94a3b8",
-          marginBottom: "8px",
+          fontSize: "14px",
+          color: "#cbd5e1",
+          marginBottom: "10px",
         }}
       >
         {COMMODITIES.length} commodities across 3 seasons. Click any pin for
@@ -436,8 +436,8 @@ const CommodityMap: FC = () => {
               display: "flex",
               alignItems: "center",
               gap: "6px",
-              fontSize: "12px",
-              color: "#94a3b8",
+              fontSize: "13px",
+              color: "#e2e8f0",
             }}
           >
             <span

@@ -39,12 +39,13 @@ export default function ExplorePage() {
       <h1 className="text-3xl sm:text-5xl font-extrabold text-white mb-6 leading-tight">
         The world is your classroom.
       </h1>
-      <p className="text-slate-300 text-lg leading-relaxed mb-10 max-w-2xl">
-        Two views of the same curriculum. <strong className="text-white">Episode
-        Origins</strong> plots all 21 commodities by geographic source.{" "}
+      <p className="text-slate-200 text-lg sm:text-xl leading-relaxed mb-10 max-w-3xl">
+        Two views of the same curriculum.{" "}
+        <strong className="text-white">Episode Origins</strong> plots all 21
+        commodities by geographic source.{" "}
         <strong className="text-white">Growing Belts</strong> shows where each
-        commodity can grow; belt colors mix like paint, so overlapping
-        latitudes darken where multiple commodities share climate.
+        commodity can grow. Belt colors mix like paint, so overlapping regions
+        darken where multiple commodities share climate.
       </p>
 
       <HomepageMapSection />
