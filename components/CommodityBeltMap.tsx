@@ -19,18 +19,6 @@ import * as d3 from "d3";
 import * as topojson from "topojson-client";
 import type { Topology, GeometryCollection } from "topojson-specification";
 
-export interface ProductionRegion {
-  /** Human-readable name used in the info panel when a click lands inside */
-  name: string;
-  /**
-   * Closed polygon ring as [lon, lat] pairs. Must start and end at the
-   * same vertex. Keep consecutive vertices < 5° apart in longitude so
-   * d3-geo's great-circle interpolation doesn't mis-route across the
-   * antimeridian (same lesson from plan 11's band-density fix).
-   */
-  coords: [number, number][];
-}
-
 export interface Belt {
   id: string;
   name: string;
@@ -42,9 +30,131 @@ export interface Belt {
   description: string;
   producers: string;
   modeB: boolean;
-  /** Approximate commercial growing regions for multiply-blend rendering in Mode B. */
-  regions?: ProductionRegion[];
 }
+
+/** Creates a GeoJSON polygon feature from [lonMin, latMin, lonMax, latMax]. */
+function makePoly(
+  lonMin: number,
+  latMin: number,
+  lonMax: number,
+  latMax: number
+): GeoJSON.Feature {
+  return {
+    type: "Feature",
+    properties: {},
+    geometry: {
+      type: "Polygon",
+      coordinates: [
+        [
+          [lonMin, latMin],
+          [lonMax, latMin],
+          [lonMax, latMax],
+          [lonMin, latMax],
+          [lonMin, latMin],
+        ],
+      ],
+    },
+  };
+}
+
+/**
+ * Commercial production regions per commodity.
+ * Rectangular lon/lat bounding boxes are a practical approximation:
+ * specific enough to show where production concentrates (not covering
+ * oceans) without requiring exact country polygons from topojson.
+ * CCW winding is guaranteed by makePoly's corner order so d3-geo draws
+ * the intended small interior (not the whole-globe complement).
+ */
+const PRODUCTION_REGIONS: Record<string, GeoJSON.Feature[]> = {
+  coffee: [
+    makePoly(-75, -35, -35, 5), // Brazil — Minas Gerais, São Paulo, Paraná
+    makePoly(-82, -5, -65, 15), // Colombia — Andes highlands
+    makePoly(33, 3, 48, 15), // Ethiopia — Sidamo, Yirgacheffe, Harrar
+    makePoly(100, 8, 120, 25), // Vietnam — Central Highlands
+    makePoly(95, -8, 141, 8), // Indonesia — Sumatra, Java, Sulawesi
+    makePoly(-95, 12, -82, 20), // Guatemala, Honduras, Mexico highlands
+    makePoly(29, -7, 42, 7), // Uganda, Kenya — eastern Africa
+  ],
+  cacao: [
+    makePoly(-9, 3, -2, 11), // Côte d'Ivoire
+    makePoly(-4, 4, 2, 12), // Ghana
+    makePoly(5, 3, 15, 12), // Nigeria, Cameroon
+    makePoly(95, -10, 141, 5), // Indonesia
+    makePoly(-82, -5, -73, 3), // Ecuador
+    makePoly(-75, -20, -35, 5), // Brazil — Bahia, Pará
+  ],
+  tea: [
+    makePoly(106, 20, 125, 35), // China — Yunnan, Fujian, Zhejiang
+    makePoly(72, 8, 96, 28), // India — Assam, Darjeeling, Nilgiris
+    makePoly(79, 6, 82, 10), // Sri Lanka
+    makePoly(33, -5, 42, 5), // Kenya — Rift Valley
+    makePoly(98, 6, 106, 20), // Myanmar, Thailand northern highlands
+    makePoly(35, 35, 53, 43), // Georgia, Turkey, Azerbaijan (Black Sea coast)
+  ],
+  sugar: [
+    makePoly(-75, -35, -35, 5), // Brazil — São Paulo, Minas Gerais
+    makePoly(72, 18, 96, 28), // India — Uttar Pradesh, Maharashtra
+    makePoly(100, 12, 125, 25), // China — Guangxi, Yunnan
+    makePoly(143, -25, 155, -15), // Australia — Queensland
+    makePoly(-85, 15, -65, 25), // Caribbean — Cuba, Dominican Republic, Jamaica
+    makePoly(-65, -30, -55, -18), // Argentina — Tucumán
+    makePoly(30, -32, 35, -22), // South Africa — KwaZulu-Natal
+    makePoly(100, -8, 118, 8), // Thailand, Indonesia
+  ],
+  guayusa: [
+    makePoly(-80, -5, -73, 2), // Ecuador — Amazon basin
+    makePoly(-78, -8, -68, 2), // Peru — upper Amazon tributaries
+    makePoly(-76, -5, -68, 4), // Colombia — Amazon headwaters
+  ],
+  kola: [
+    makePoly(-15, 3, 5, 10), // Sierra Leone, Liberia, Côte d'Ivoire
+    makePoly(-5, 4, 10, 11), // Ghana, Togo, Benin
+    makePoly(3, 4, 15, 12), // Nigeria (primary producer)
+    makePoly(10, 3, 25, 10), // Cameroon, Congo
+  ],
+  tobacco: [
+    makePoly(-85, 33, -75, 42), // USA — Virginia, Kentucky, North Carolina
+    makePoly(103, 18, 125, 30), // China — Yunnan, Guizhou, Henan
+    makePoly(-55, -30, -35, -10), // Brazil — Rio Grande do Sul, Santa Catarina
+    makePoly(72, 14, 82, 24), // India — Andhra Pradesh, Gujarat
+    makePoly(29, -20, 36, -10), // Malawi, Zimbabwe, Zambia
+    makePoly(-79, -5, -73, 1), // Ecuador
+    makePoly(18, 41, 29, 47), // Bulgaria, Romania (Balkans)
+  ],
+  cannabis: [
+    makePoly(60, 28, 75, 42), // Afghanistan — primary illicit source
+    makePoly(92, 20, 102, 28), // Myanmar — Golden Triangle
+    makePoly(95, 18, 103, 25), // Thailand northern highlands
+    makePoly(-115, 30, -105, 42), // Mexico — Sinaloa, Durango
+    makePoly(-125, 32, -113, 42), // USA — California, Pacific Northwest
+    makePoly(-5, 30, 4, 36), // Morocco — Rif Mountains
+    makePoly(-80, 4, -72, 12), // Colombia — traditional and legal farms
+    makePoly(19, -30, 32, -20), // South Africa — Lesotho, Eastern Cape
+  ],
+  coca: [
+    makePoly(-78, -5, -68, 8), // Colombia — primary producer (Putumayo, Nariño)
+    makePoly(-80, -18, -68, -2), // Peru — VRAEM, Huallaga Valley
+    makePoly(-70, -22, -60, -10), // Bolivia — Chapare, Yungas
+  ],
+  khat: [
+    makePoly(38, 6, 46, 15), // Ethiopia — Harar, Oromia highlands
+    makePoly(34, -2, 42, 5), // Kenya — Meru County, Nyambene Hills
+    makePoly(43, 12, 50, 18), // Yemen — highland terraces
+    makePoly(40, 10, 50, 15), // Djibouti, Somaliland corridor
+  ],
+  poppy: [
+    makePoly(60, 28, 75, 38), // Afghanistan — Helmand, Kandahar (primary)
+    makePoly(92, 20, 102, 28), // Myanmar — Shan State (Golden Triangle)
+    makePoly(-115, 28, -105, 38), // Mexico — Sinaloa, Guerrero
+    makePoly(44, 34, 56, 40), // Iran — traditional areas
+    makePoly(65, 36, 75, 43), // Tajikistan, Kyrgyzstan (Central Asia)
+    makePoly(75, 28, 88, 36), // Pakistan, northern India
+  ],
+  peyote: [
+    // Most geographically specific — Chihuahuan Desert only
+    makePoly(-105, 22, -95, 32), // Texas (USA) + Tamaulipas, Coahuila (Mexico)
+  ],
+};
 
 export const BELTS: Belt[] = [
   {
@@ -59,96 +169,6 @@ export const BELTS: Belt[] = [
       "The Bean Belt spans 25°N to 30°S and requires volcanic soil, high elevation, and consistent rainfall. No frost tolerance.",
     producers: "Brazil (38%), Vietnam (18%), Colombia (8%), Ethiopia (4%)",
     modeB: true,
-    regions: [
-      {
-        name: "Brazilian Coffee Belt",
-        coords: [
-          [-52, -8],
-          [-47, -8],
-          [-40, -14],
-          [-39, -20],
-          [-44, -24],
-          [-50, -24],
-          [-54, -20],
-          [-54, -12],
-          [-52, -8],
-        ],
-      },
-      {
-        name: "Colombian Coffee Axis",
-        coords: [
-          [-77, 2],
-          [-74, 2],
-          [-73, 5],
-          [-74, 7],
-          [-76, 7],
-          [-77, 5],
-          [-77, 2],
-        ],
-      },
-      {
-        name: "Central American Arc",
-        coords: [
-          [-93, 15],
-          [-90, 17],
-          [-86, 16],
-          [-83, 13],
-          [-84, 10],
-          [-87, 11],
-          [-90, 14],
-          [-93, 15],
-        ],
-      },
-      {
-        name: "Ethiopian Highlands",
-        coords: [
-          [35, 5],
-          [38, 5],
-          [40, 7],
-          [40, 10],
-          [38, 10],
-          [35, 9],
-          [35, 5],
-        ],
-      },
-      {
-        name: "East African Rift",
-        coords: [
-          [30, -6],
-          [34, -6],
-          [38, -5],
-          [38, 0],
-          [35, 2],
-          [31, 1],
-          [30, -2],
-          [30, -6],
-        ],
-      },
-      {
-        name: "Vietnamese Central Highlands",
-        coords: [
-          [107, 11],
-          [109, 11],
-          [109, 14],
-          [107, 14],
-          [107, 11],
-        ],
-      },
-      {
-        name: "Indonesian Coffee Zones",
-        coords: [
-          [97, -4],
-          [102, -4],
-          [105, -1],
-          [108, 0],
-          [112, -3],
-          [110, -6],
-          [104, -7],
-          [99, -5],
-          [97, -4],
-        ],
-      },
-    ],
   },
   {
     id: "cacao",
@@ -162,73 +182,6 @@ export const BELTS: Belt[] = [
       "The Cacao Belt is narrower than coffee. 20°N to 20°S. Requires rainforest canopy shade, 70-100% humidity, and temperatures above 60°F year-round.",
     producers: "Côte d'Ivoire (42%), Ghana (17%), Indonesia (13%), Nigeria (7%)",
     modeB: true,
-    regions: [
-      {
-        name: "West Africa Cocoa Belt",
-        coords: [
-          [-8, 4],
-          [-4, 5],
-          [0, 6],
-          [3, 6],
-          [8, 5],
-          [10, 6],
-          [10, 8],
-          [4, 9],
-          [-2, 9],
-          [-6, 8],
-          [-8, 7],
-          [-8, 4],
-        ],
-      },
-      {
-        name: "Cameroon Belt",
-        coords: [
-          [9, 3],
-          [12, 3],
-          [15, 5],
-          [14, 7],
-          [11, 7],
-          [9, 5],
-          [9, 3],
-        ],
-      },
-      {
-        name: "Ecuador Coastal",
-        coords: [
-          [-80, -2],
-          [-79, -1],
-          [-78, 0],
-          [-79, 1],
-          [-80, 1],
-          [-81, 0],
-          [-80, -2],
-        ],
-      },
-      {
-        name: "Brazil Bahia",
-        coords: [
-          [-40, -17],
-          [-38, -16],
-          [-38, -13],
-          [-40, -12],
-          [-41, -14],
-          [-40, -17],
-        ],
-      },
-      {
-        name: "Indonesia (Sulawesi)",
-        coords: [
-          [119, -3],
-          [121, -4],
-          [124, -3],
-          [125, -1],
-          [123, 1],
-          [120, 1],
-          [118, 0],
-          [119, -3],
-        ],
-      },
-    ],
   },
   {
     id: "tea",
@@ -242,82 +195,6 @@ export const BELTS: Belt[] = [
       "Tea grows across a wide band from 35°N to 35°S, but quality production concentrates in highland tropical zones where altitude creates flavor complexity.",
     producers: "China (46%), India (23%), Kenya (8%), Sri Lanka (6%)",
     modeB: true,
-    regions: [
-      {
-        name: "Chinese Tea Belt",
-        coords: [
-          [100, 22],
-          [104, 21],
-          [110, 23],
-          [115, 25],
-          [119, 26],
-          [121, 28],
-          [122, 31],
-          [118, 32],
-          [112, 30],
-          [106, 29],
-          [102, 27],
-          [100, 24],
-          [100, 22],
-        ],
-      },
-      {
-        name: "Assam (NE India)",
-        coords: [
-          [91, 25],
-          [94, 25],
-          [96, 27],
-          [95, 28],
-          [92, 28],
-          [91, 27],
-          [91, 25],
-        ],
-      },
-      {
-        name: "Darjeeling",
-        coords: [
-          [87.5, 26.7],
-          [88.5, 26.7],
-          [88.8, 27.3],
-          [88.0, 27.4],
-          [87.5, 27.1],
-          [87.5, 26.7],
-        ],
-      },
-      {
-        name: "Nilgiris (South India)",
-        coords: [
-          [76, 10.5],
-          [77, 10.5],
-          [77.3, 11.5],
-          [76.7, 12],
-          [76, 11.7],
-          [76, 10.5],
-        ],
-      },
-      {
-        name: "Sri Lanka Highlands",
-        coords: [
-          [80.4, 6.5],
-          [81.0, 6.5],
-          [81.1, 7.1],
-          [80.8, 7.4],
-          [80.4, 7.2],
-          [80.4, 6.5],
-        ],
-      },
-      {
-        name: "Kenya Rift Valley",
-        coords: [
-          [34.5, -1.2],
-          [35.5, -1.2],
-          [35.7, 0.3],
-          [35.0, 0.8],
-          [34.4, 0.3],
-          [34.5, -1.2],
-        ],
-      },
-    ],
   },
   {
     id: "sugar",
@@ -330,7 +207,7 @@ export const BELTS: Belt[] = [
     description:
       "Sugarcane grows across tropical and subtropical zones. The colonial sugar belt of the Caribbean and Brazil was the economic foundation of the Atlantic slave trade.",
     producers: "Brazil (39%), India (20%), China (6%), Thailand (5%)",
-    modeB: false,
+    modeB: true,
   },
   {
     id: "guayusa",
@@ -343,7 +220,7 @@ export const BELTS: Belt[] = [
     description:
       "Guayusa grows only in the Amazonian equatorial zone. The narrowest belt in the series. Requires dense canopy shade and year-round tropical conditions.",
     producers: "Ecuador (primary), Peru, Colombia",
-    modeB: false,
+    modeB: true,
   },
   {
     id: "kola",
@@ -356,7 +233,7 @@ export const BELTS: Belt[] = [
     description:
       "Kola nut grows in tropical West Africa between the equator and 15°N. It thrives in the same rainforest conditions as cacao. The two belts overlap significantly.",
     producers: "Nigeria (primary), Ghana, Côte d'Ivoire, Sierra Leone",
-    modeB: false,
+    modeB: true,
   },
   {
     id: "tobacco",
@@ -369,7 +246,7 @@ export const BELTS: Belt[] = [
     description:
       "Tobacco has the broadest growing belt (60°N to 40°S), which is part of what made it the first successful global colonial commodity. It grows almost anywhere temperate.",
     producers: "China (43%), Brazil (11%), India (9%), USA (5%)",
-    modeB: false,
+    modeB: true,
   },
   {
     id: "cannabis",
@@ -382,7 +259,7 @@ export const BELTS: Belt[] = [
     description:
       "Cannabis has one of the widest natural growing ranges in the series (50°N to 50°S). Its near-global range is part of why its Schedule I classification was driven by politics, not pharmacology.",
     producers: "Afghanistan, Morocco, Mexico, Colombia, USA (legal states)",
-    modeB: false,
+    modeB: true,
   },
   {
     id: "coca",
@@ -395,7 +272,7 @@ export const BELTS: Belt[] = [
     description:
       "Coca grows in Andean highland tropical zones. Concentrated but not identical to the Cacao Belt. Requires elevations of 500-2,000m, humid conditions, and well-drained volcanic soil.",
     producers: "Colombia (primary), Peru, Bolivia",
-    modeB: false,
+    modeB: true,
   },
   {
     id: "khat",
@@ -408,7 +285,7 @@ export const BELTS: Belt[] = [
     description:
       "Khat grows in tropical highland conditions (elevations of 1,500-2,500m, temperatures of 15-25°C). Its belt overlaps with coffee, cacao, and tea in the East African highlands.",
     producers: "Ethiopia (primary), Kenya (miraa), Yemen",
-    modeB: false,
+    modeB: true,
   },
   {
     id: "poppy",
@@ -421,7 +298,7 @@ export const BELTS: Belt[] = [
     description:
       "The opium poppy belt runs through temperate regions from 25°N to 55°N. It's the only major BVC belt in the northern temperate zone. Produces where coffee, cacao, and tea cannot grow.",
     producers: "Afghanistan (85% of illicit supply), Myanmar, Mexico",
-    modeB: false,
+    modeB: true,
   },
   {
     id: "peyote",
@@ -435,7 +312,7 @@ export const BELTS: Belt[] = [
       "Peyote's range is the most geographically specific in the series. The Chihuahuan Desert of Texas and northern Mexico, a narrow band from 22°N to 32°N between 95°W and 105°W.",
     producers:
       "Texas (USA), Tamaulipas, Coahuila (Mexico). Endangered; 10-15 years to maturity",
-    modeB: false,
+    modeB: true,
   },
 ];
 
@@ -469,36 +346,6 @@ function multiplyBlend(colors: string[]): string {
     { r: 255, g: 255, b: 255 }
   );
   return `rgb(${blended.r},${blended.g},${blended.b})`;
-}
-
-/**
- * Ensure d3-geo renders the small intended interior, not the complement.
- *
- * d3-geo treats polygon rings on a sphere, and if the ring is authored
- * "the wrong way around," it interprets the interior as the complement
- * (everything on the earth EXCEPT the region), which renders as the
- * whole globe covering the oceans. The fix isn't about winding per se;
- * it's "is the area d3 computes larger than half the earth?" If so, we
- * authored the ring the other way — reverse it.
- *
- * Uses d3.geoArea (steradians, 0 to 4π) as the definitive test rather
- * than a planar shoelace heuristic, so it's correct regardless of
- * vertex-order convention.
- */
-function ensureSmallInterior(
-  coords: [number, number][]
-): [number, number][] {
-  const feat: GeoJSON.Feature = {
-    type: "Feature",
-    properties: {},
-    geometry: { type: "Polygon", coordinates: [coords] },
-  };
-  const area = d3.geoArea(feat);
-  if (area > 2 * Math.PI) {
-    // d3 is drawing the complement — flip the ring.
-    return [...coords].reverse();
-  }
-  return coords;
 }
 
 const OVERLAP_SAMPLES: Array<{ count: number; colors: string[]; label: string }> = [
@@ -636,28 +483,15 @@ interface ClickPoint {
   lon: number;
 }
 
-interface RegionHit {
-  belt: Belt;
-  region: ProductionRegion;
-}
-
-function regionsAtPoint(activeBelts: Belt[], point: ClickPoint): RegionHit[] {
-  const hits: RegionHit[] = [];
+function regionsAtPoint(activeBelts: Belt[], point: ClickPoint): Belt[] {
+  const hits: Belt[] = [];
   for (const belt of activeBelts) {
-    if (!belt.modeB || !belt.regions?.length) continue;
-    for (const region of belt.regions) {
-      const feature = {
-        type: "Feature" as const,
-        properties: {},
-        geometry: {
-          type: "Polygon" as const,
-          coordinates: [ensureSmallInterior(region.coords)],
-        },
-      };
-      if (d3.geoContains(feature, [point.lon, point.lat])) {
-        hits.push({ belt, region });
-      }
-    }
+    const regions = PRODUCTION_REGIONS[belt.id];
+    if (!regions?.length) continue;
+    const covers = regions.some((feat) =>
+      d3.geoContains(feat, [point.lon, point.lat])
+    );
+    if (covers) hits.push(belt);
   }
   return hits;
 }
@@ -712,21 +546,15 @@ function BeltInfoPanel({
     );
   }
 
+  // A single list of belts that cover the clicked point, computed per mode.
   const overlapping =
     viewMode === "bands"
       ? activeBelts.filter(
           (b) => clickPoint.lat >= b.latMin && clickPoint.lat <= b.latMax
         )
-      : [];
+      : regionsAtPoint(activeBelts, clickPoint);
 
-  const regionHits =
-    viewMode === "regions" ? regionsAtPoint(activeBelts, clickPoint) : [];
-
-  const overlapColors =
-    viewMode === "bands"
-      ? overlapping.map((b) => b.color)
-      : regionHits.map((h) => h.belt.color);
-
+  const overlapColors = overlapping.map((b) => b.color);
   const blendedColor =
     overlapColors.length > 0 ? multiplyBlend(overlapColors) : "#334155";
 
@@ -742,24 +570,18 @@ function BeltInfoPanel({
         }`;
 
   let headline: string;
-  if (viewMode === "bands") {
+  if (overlapping.length === 0) {
     headline =
-      overlapping.length === 0
+      viewMode === "bands"
         ? "No active belts at this latitude"
-        : overlapping.length === 1
-        ? `1 belt: ${overlapping[0].name}`
-        : `${overlapping.length} belts overlapping`;
+        : "No production regions at this location";
+  } else if (overlapping.length === 1) {
+    headline = `1 belt: ${overlapping[0].name}`;
   } else {
-    // regions
-    const beltsHit = new Set(regionHits.map((h) => h.belt.id)).size;
-    if (regionHits.length === 0) {
-      headline = "No production regions at this location";
-    } else if (beltsHit === 1) {
-      const hit = regionHits[0];
-      headline = `1 belt: ${hit.belt.name} — ${hit.region.name}`;
-    } else {
-      headline = `${beltsHit} commodities grow here`;
-    }
+    headline =
+      viewMode === "bands"
+        ? `${overlapping.length} belts overlapping`
+        : `${overlapping.length} commodities grow here`;
   }
 
   return (
@@ -808,7 +630,7 @@ function BeltInfoPanel({
             {headline}
           </div>
 
-          {viewMode === "bands" && overlapping.length > 1 && (
+          {overlapping.length > 1 && (
             <div
               style={{
                 display: "flex",
@@ -846,45 +668,7 @@ function BeltInfoPanel({
             </div>
           )}
 
-          {viewMode === "regions" && regionHits.length > 0 && (
-            <div
-              style={{
-                display: "flex",
-                flexWrap: "wrap",
-                gap: "5px",
-                marginBottom: "8px",
-              }}
-            >
-              {regionHits.map((h, i) => (
-                <span
-                  key={`${h.belt.id}-${i}`}
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: "4px",
-                    padding: "3px 8px",
-                    borderRadius: "4px",
-                    border: `1px solid ${h.belt.color}`,
-                    background: `${h.belt.color}24`,
-                    fontSize: "11px",
-                    color: "#f1f5f9",
-                  }}
-                >
-                  <span
-                    style={{
-                      width: "6px",
-                      height: "6px",
-                      borderRadius: "50%",
-                      background: h.belt.color,
-                    }}
-                  />
-                  {h.belt.name} · {h.region.name}
-                </span>
-              ))}
-            </div>
-          )}
-
-          {viewMode === "bands" && overlapping.length === 1 && (
+          {overlapping.length === 1 && (
             <div style={{ fontSize: "12px", color: "#cbd5e1", lineHeight: 1.55 }}>
               <strong style={{ color: "#f1f5f9", fontWeight: 600 }}>
                 {overlapping[0].episode}
@@ -892,17 +676,9 @@ function BeltInfoPanel({
               · {overlapping[0].producers}
             </div>
           )}
-          {viewMode === "bands" && overlapping.length > 1 && (
+          {overlapping.length > 1 && (
             <div style={{ fontSize: "12px", color: "#94a3b8" }}>
               Episodes: {overlapping.map((b) => b.episode).join(", ")}
-            </div>
-          )}
-          {viewMode === "regions" && regionHits.length === 1 && (
-            <div style={{ fontSize: "12px", color: "#cbd5e1", lineHeight: 1.55 }}>
-              <strong style={{ color: "#f1f5f9", fontWeight: 600 }}>
-                {regionHits[0].belt.episode}
-              </strong>{" "}
-              · {regionHits[0].belt.producers}
             </div>
           )}
         </div>
@@ -1037,28 +813,20 @@ const CommodityBeltMap: FC = () => {
       });
     } else {
       // regions mode — render approximate commercial growing polygons
-      activeBelts
-        .filter((b) => b.modeB && b.regions?.length)
-        .forEach((belt) => {
-          belt.regions!.forEach((region) => {
-            const feat: GeoJSON.Feature = {
-              type: "Feature",
-              properties: {},
-              geometry: {
-                type: "Polygon",
-                coordinates: [ensureSmallInterior(region.coords)],
-              },
-            };
-            beltGroup
-              .append("path")
-              .datum(feat as d3.GeoPermissibleObjects)
-              .attr("d", pathGen)
-              .attr("fill", belt.color)
-              .attr("opacity", 0.55)
-              .style("mix-blend-mode", "multiply")
-              .style("cursor", "pointer");
-          });
+      activeBelts.forEach((belt) => {
+        const regions = PRODUCTION_REGIONS[belt.id];
+        if (!regions?.length) return;
+        regions.forEach((feat) => {
+          beltGroup
+            .append("path")
+            .datum(feat as d3.GeoPermissibleObjects)
+            .attr("d", pathGen)
+            .attr("fill", belt.color)
+            .attr("opacity", 0.45)
+            .style("mix-blend-mode", "multiply")
+            .style("cursor", "pointer");
         });
+      });
     }
 
     svg
@@ -1141,13 +909,9 @@ const CommodityBeltMap: FC = () => {
 
   const activeBeltsList = BELTS.filter((b) => active.has(b.id));
 
-  const beltsWithRegions = BELTS.filter(
-    (b) => b.modeB && b.regions?.length
-  );
-  const regionsModeAvailable = beltsWithRegions.length > 0;
-  const activeRegionBelts = activeBeltsList.filter(
-    (b) => b.modeB && b.regions?.length
-  );
+  const beltsWithRegionsCount = BELTS.filter(
+    (b) => PRODUCTION_REGIONS[b.id]?.length
+  ).length;
 
   return (
     <div
@@ -1171,7 +935,6 @@ const CommodityBeltMap: FC = () => {
         </span>
         {(["bands", "regions"] as ViewMode[]).map((mode) => {
           const isActive = viewMode === mode;
-          const isDisabled = mode === "regions" && !regionsModeAvailable;
           const labels = {
             bands: "Latitude Bands",
             regions: "Production Regions",
@@ -1179,21 +942,16 @@ const CommodityBeltMap: FC = () => {
           return (
             <button
               key={mode}
-              onClick={() => !isDisabled && setViewMode(mode)}
-              disabled={isDisabled}
+              onClick={() => setViewMode(mode)}
               style={{
                 padding: "6px 14px",
                 borderRadius: "6px",
                 border: isActive ? "1.5px solid #475569" : "1px solid #334155",
                 background: isActive ? "#0f172a" : "transparent",
-                color: isActive
-                  ? "#f1f5f9"
-                  : isDisabled
-                  ? "#475569"
-                  : "#cbd5e1",
+                color: isActive ? "#f1f5f9" : "#cbd5e1",
                 fontSize: "12px",
                 fontWeight: isActive ? 600 : 500,
-                cursor: isDisabled ? "not-allowed" : "pointer",
+                cursor: "pointer",
                 minHeight: 36,
                 display: "inline-flex",
                 alignItems: "center",
@@ -1201,22 +959,6 @@ const CommodityBeltMap: FC = () => {
               }}
             >
               {labels[mode]}
-              {isDisabled && (
-                <span
-                  style={{
-                    fontSize: "9px",
-                    background: "#1e293b",
-                    color: "#94a3b8",
-                    border: "1px solid #334155",
-                    padding: "1px 6px",
-                    borderRadius: "4px",
-                    verticalAlign: "middle",
-                    letterSpacing: "0.04em",
-                  }}
-                >
-                  coming soon
-                </span>
-              )}
             </button>
           );
         })}
@@ -1228,7 +970,7 @@ const CommodityBeltMap: FC = () => {
               marginLeft: "4px",
             }}
           >
-            Production regions mapped for {beltsWithRegions.length} of{" "}
+            Production regions mapped for {beltsWithRegionsCount} of{" "}
             {BELTS.length} commodities.
           </span>
         )}
@@ -1310,7 +1052,9 @@ const CommodityBeltMap: FC = () => {
 
       <OverlapLegend />
 
-      {/* Map — SVG interior stays light (required by multiply blend mode) */}
+      {/* Map — SVG interior stays light (required by multiply blend mode).
+          isolation: isolate scopes the mix-blend-mode to this container so
+          multiply doesn't blend with the dark app background. */}
       <div
         style={{
           width: "100%",
@@ -1318,6 +1062,7 @@ const CommodityBeltMap: FC = () => {
           overflow: "hidden",
           border: "0.5px solid #1e293b",
           background: "#f0f4f8",
+          isolation: "isolate",
         }}
       >
         {error ? (
@@ -1353,26 +1098,6 @@ const CommodityBeltMap: FC = () => {
         )}
       </div>
 
-      {viewMode === "regions" && active.size > 0 && activeRegionBelts.length === 0 && (
-        <div
-          style={{
-            marginTop: "12px",
-            padding: "14px 16px",
-            borderRadius: "10px",
-            border: "1px dashed #334155",
-            background: "#0f172a",
-            color: "#94a3b8",
-            fontSize: "13px",
-            lineHeight: 1.5,
-          }}
-          role="status"
-        >
-          None of the selected commodities have production regions mapped yet.
-          Add Coffee, Cacao, or Tea to see regions, or switch back to Latitude
-          Bands.
-        </div>
-      )}
-
       <BeltInfoPanel
         viewMode={viewMode}
         activeBelts={activeBeltsList}
@@ -1391,12 +1116,11 @@ const CommodityBeltMap: FC = () => {
           }}
         >
           {activeBeltsList.map((b) => {
+            const regionCount = PRODUCTION_REGIONS[b.id]?.length ?? 0;
             const trailing =
               viewMode === "regions"
-                ? b.modeB && b.regions?.length
-                  ? `${b.regions.length} region${
-                      b.regions.length === 1 ? "" : "s"
-                    }`
+                ? regionCount > 0
+                  ? `${regionCount} region${regionCount === 1 ? "" : "s"}`
                   : "no regions yet"
                 : `${
                     b.latMin < 0 ? `${Math.abs(b.latMin)}°S` : `${b.latMin}°N`
