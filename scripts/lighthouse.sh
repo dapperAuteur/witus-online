@@ -16,6 +16,7 @@ THRESH_PERF=90
 ROUTES=(
   "/"
   "/about"
+  "/explore"
   "/learn"
   "/learn/bio"
   "/learn/curriculum"

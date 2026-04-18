@@ -31,6 +31,12 @@ export default function Header() {
             Learn
           </Link>
           <Link
+            href="/explore"
+            className="inline-flex items-center min-h-11 px-3 hover:text-white transition-colors focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white rounded"
+          >
+            Explore
+          </Link>
+          <Link
             href="/roadmap"
             className="inline-flex items-center min-h-11 px-3 hover:text-white transition-colors focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white rounded"
           >
