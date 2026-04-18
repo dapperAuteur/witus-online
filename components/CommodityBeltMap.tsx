@@ -413,6 +413,43 @@ function BeltToggleButton({
   );
 }
 
+/**
+ * Renders exactly what the map renders for an N-belt overlap: the map's
+ * light ocean color (#f0f4f8) with each belt color layered at opacity 0.45
+ * using mix-blend-mode: multiply, scoped via isolation so the dark legend
+ * panel beneath doesn't bleed into the blend. Matches the map exactly
+ * rather than a precomputed RGB that assumes 100% opacity.
+ */
+function OverlapSwatch({ colors }: { colors: string[] }) {
+  return (
+    <div
+      style={{
+        height: "28px",
+        borderRadius: "5px",
+        background: "#f0f4f8",
+        border: "0.5px solid rgba(0,0,0,0.15)",
+        marginBottom: "4px",
+        position: "relative",
+        overflow: "hidden",
+        isolation: "isolate",
+      }}
+    >
+      {colors.map((c, i) => (
+        <div
+          key={i}
+          style={{
+            position: "absolute",
+            inset: 0,
+            background: c,
+            opacity: 0.45,
+            mixBlendMode: "multiply",
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
 function OverlapLegend() {
   return (
     <div
@@ -446,42 +483,22 @@ function OverlapLegend() {
       >
         {OVERLAP_SAMPLES.map((s, i) => (
           <div key={i} style={{ textAlign: "center", flex: 1 }}>
-            <div
-              style={{
-                height: "28px",
-                borderRadius: "5px",
-                background: multiplyBlend(s.colors),
-                border: "0.5px solid rgba(255,255,255,0.08)",
-                marginBottom: "4px",
-              }}
-            />
+            <OverlapSwatch colors={s.colors} />
             <div style={{ fontSize: "12px", color: "#e2e8f0" }}>{s.label}</div>
           </div>
         ))}
         <div style={{ textAlign: "center", flex: 1 }}>
-          <div
-            style={{
-              height: "28px",
-              borderRadius: "5px",
-              background: multiplyBlend([
-                "#FFE500",
-                "#FF2200",
-                "#0055FF",
-                "#00BB44",
-                "#FF8800",
-              ]),
-              border: "0.5px solid rgba(255,255,255,0.08)",
-              marginBottom: "4px",
-            }}
+          <OverlapSwatch
+            colors={["#FFE500", "#FF2200", "#0055FF", "#00BB44", "#FF8800"]}
           />
           <div style={{ fontSize: "12px", color: "#e2e8f0" }}>5+ belts</div>
         </div>
       </div>
       <div style={{ fontSize: "13px", color: "#cbd5e1", lineHeight: 1.55 }}>
-        Belt colors mix like paint. Yellow + blue = green. Red + blue = purple.
-        All primary colors together = near black. Darker regions have more
-        overlapping growing belts. Click any region to see which belts are
-        active at that point.
+        Belt colors mix like paint against the light map. Yellow + blue reads
+        green. Red + blue reads purple. All primary colors together darken
+        toward brown. Darker regions have more overlapping growing belts.
+        Click any region to see which belts are active at that point.
       </div>
     </div>
   );

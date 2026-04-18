@@ -11,7 +11,19 @@ export default function Footer() {
       <div className="max-w-5xl mx-auto px-6 py-10 flex flex-col sm:flex-row items-start sm:justify-between gap-10 text-sm text-slate-300">
         <div>
           <p className="font-semibold text-white mb-1">WitUS.online</p>
-          <p>A B4C LLC / AwesomeWebStore.com brand</p>
+          <p>
+            A B4C LLC /{" "}
+            <a
+              href="https://awesomewebstore.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline underline-offset-2 hover:text-white transition-colors focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white rounded"
+            >
+              AwesomeWebStore.com
+              <span className="sr-only"> (opens in new tab)</span>
+            </a>{" "}
+            brand
+          </p>
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-8 w-full sm:w-auto">

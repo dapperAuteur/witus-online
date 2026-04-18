@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import HomepageMapSection from "@/components/HomepageMapSection";
 import { SITE_URL } from "@/lib/products";
 
@@ -33,20 +34,38 @@ export const metadata: Metadata = {
 export default function ExplorePage() {
   return (
     <div className="max-w-5xl mx-auto px-6 py-12 sm:py-16">
-      <p className="text-xs font-semibold tracking-widest text-slate-400 uppercase mb-3">
-        21 episodes · 3 seasons · 4 subjects
+      <p className="text-sm font-semibold tracking-widest text-teal-300 uppercase mb-3">
+        Better Vice Club
       </p>
       <h1 className="text-3xl sm:text-5xl font-extrabold text-white mb-6 leading-tight">
-        The world is your classroom.
+        Twenty-one commodities. One story about geography.
       </h1>
-      <p className="text-slate-200 text-lg sm:text-xl leading-relaxed mb-10 max-w-3xl">
-        Two views of the same curriculum.{" "}
-        <strong className="text-white">Episode Origins</strong> plots all 21
-        commodities by geographic source.{" "}
+      <p className="text-slate-200 text-lg sm:text-xl leading-relaxed mb-4 max-w-3xl">
+        Better Vice Club is a 21-episode{" "}
+        <strong className="text-white">curriculum and podcast</strong> about the
+        global commodities that run everyday life &mdash; coffee, tea,
+        chocolate, sugar, cannabis, coca, and more. Every episode starts with
+        where the commodity grows.
+      </p>
+      <p className="text-slate-300 text-base sm:text-lg leading-relaxed mb-10 max-w-3xl">
+        The maps below show that geography two ways.{" "}
+        <strong className="text-white">Episode Origins</strong> pins each
+        commodity at its source.{" "}
         <strong className="text-white">Growing Belts</strong> shows where each
-        commodity can grow. Belt colors mix like paint, so overlapping regions
+        can grow &mdash; belt colors mix like paint so overlapping regions
         darken where multiple commodities share climate.
       </p>
+      <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm mb-10">
+        <Link
+          href="/learn/curriculum"
+          className="text-teal-300 hover:text-teal-200 underline underline-offset-2 transition-colors focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-300 rounded font-semibold"
+        >
+          Curriculum details &rarr;
+        </Link>
+        <span className="text-slate-400">
+          Podcast · new episode links shipping with each season drop
+        </span>
+      </div>
 
       <HomepageMapSection />
 
