@@ -1,9 +1,33 @@
 import type { Metadata } from "next";
 import RoadmapItem from "@/components/RoadmapItem";
+import { SITE_URL } from "@/lib/products";
 
 export const metadata: Metadata = {
   title: "Roadmap",
-  description: "Track what's shipped, in progress, and planned across the WitUS ecosystem.",
+  description:
+    "Track what's shipped, in progress, and planned across the WitUS ecosystem.",
+  alternates: { canonical: `${SITE_URL}/roadmap` },
+  openGraph: {
+    title: "Roadmap · WitUS",
+    description:
+      "Shipped, in progress, planned across the WitUS ecosystem.",
+    url: `${SITE_URL}/roadmap`,
+    images: [
+      {
+        url: "/og/roadmap",
+        width: 1200,
+        height: 630,
+        alt: "The WitUS roadmap.",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Roadmap · WitUS",
+    description:
+      "Shipped, in progress, planned across the WitUS ecosystem.",
+    images: ["/og/roadmap"],
+  },
 };
 
 const centenarianOSItems = [

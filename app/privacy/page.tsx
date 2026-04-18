@@ -1,7 +1,31 @@
 import type { Metadata } from "next";
+import { SITE_URL } from "@/lib/products";
 
 export const metadata: Metadata = {
   title: "Privacy Policy",
+  description: "How WitUS handles your data across every platform in the ecosystem.",
+  alternates: { canonical: `${SITE_URL}/privacy` },
+  openGraph: {
+    title: "Privacy Policy · WitUS",
+    description:
+      "How WitUS handles your data across every platform in the ecosystem.",
+    url: `${SITE_URL}/privacy`,
+    images: [
+      {
+        url: "/og/privacy",
+        width: 1200,
+        height: 630,
+        alt: "Privacy Policy.",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Privacy Policy · WitUS",
+    description:
+      "How WitUS handles your data across every platform in the ecosystem.",
+    images: ["/og/privacy"],
+  },
 };
 
 export default function PrivacyPage() {

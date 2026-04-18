@@ -1,9 +1,33 @@
 import type { Metadata } from "next";
 import ManifestoSection from "@/components/ManifestoSection";
+import { SITE_URL } from "@/lib/products";
 
 export const metadata: Metadata = {
   title: "About",
-  description: "The philosophy behind WitUS. Why longevity and independent work belong together.",
+  description:
+    "The philosophy behind WitUS. Why longevity and independent work belong together.",
+  alternates: { canonical: `${SITE_URL}/about` },
+  openGraph: {
+    title: "About · WitUS",
+    description:
+      "The philosophy behind WitUS. Why longevity and independent work belong together.",
+    url: `${SITE_URL}/about`,
+    images: [
+      {
+        url: "/og/about",
+        width: 1200,
+        height: 630,
+        alt: "Why WitUS exists.",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "About · WitUS",
+    description:
+      "The philosophy behind WitUS. Why longevity and independent work belong together.",
+    images: ["/og/about"],
+  },
 };
 
 export default function AboutPage() {
