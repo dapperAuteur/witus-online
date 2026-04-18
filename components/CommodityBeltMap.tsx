@@ -32,7 +32,16 @@ export interface Belt {
   modeB: boolean;
 }
 
-/** Creates a GeoJSON polygon feature from [lonMin, latMin, lonMax, latMax]. */
+/**
+ * Creates a GeoJSON polygon feature from [lonMin, latMin, lonMax, latMax].
+ *
+ * Vertex order: SW -> NW -> NE -> SE -> SW. This is clockwise on a
+ * north-up map, which is what d3-geo's spherical polygon clipping
+ * expects for a small outer ring (interior on the RIGHT as you walk).
+ * The "obvious" CCW order (SW -> SE -> NE -> NW -> SW) makes d3 render
+ * the complement — the entire globe except the intended bounding box.
+ * Guards against the bug the user reported in plan 12.
+ */
 function makePoly(
   lonMin: number,
   latMin: number,
@@ -47,9 +56,9 @@ function makePoly(
       coordinates: [
         [
           [lonMin, latMin],
-          [lonMax, latMin],
-          [lonMax, latMax],
           [lonMin, latMax],
+          [lonMax, latMax],
+          [lonMax, latMin],
           [lonMin, latMin],
         ],
       ],
@@ -376,14 +385,14 @@ function BeltToggleButton({
         display: "flex",
         alignItems: "center",
         gap: "6px",
-        padding: "6px 12px",
+        padding: "8px 14px",
         borderRadius: "6px",
-        border: active ? `1.5px solid ${belt.color}` : "1px solid #334155",
+        border: active ? `1.5px solid ${belt.color}` : "1px solid #475569",
         background: active ? `${belt.color}20` : "transparent",
         cursor: "pointer",
-        fontSize: "12px",
+        fontSize: "14px",
         fontWeight: active ? 600 : 500,
-        color: active ? "#f1f5f9" : "#cbd5e1",
+        color: active ? "#f8fafc" : "#e2e8f0",
         transition: "all 0.15s",
         whiteSpace: "nowrap",
         minHeight: 36,
@@ -417,9 +426,9 @@ function OverlapLegend() {
     >
       <div
         style={{
-          fontSize: "11px",
+          fontSize: "13px",
           fontWeight: 600,
-          color: "#f1f5f9",
+          color: "#f8fafc",
           marginBottom: "10px",
           letterSpacing: "0.06em",
           textTransform: "uppercase",
@@ -446,7 +455,7 @@ function OverlapLegend() {
                 marginBottom: "4px",
               }}
             />
-            <div style={{ fontSize: "10px", color: "#cbd5e1" }}>{s.label}</div>
+            <div style={{ fontSize: "12px", color: "#e2e8f0" }}>{s.label}</div>
           </div>
         ))}
         <div style={{ textAlign: "center", flex: 1 }}>
@@ -465,10 +474,10 @@ function OverlapLegend() {
               marginBottom: "4px",
             }}
           />
-          <div style={{ fontSize: "10px", color: "#cbd5e1" }}>5+ belts</div>
+          <div style={{ fontSize: "12px", color: "#e2e8f0" }}>5+ belts</div>
         </div>
       </div>
-      <div style={{ fontSize: "11px", color: "#94a3b8", lineHeight: 1.55 }}>
+      <div style={{ fontSize: "13px", color: "#cbd5e1", lineHeight: 1.55 }}>
         Belt colors mix like paint. Yellow + blue = green. Red + blue = purple.
         All primary colors together = near black. Darker regions have more
         overlapping growing belts. Click any region to see which belts are
@@ -520,7 +529,7 @@ function IdlePanel({ hint }: { hint: string }) {
           flexShrink: 0,
         }}
       />
-      <span style={{ fontSize: "13px", color: "#94a3b8" }}>{hint}</span>
+      <span style={{ fontSize: "14px", color: "#cbd5e1" }}>{hint}</span>
     </div>
   );
 }
@@ -610,10 +619,10 @@ function BeltInfoPanel({
         <div style={{ flex: 1, minWidth: 0 }}>
           <div
             style={{
-              fontSize: "11px",
+              fontSize: "13px",
               fontWeight: 600,
-              color: "#94a3b8",
-              marginBottom: "3px",
+              color: "#cbd5e1",
+              marginBottom: "4px",
               letterSpacing: "0.04em",
             }}
           >
@@ -621,9 +630,9 @@ function BeltInfoPanel({
           </div>
           <div
             style={{
-              fontSize: "16px",
+              fontSize: "18px",
               fontWeight: 600,
-              color: "#f1f5f9",
+              color: "#f8fafc",
               marginBottom: "6px",
             }}
           >
@@ -646,12 +655,12 @@ function BeltInfoPanel({
                     display: "inline-flex",
                     alignItems: "center",
                     gap: "4px",
-                    padding: "3px 8px",
+                    padding: "4px 10px",
                     borderRadius: "4px",
                     border: `1px solid ${b.color}`,
                     background: `${b.color}24`,
-                    fontSize: "11px",
-                    color: "#f1f5f9",
+                    fontSize: "13px",
+                    color: "#f8fafc",
                   }}
                 >
                   <span
@@ -669,15 +678,15 @@ function BeltInfoPanel({
           )}
 
           {overlapping.length === 1 && (
-            <div style={{ fontSize: "12px", color: "#cbd5e1", lineHeight: 1.55 }}>
-              <strong style={{ color: "#f1f5f9", fontWeight: 600 }}>
+            <div style={{ fontSize: "14px", color: "#e2e8f0", lineHeight: 1.55 }}>
+              <strong style={{ color: "#f8fafc", fontWeight: 600 }}>
                 {overlapping[0].episode}
               </strong>{" "}
               · {overlapping[0].producers}
             </div>
           )}
           {overlapping.length > 1 && (
-            <div style={{ fontSize: "12px", color: "#94a3b8" }}>
+            <div style={{ fontSize: "13px", color: "#cbd5e1" }}>
               Episodes: {overlapping.map((b) => b.episode).join(", ")}
             </div>
           )}
@@ -930,7 +939,13 @@ const CommodityBeltMap: FC = () => {
           flexWrap: "wrap",
         }}
       >
-        <span style={{ fontSize: "11px", color: "#94a3b8", fontWeight: 500 }}>
+        <span
+          style={{
+            fontSize: "14px",
+            color: "#e2e8f0",
+            fontWeight: 600,
+          }}
+        >
           View:
         </span>
         {(["bands", "regions"] as ViewMode[]).map((mode) => {
@@ -944,15 +959,15 @@ const CommodityBeltMap: FC = () => {
               key={mode}
               onClick={() => setViewMode(mode)}
               style={{
-                padding: "6px 14px",
+                padding: "8px 16px",
                 borderRadius: "6px",
-                border: isActive ? "1.5px solid #475569" : "1px solid #334155",
-                background: isActive ? "#0f172a" : "transparent",
-                color: isActive ? "#f1f5f9" : "#cbd5e1",
-                fontSize: "12px",
+                border: isActive ? "1.5px solid #94a3b8" : "1px solid #475569",
+                background: isActive ? "#1e293b" : "transparent",
+                color: isActive ? "#f8fafc" : "#e2e8f0",
+                fontSize: "14px",
                 fontWeight: isActive ? 600 : 500,
                 cursor: "pointer",
-                minHeight: 36,
+                minHeight: 40,
                 display: "inline-flex",
                 alignItems: "center",
                 gap: 6,
@@ -965,8 +980,8 @@ const CommodityBeltMap: FC = () => {
         {viewMode === "regions" && (
           <span
             style={{
-              fontSize: "11px",
-              color: "#94a3b8",
+              fontSize: "13px",
+              color: "#cbd5e1",
               marginLeft: "4px",
             }}
           >
@@ -1011,11 +1026,12 @@ const CommodityBeltMap: FC = () => {
           style={{
             background: "none",
             border: "none",
-            fontSize: "12px",
-            color: "#2dd4bf",
+            fontSize: "14px",
+            color: "#5eead4",
             cursor: "pointer",
-            padding: 0,
+            padding: "4px 2px",
             textDecoration: "underline",
+            fontWeight: 600,
           }}
         >
           Show all
@@ -1025,11 +1041,12 @@ const CommodityBeltMap: FC = () => {
           style={{
             background: "none",
             border: "none",
-            fontSize: "12px",
-            color: "#94a3b8",
+            fontSize: "14px",
+            color: "#cbd5e1",
             cursor: "pointer",
-            padding: 0,
+            padding: "4px 2px",
             textDecoration: "underline",
+            fontWeight: 600,
           }}
         >
           Clear all
@@ -1037,11 +1054,11 @@ const CommodityBeltMap: FC = () => {
         <span
           style={{
             marginLeft: "auto",
-            fontSize: "11px",
-            color: active.size > 0 ? "#cbd5e1" : "#475569",
+            fontSize: "13px",
+            color: active.size > 0 ? "#e2e8f0" : "#64748b",
             background: active.size > 0 ? "#1e293b" : "transparent",
-            border: active.size > 0 ? "1px solid #334155" : "none",
-            padding: "3px 10px",
+            border: active.size > 0 ? "1px solid #475569" : "none",
+            padding: "4px 12px",
             borderRadius: "12px",
             fontWeight: 600,
           }}
@@ -1134,22 +1151,22 @@ const CommodityBeltMap: FC = () => {
                   display: "flex",
                   alignItems: "center",
                   gap: "6px",
-                  fontSize: "11px",
-                  color: "#cbd5e1",
+                  fontSize: "13px",
+                  color: "#e2e8f0",
                 }}
               >
                 <span
                   style={{
-                    width: "10px",
-                    height: "10px",
-                    borderRadius: "2px",
+                    width: "12px",
+                    height: "12px",
+                    borderRadius: "3px",
                     background: b.color,
                     flexShrink: 0,
                   }}
                 />
                 {b.name}
-                <span style={{ color: "#475569" }}>·</span>
-                <span style={{ fontSize: "10px", color: "#94a3b8" }}>
+                <span style={{ color: "#64748b" }}>·</span>
+                <span style={{ fontSize: "12px", color: "#cbd5e1" }}>
                   {trailing}
                 </span>
               </div>
@@ -1161,8 +1178,8 @@ const CommodityBeltMap: FC = () => {
       <div
         style={{
           marginTop: "12px",
-          fontSize: "10px",
-          color: "#475569",
+          fontSize: "12px",
+          color: "#64748b",
           textAlign: "right",
         }}
       >
