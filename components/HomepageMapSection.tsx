@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 
-const CommodityMap = dynamic(() => import("@/components/CommodityMap"), {
+const MapTabs = dynamic(() => import("@/components/MapTabs"), {
   ssr: false,
   loading: () => <MapPlaceholder />,
 });
@@ -57,7 +57,7 @@ export default function HomepageMapSection() {
 
   return (
     <div ref={ref}>
-      {shouldLoad ? <CommodityMap /> : <MapPlaceholder />}
+      {shouldLoad ? <MapTabs /> : <MapPlaceholder />}
     </div>
   );
 }
