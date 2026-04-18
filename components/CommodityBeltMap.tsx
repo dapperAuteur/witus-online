@@ -471,6 +471,23 @@ function multiplyBlend(colors: string[]): string {
   return `rgb(${blended.r},${blended.g},${blended.b})`;
 }
 
+/**
+ * Normalize a polygon ring to counter-clockwise winding on the lon/lat plane.
+ * GeoJSON RFC 7946 requires outer rings to be CCW; d3-geo interprets a CW
+ * polygon as the *complement* of its interior, which renders as "everything
+ * except this region" (a.k.a. the entire globe and the oceans). Applying
+ * this at render + click time makes polygon authoring winding-agnostic.
+ */
+function ensureCCW(coords: [number, number][]): [number, number][] {
+  let sum = 0;
+  for (let i = 0; i < coords.length - 1; i++) {
+    const [x1, y1] = coords[i];
+    const [x2, y2] = coords[i + 1];
+    sum += x1 * y2 - x2 * y1;
+  }
+  return sum >= 0 ? coords : [...coords].reverse();
+}
+
 const OVERLAP_SAMPLES: Array<{ count: number; colors: string[]; label: string }> = [
   { count: 1, colors: ["#FFE500"], label: "1 belt" },
   { count: 2, colors: ["#FFE500", "#FF2200"], label: "2 belts" },
@@ -621,7 +638,7 @@ function regionsAtPoint(activeBelts: Belt[], point: ClickPoint): RegionHit[] {
         properties: {},
         geometry: {
           type: "Polygon" as const,
-          coordinates: [region.coords],
+          coordinates: [ensureCCW(region.coords)],
         },
       };
       if (d3.geoContains(feature, [point.lon, point.lat])) {
@@ -1016,7 +1033,7 @@ const CommodityBeltMap: FC = () => {
               properties: {},
               geometry: {
                 type: "Polygon",
-                coordinates: [region.coords],
+                coordinates: [ensureCCW(region.coords)],
               },
             };
             beltGroup
