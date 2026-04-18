@@ -84,7 +84,8 @@ export default function HomePage() {
         <div className="flex flex-wrap gap-3 sm:gap-4">
           <Link
             href="/about"
-            className="min-h-11 inline-flex items-center px-6 py-3 rounded-lg bg-white text-slate-950 font-semibold text-sm hover:bg-slate-200 transition-colors focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+            style={{ color: "#020617", backgroundColor: "#ffffff" }}
+            className="min-h-11 inline-flex items-center px-6 py-3 rounded-lg font-bold text-sm hover:bg-slate-200 transition-colors focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
           >
             Read the Philosophy
           </Link>

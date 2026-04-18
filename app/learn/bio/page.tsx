@@ -5,12 +5,12 @@ import { SITE_URL } from "@/lib/products";
 export const metadata: Metadata = {
   title: "Bio · Learn.WitUS",
   description:
-    "Brand Anthony McDonald (BAM). Developer relations specialist, software developer, fitness professional (CPT, CNC, CES), voiceover artist, and MBA.",
+    "Brand Anthony McDonald (BAM). Developer relations specialist, software developer, fitness professional (NASM CPT / CNC / CES), voiceover artist, and MBA.",
   alternates: { canonical: `${SITE_URL}/learn/bio` },
   openGraph: {
     title: "Bio · Brand Anthony McDonald · WitUS",
     description:
-      "Developer relations, software, fitness (CPT/CNC/CES), voiceover, MBA. 25+ years in business.",
+      "Developer relations, software, NASM-certified fitness (CPT/CNC/CES), voiceover, MBA. 25+ years in business.",
     url: `${SITE_URL}/learn/bio`,
     images: [
       {
@@ -25,10 +25,16 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Bio · Brand Anthony McDonald · WitUS",
     description:
-      "Developer relations, software, fitness (CPT/CNC/CES), voiceover, MBA.",
+      "Developer relations, software, NASM-certified fitness (CPT/CNC/CES), voiceover, MBA.",
     images: ["/og/home.png"],
   },
 };
+
+const NASM_ORG = {
+  "@type": "Organization",
+  name: "National Academy of Sports Medicine",
+  url: "https://www.nasm.org",
+} as const;
 
 const personJsonLd = {
   "@context": "https://schema.org",
@@ -49,21 +55,33 @@ const personJsonLd = {
     name: "B4C LLC (dba BAM Sports)",
     url: "https://brandanthonymcdonald.com",
   },
-  address: {
-    "@type": "PostalAddress",
-    addressLocality: "San Francisco",
-    addressRegion: "CA",
-    addressCountry: "US",
-  },
   alumniOf: {
     "@type": "CollegeOrUniversity",
     name: "Arizona State University, W. P. Carey School of Business",
   },
   hasCredential: [
-    { "@type": "EducationalOccupationalCredential", name: "MBA (Arizona State, W. P. Carey)" },
-    { "@type": "EducationalOccupationalCredential", name: "CPT (Certified Personal Trainer)" },
-    { "@type": "EducationalOccupationalCredential", name: "CNC (Certified Nutrition Coach)" },
-    { "@type": "EducationalOccupationalCredential", name: "CES (Corrective Exercise Specialist)" },
+    {
+      "@type": "EducationalOccupationalCredential",
+      name: "MBA (Arizona State, W. P. Carey)",
+    },
+    {
+      "@type": "EducationalOccupationalCredential",
+      name: "CPT (Certified Personal Trainer)",
+      url: "http://the.worldsfastestcentenarian.com/nasm-cpt-cert",
+      recognizedBy: NASM_ORG,
+    },
+    {
+      "@type": "EducationalOccupationalCredential",
+      name: "CNC (Certified Nutrition Coach)",
+      url: "http://the.worldsfastestcentenarian.com/nasm-cnc-cert",
+      recognizedBy: NASM_ORG,
+    },
+    {
+      "@type": "EducationalOccupationalCredential",
+      name: "CES (Corrective Exercise Specialist)",
+      url: "http://the.worldsfastestcentenarian.com/nasm-ces-cert",
+      recognizedBy: NASM_ORG,
+    },
   ],
   knowsLanguage: ["en", "es"],
 };
@@ -96,10 +114,9 @@ export default function BioPage() {
           by training and by temperament.
         </p>
         <p className="text-slate-400 leading-relaxed mb-12 max-w-2xl">
-          Based in San Francisco. Operates through B4C LLC (dba BAM Sports) and
-          AwesomeWebStore.com. Writes, codes, teaches, and narrates.
-          &ldquo;Building tools and documenting the journey to become the world&rsquo;s
-          fastest centenarian.&rdquo;
+          Operates through B4C LLC (dba BAM Sports) and AwesomeWebStore.com. Writes,
+          codes, teaches, and narrates. &ldquo;Building tools and documenting the
+          journey to become the world&rsquo;s fastest centenarian.&rdquo;
         </p>
 
         <h2 className="text-xl font-bold text-white mb-4">Roles</h2>
@@ -122,15 +139,51 @@ export default function BioPage() {
           </div>
           <div>
             <dt className="text-sm font-semibold text-white">CPT</dt>
-            <dd className="text-sm text-slate-400">Certified Personal Trainer</dd>
+            <dd className="text-sm text-slate-400">
+              Certified Personal Trainer
+              <br />
+              <a
+                href="http://the.worldsfastestcentenarian.com/nasm-cpt-cert"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-slate-400 hover:text-teal-300 underline underline-offset-2 transition-colors focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-300 rounded"
+              >
+                via National Academy of Sports Medicine (NASM)
+                <span className="sr-only"> (opens in new tab)</span>
+              </a>
+            </dd>
           </div>
           <div>
             <dt className="text-sm font-semibold text-white">CNC</dt>
-            <dd className="text-sm text-slate-400">Certified Nutrition Coach</dd>
+            <dd className="text-sm text-slate-400">
+              Certified Nutrition Coach
+              <br />
+              <a
+                href="http://the.worldsfastestcentenarian.com/nasm-cnc-cert"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-slate-400 hover:text-teal-300 underline underline-offset-2 transition-colors focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-300 rounded"
+              >
+                via National Academy of Sports Medicine (NASM)
+                <span className="sr-only"> (opens in new tab)</span>
+              </a>
+            </dd>
           </div>
           <div>
             <dt className="text-sm font-semibold text-white">CES</dt>
-            <dd className="text-sm text-slate-400">Corrective Exercise Specialist</dd>
+            <dd className="text-sm text-slate-400">
+              Corrective Exercise Specialist
+              <br />
+              <a
+                href="http://the.worldsfastestcentenarian.com/nasm-ces-cert"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-slate-400 hover:text-teal-300 underline underline-offset-2 transition-colors focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-300 rounded"
+              >
+                via National Academy of Sports Medicine (NASM)
+                <span className="sr-only"> (opens in new tab)</span>
+              </a>
+            </dd>
           </div>
         </dl>
 
@@ -143,7 +196,7 @@ export default function BioPage() {
               rel="noopener noreferrer"
               className="text-teal-300 hover:text-teal-200 transition-colors focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-300 rounded"
             >
-              brandanthonymcdonald.com
+              BrandAnthonyMcDonald.com
               <span className="sr-only"> (opens in new tab)</span>
             </a>
             <span className="text-slate-400 text-sm"> &middot; full portfolio, services, blog</span>

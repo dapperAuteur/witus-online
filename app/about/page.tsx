@@ -59,9 +59,9 @@ export default function AboutPage() {
         </p>
         <h2 className="text-2xl font-bold text-white mb-4">Brand Anthony McDonald</h2>
         <p className="text-slate-400 leading-relaxed mb-4">
-          BAM is a developer advocate, voiceover artist, business consultant, and content creator
-          based in Indianapolis, Indiana. He built WitUS to solve his own problems with tracking
-          contractor work while staying intentional about health and longevity.
+          BAM is a developer advocate, voiceover artist, business consultant, and content creator.
+          He built WitUS to solve his own problems with tracking contractor work while staying
+          intentional about health and longevity.
         </p>
         <p className="text-slate-400 leading-relaxed mb-6">
           WitUS is a B4C LLC / AwesomeWebStore.com product. It sits at the top of an ecosystem that

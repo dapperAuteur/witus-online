@@ -97,7 +97,15 @@ const faqs = [
     q: "What if I forget a password?",
     a: "Use the password-reset flow on the app you're signing into. Each app's reset is independent today.",
   },
+  {
+    q: "When will the other WitUS apps appear here?",
+    a: "As each app ships a public sign-in surface, its tile lands here. Fly.WitUS and FlashLearnAI are in beta with auth still in progress. AwesomeWebStore uses a commerce checkout rather than a WitUS account, and Learn.WitUS courses run on the CentenarianOS Academy, so the CentenarianOS tile already covers that.",
+  },
 ];
+
+const comingSoonProducts = products.filter(
+  (p) => !p.signInHref && p.status !== "coming-soon" && p.slug !== "learn-witus" && p.slug !== "awesomewebstore"
+);
 
 const faqJsonLd = {
   "@context": "https://schema.org",
@@ -174,6 +182,46 @@ export default function AccountPage() {
             );
           })}
         </div>
+
+        {comingSoonProducts.length > 0 && (
+          <>
+            <h2
+              id="coming-soon-heading"
+              className="text-xs font-semibold tracking-widest text-slate-400 uppercase mb-4"
+            >
+              Coming soon
+            </h2>
+            <div
+              aria-labelledby="coming-soon-heading"
+              role="list"
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-16"
+            >
+              {comingSoonProducts.map((product) => {
+                const styles = tileStyles[product.accent];
+                return (
+                  <div
+                    key={product.slug}
+                    role="listitem"
+                    className="flex flex-col p-6 rounded-xl border border-slate-800 bg-slate-900/30"
+                  >
+                    <span className="flex items-center gap-2 mb-2">
+                      <span
+                        className={`w-2 h-2 rounded-full ${styles.dot} opacity-50`}
+                        aria-hidden="true"
+                      />
+                      <span className="text-sm font-semibold text-slate-300">
+                        {product.name}
+                      </span>
+                    </span>
+                    <span className="text-xs text-slate-400">
+                      Sign-in lands here when auth ships.
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </>
+        )}
 
         <h2 className="text-xl font-bold text-white mb-6">
           Frequently asked questions
