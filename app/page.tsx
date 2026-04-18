@@ -104,8 +104,8 @@ export default function HomePage() {
         aria-labelledby="explore-heading"
         className="max-w-5xl mx-auto px-6 pb-16 sm:pb-20"
       >
-        <p className="text-sm font-semibold tracking-widest text-slate-300 uppercase mb-3">
-          21 episodes · 3 seasons · 4 subjects
+        <p className="text-sm font-semibold tracking-widest text-teal-300 uppercase mb-3">
+          Better Vice Club · 21 episodes
         </p>
         <h2
           id="explore-heading"
@@ -114,9 +114,10 @@ export default function HomePage() {
           Every episode starts somewhere on this map.
         </h2>
         <p className="text-slate-200 text-base sm:text-lg max-w-2xl leading-relaxed mb-8">
-          Switch between episode origins and growing belts. Belt colors mix
-          like paint: the darker a region, the more commodities share that
-          latitude.
+          A curriculum and podcast about the global commodities that run
+          everyday life. Switch between episode origins and growing belts
+          below &mdash; belt colors mix like paint where multiple commodities
+          share geography.
         </p>
         <HomepageMapSection />
         <div className="mt-6 text-right">
