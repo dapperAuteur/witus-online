@@ -5,7 +5,7 @@
  *   - Sitemap / robots / API -> network only (bypass cache)
  */
 
-const VERSION = "v1";
+const VERSION = "v2";
 const SHELL_CACHE = `witus-shell-${VERSION}`;
 const RUNTIME_CACHE = `witus-runtime-${VERSION}`;
 
@@ -17,15 +17,25 @@ const PRECACHE_URLS = [
   "/brand/04-orbit-type/favicon-32.png",
   "/brand/04-orbit-type/favicon-180.png",
   "/brand/04-orbit-type/wordmark.svg",
-  "/og/home.png",
 ];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches
-      .open(SHELL_CACHE)
-      .then((cache) => cache.addAll(PRECACHE_URLS))
-      .then(() => self.skipWaiting())
+    (async () => {
+      const cache = await caches.open(SHELL_CACHE);
+      // Cache each URL individually so one 404 doesn't abort the whole install.
+      await Promise.all(
+        PRECACHE_URLS.map(async (url) => {
+          try {
+            const response = await fetch(url, { cache: "no-cache" });
+            if (response.ok) await cache.put(url, response);
+          } catch {
+            // swallow; precache is best-effort
+          }
+        })
+      );
+      await self.skipWaiting();
+    })()
   );
 });
 
