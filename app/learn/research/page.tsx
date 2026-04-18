@@ -102,7 +102,7 @@ export default function ResearchPage() {
           research threads. The blog is where the thinking-out-loud happens.
         </p>
         <a
-          href="https://brandanthonymcdonald.com"
+          href="https://www.brandanthonymcdonald.com/blog"
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center min-h-11 px-5 py-2.5 rounded-lg border border-slate-700 text-slate-200 text-sm font-semibold hover:border-slate-500 hover:text-white transition-colors focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"

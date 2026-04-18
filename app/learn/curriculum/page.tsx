@@ -83,7 +83,7 @@ export default function CurriculumPage() {
           <span className="text-teal-400" aria-hidden="true">3.</span>
           <span>
             Interventions that survive contact with ordinary life are the only
-            ones worth running. Design for Tuesday, not New Year&rsquo;s Day.
+            ones worth running. Design for WinsDay, not New Year&rsquo;s Day.
           </span>
         </li>
       </ul>
@@ -120,6 +120,52 @@ export default function CurriculumPage() {
             hold up. Draws on BAM&rsquo;s consulting work across developer
             relations, corrective exercise, and corporate training.
           </p>
+        </div>
+        <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-6">
+          <h3 className="text-base font-semibold text-white mb-2">
+            Endocannabinoid System
+          </h3>
+          <p className="text-sm text-slate-400 leading-relaxed mb-4">
+            A curriculum mapping the endocannabinoid system&rsquo;s role in
+            fitness, recovery, sleep, and vice regulation. Built on BAM&rsquo;s
+            published infographic and source research.
+          </p>
+          <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm">
+            <a
+              href="https://www.brandanthonymcdonald.com/blog/endocannabinoid-system-curriculum-infographic-sources"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-teal-300 hover:text-teal-200 transition-colors focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-300 rounded"
+            >
+              Read the sources
+              <span className="sr-only"> (opens in new tab)</span>
+            </a>
+            <a
+              href="https://ecs-specialization.betterbud.club/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-teal-300 hover:text-teal-200 transition-colors focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-300 rounded"
+            >
+              ECS specialization
+              <span className="sr-only"> (opens in new tab)</span>
+            </a>
+          </div>
+        </div>
+        <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-6">
+          <h3 className="text-base font-semibold text-white mb-2">FDAC</h3>
+          <p className="text-sm text-slate-400 leading-relaxed mb-4">
+            A practitioner health course under the WitUS brand. The applied
+            intersection of fitness, diet, and daily conditioning.
+          </p>
+          <a
+            href="https://fdac.witus.online/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm text-teal-300 hover:text-teal-200 transition-colors focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-300 rounded"
+          >
+            Visit FDAC
+            <span className="sr-only"> (opens in new tab)</span>
+          </a>
         </div>
       </div>
 

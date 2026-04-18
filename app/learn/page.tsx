@@ -69,8 +69,7 @@ export default function LearnIndexPage() {
         <p className="text-slate-400 leading-relaxed mb-12 max-w-2xl">
           Twenty-five years in business, spanning developer relations, fitness
           education, voiceover, AI advising, and multidisciplinary consulting.
-          Based in San Francisco. Operating through B4C LLC (dba BAM Sports) and
-          AwesomeWebStore.com.
+          Operating through B4C LLC (dba BAM Sports) and AwesomeWebStore.com.
         </p>
 
         <h2
