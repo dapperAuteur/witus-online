@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import ProductCard from "@/components/ProductCard";
+import HomepageMapSection from "@/components/HomepageMapSection";
 import { products, SITE_URL } from "@/lib/products";
 
 export const metadata: Metadata = {
@@ -94,6 +95,36 @@ export default function HomePage() {
             className="min-h-11 inline-flex items-center px-6 py-3 rounded-lg border border-slate-700 text-slate-300 font-semibold text-sm hover:border-slate-500 hover:text-white transition-colors focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
           >
             View Roadmap
+          </Link>
+        </div>
+      </section>
+
+      {/* BVC Commodity Map preview */}
+      <section
+        aria-labelledby="explore-heading"
+        className="max-w-5xl mx-auto px-6 pb-16 sm:pb-20"
+      >
+        <p className="text-xs font-semibold tracking-widest text-slate-400 uppercase mb-3">
+          21 episodes · 3 seasons · 4 subjects
+        </p>
+        <h2
+          id="explore-heading"
+          className="text-2xl sm:text-3xl font-bold text-white mb-3 leading-tight"
+        >
+          Every episode starts somewhere on this map.
+        </h2>
+        <p className="text-slate-400 max-w-2xl leading-relaxed mb-8">
+          Click any pin to see the episode, its geographic origin, and what
+          it covers across Geography, Social Studies, Economics, and ELA.
+        </p>
+        <HomepageMapSection />
+        <div className="mt-6 text-right">
+          <Link
+            href="/explore"
+            className="inline-flex items-center text-sm font-semibold text-teal-300 hover:text-teal-200 transition-colors focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-300 rounded"
+          >
+            Open full Explore page
+            <span aria-hidden="true" className="ml-2">&rarr;</span>
           </Link>
         </div>
       </section>

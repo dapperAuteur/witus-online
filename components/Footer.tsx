@@ -76,6 +76,11 @@ export default function Footer() {
                   </Link>
                 </li>
               ))}
+              <li>
+                <Link href="/explore" className={linkClasses}>
+                  Explore (map)
+                </Link>
+              </li>
             </ul>
           </div>
           <div>

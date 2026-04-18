@@ -102,6 +102,22 @@ export default function PartnershipsPage() {
         </li>
       </ul>
 
+      <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-6 mb-6">
+        <p className="text-sm font-semibold text-white mb-1">
+          Want to see the full curriculum before deciding?
+        </p>
+        <p className="text-sm text-slate-400 leading-relaxed mb-2">
+          The episode map shows all 21 Better Vice Club commodities across
+          three seasons. Click any pin for episode details.
+        </p>
+        <Link
+          href="/explore"
+          className="text-sm font-semibold text-teal-300 hover:text-teal-200 transition-colors focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-300 rounded"
+        >
+          Explore all 21 episodes &rarr;
+        </Link>
+      </div>
+
       <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-6">
         <h2 className="text-base font-semibold text-white mb-2">
           Want to partner?

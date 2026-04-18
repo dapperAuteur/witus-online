@@ -20,6 +20,11 @@ export const ogEntries: Record<string, OgEntry> = {
     title: "Your WitUS accounts.",
     subtitle: "Sign-in doors today. Unified account on the roadmap.",
   },
+  explore: {
+    title: "The world is your classroom.",
+    subtitle:
+      "21 Better Vice Club episodes across 3 seasons, plotted by origin.",
+  },
   learn: {
     title: "Learn.WitUS.",
     subtitle: "BAM's practitioner-scholar profile.",
