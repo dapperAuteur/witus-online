@@ -114,8 +114,9 @@ export default function HomePage() {
           Every episode starts somewhere on this map.
         </h2>
         <p className="text-slate-400 max-w-2xl leading-relaxed mb-8">
-          Click any pin to see the episode, its geographic origin, and what
-          it covers across Geography, Social Studies, Economics, and ELA.
+          Switch between episode origins and growing belts. Belt colors mix
+          like paint: the darker a region, the more commodities share that
+          latitude.
         </p>
         <HomepageMapSection />
         <div className="mt-6 text-right">

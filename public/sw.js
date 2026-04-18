@@ -5,7 +5,7 @@
  *   - Sitemap / robots / API -> network only (bypass cache)
  */
 
-const VERSION = "v3";
+const VERSION = "v4";
 const SHELL_CACHE = `witus-shell-${VERSION}`;
 const RUNTIME_CACHE = `witus-runtime-${VERSION}`;
 

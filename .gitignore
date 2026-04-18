@@ -4,3 +4,4 @@ node_modules
 plans/
 .claude/
 .DS_Store
+tsconfig.tsbuildinfo

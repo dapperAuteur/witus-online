@@ -40,10 +40,11 @@ export default function ExplorePage() {
         The world is your classroom.
       </h1>
       <p className="text-slate-300 text-lg leading-relaxed mb-10 max-w-2xl">
-        Better Vice Club teaches Geography, Social Studies, Economics, and ELA
-        through 21 global commodities: coffee, chocolate, whiskey, khat, coca
-        leaf, and more. Click any pin to see where the episode lives and what
-        it covers.
+        Two views of the same curriculum. <strong className="text-white">Episode
+        Origins</strong> plots all 21 commodities by geographic source.{" "}
+        <strong className="text-white">Growing Belts</strong> shows where each
+        commodity can grow; belt colors mix like paint, so overlapping
+        latitudes darken where multiple commodities share climate.
       </p>
 
       <HomepageMapSection />
