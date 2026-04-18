@@ -472,20 +472,33 @@ function multiplyBlend(colors: string[]): string {
 }
 
 /**
- * Normalize a polygon ring to counter-clockwise winding on the lon/lat plane.
- * GeoJSON RFC 7946 requires outer rings to be CCW; d3-geo interprets a CW
- * polygon as the *complement* of its interior, which renders as "everything
- * except this region" (a.k.a. the entire globe and the oceans). Applying
- * this at render + click time makes polygon authoring winding-agnostic.
+ * Ensure d3-geo renders the small intended interior, not the complement.
+ *
+ * d3-geo treats polygon rings on a sphere, and if the ring is authored
+ * "the wrong way around," it interprets the interior as the complement
+ * (everything on the earth EXCEPT the region), which renders as the
+ * whole globe covering the oceans. The fix isn't about winding per se;
+ * it's "is the area d3 computes larger than half the earth?" If so, we
+ * authored the ring the other way — reverse it.
+ *
+ * Uses d3.geoArea (steradians, 0 to 4π) as the definitive test rather
+ * than a planar shoelace heuristic, so it's correct regardless of
+ * vertex-order convention.
  */
-function ensureCCW(coords: [number, number][]): [number, number][] {
-  let sum = 0;
-  for (let i = 0; i < coords.length - 1; i++) {
-    const [x1, y1] = coords[i];
-    const [x2, y2] = coords[i + 1];
-    sum += x1 * y2 - x2 * y1;
+function ensureSmallInterior(
+  coords: [number, number][]
+): [number, number][] {
+  const feat: GeoJSON.Feature = {
+    type: "Feature",
+    properties: {},
+    geometry: { type: "Polygon", coordinates: [coords] },
+  };
+  const area = d3.geoArea(feat);
+  if (area > 2 * Math.PI) {
+    // d3 is drawing the complement — flip the ring.
+    return [...coords].reverse();
   }
-  return sum >= 0 ? coords : [...coords].reverse();
+  return coords;
 }
 
 const OVERLAP_SAMPLES: Array<{ count: number; colors: string[]; label: string }> = [
@@ -638,7 +651,7 @@ function regionsAtPoint(activeBelts: Belt[], point: ClickPoint): RegionHit[] {
         properties: {},
         geometry: {
           type: "Polygon" as const,
-          coordinates: [ensureCCW(region.coords)],
+          coordinates: [ensureSmallInterior(region.coords)],
         },
       };
       if (d3.geoContains(feature, [point.lon, point.lat])) {
@@ -1033,7 +1046,7 @@ const CommodityBeltMap: FC = () => {
               properties: {},
               geometry: {
                 type: "Polygon",
-                coordinates: [ensureCCW(region.coords)],
+                coordinates: [ensureSmallInterior(region.coords)],
               },
             };
             beltGroup
