@@ -152,11 +152,17 @@ export async function pilotSignupAction(
     };
   }
 
+  if (result.detail === "dev-log") {
+    return {
+      status: "success",
+      message:
+        "Form received. Mailgun is not configured on this deploy, so the submission was logged to the server console instead of emailed. Check MAILGUN_API_KEY and MAILGUN_DOMAIN.",
+    };
+  }
+
   return {
     status: "success",
     message:
       "Thanks. BAM will follow up within a few days. Check your spam folder if you do not see a reply.",
   };
 }
-
-export const PACKETS_PUBLIC = PACKETS; // re-export so client form can read it
