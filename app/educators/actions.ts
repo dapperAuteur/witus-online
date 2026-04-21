@@ -152,6 +152,14 @@ export async function pilotSignupAction(
     };
   }
 
+  if (result.detail === "dev-log") {
+    return {
+      status: "success",
+      message:
+        "Form received. Mailgun is not configured on this deploy, so the submission was logged to the server console instead of emailed. Check MAILGUN_API_KEY and MAILGUN_DOMAIN.",
+    };
+  }
+
   return {
     status: "success",
     message:

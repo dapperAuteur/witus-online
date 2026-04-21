@@ -47,7 +47,7 @@ export default function SampleDownloadCard({ botError, packetMissing }: Props) {
       <TurnstileWidget />
       <DownloadButton />
       <p className="text-xs text-slate-400">
-        PDF opens in a new tab. Roughly 180&nbsp;KB. No email required.
+        Downloads a PDF. Roughly 180&nbsp;KB. No email required.
       </p>
     </form>
   );

@@ -108,7 +108,36 @@ export default async function EducatorsPage({
         <PilotSignupForm />
       </section>
 
-      <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm mb-2">
+      <section
+        aria-labelledby="feedback-heading"
+        className="mb-16 rounded-2xl border border-amber-500/30 bg-slate-900/60 p-6 sm:p-8"
+      >
+        <p className="text-xs font-semibold tracking-widest text-amber-300 uppercase mb-2">
+          Already taught with a packet?
+        </p>
+        <h2
+          id="feedback-heading"
+          className="text-2xl sm:text-3xl font-bold text-white mb-3 leading-tight"
+        >
+          Tell BAM how it went.
+        </h2>
+        <p className="text-slate-300 leading-relaxed mb-6 max-w-2xl">
+          Two minutes of honest feedback makes the next packet better.
+          What worked, what did not, and whether you would teach it again.
+          The QR code on the packet prefills the right episode.
+        </p>
+        <Link
+          href="/educators/feedback"
+          className="inline-flex items-center min-h-11 px-5 py-2.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 text-sm font-semibold transition-colors focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300"
+        >
+          Open the feedback form
+          <span aria-hidden="true" className="ml-2">
+            &rarr;
+          </span>
+        </Link>
+      </section>
+
+      <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm">
         <Link
           href="/learn/curriculum"
           className="text-teal-300 hover:text-teal-200 underline underline-offset-2 transition-colors focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-300 rounded font-semibold"
@@ -122,16 +151,6 @@ export default async function EducatorsPage({
           See all 21 episodes on the map &rarr;
         </Link>
       </div>
-      <p className="text-xs text-slate-400 max-w-2xl">
-        Already taught with a BVC packet?{" "}
-        <Link
-          href="/educators/feedback"
-          className="text-teal-300 hover:text-teal-200 underline underline-offset-2"
-        >
-          Share feedback
-        </Link>{" "}
-        so the next one lands harder.
-      </p>
     </div>
   );
 }
