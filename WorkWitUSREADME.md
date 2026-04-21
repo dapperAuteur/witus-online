@@ -144,8 +144,8 @@ This app shares a Supabase database with CentenarianOS. See `SHARED_DB.md` for d
 
 ## License
 
-Proprietary — B4C LLC / AwesomeWebStore.com
+Proprietary B4C LLC / AwesomeWebStore.com
 
 ---
 
-**Operated by** B4C LLC / AwesomeWebStore.com — Indianapolis, Indiana
+**Operated by** B4C LLC / AwesomeWebStore.com Indianapolis, Indiana

@@ -46,7 +46,7 @@ export interface Belt {
  * north-up map, which is what d3-geo's spherical polygon clipping
  * expects for a small outer ring (interior on the RIGHT as you walk).
  * The "obvious" CCW order (SW -> SE -> NE -> NW -> SW) makes d3 render
- * the complement — the entire globe except the intended bounding box.
+ * the complement of the entire globe except the intended bounding box.
  * Guards against the bug the user reported in plan 12.
  */
 function makePoly(
@@ -76,7 +76,7 @@ function makePoly(
 /**
  * Per-commodity producing countries, keyed by belt id, as ISO 3166-1
  * numeric codes. Rendered in Mode B by filtering the world-atlas country
- * features — gives real country shapes instead of rectangles so the
+ * features: gives real country shapes instead of rectangles so the
  * oceans stay white and borders read correctly.
  *
  * Peyote is intentionally absent. Its range is sub-national (Chihuahuan
@@ -742,7 +742,7 @@ const CommodityBeltMap: FC = () => {
 
     const pathGen = d3.geoPath(proj);
 
-    // Light ocean — required for multiply blend to produce correct overlap colors
+    // Light ocean: required for multiply blend to produce correct overlap colors
     svg
       .append("path")
       .datum({ type: "Sphere" } as d3.GeoPermissibleObjects)
@@ -826,7 +826,7 @@ const CommodityBeltMap: FC = () => {
           .style("cursor", "pointer");
       });
     } else {
-      // regions mode — prefer real country shapes from the world-atlas
+      // regions mode prefers real country shapes from the world-atlas
       // topology; fall back to bounding-box polygons for sub-national
       // commodities (peyote).
       activeBelts.forEach((belt) => {
@@ -1095,7 +1095,7 @@ const CommodityBeltMap: FC = () => {
 
       <OverlapLegend />
 
-      {/* Map — SVG interior stays light (required by multiply blend mode).
+      {/* Map: SVG interior stays light (required by multiply blend mode).
           isolation: isolate scopes the mix-blend-mode to this container so
           multiply doesn't blend with the dark app background. */}
       <div

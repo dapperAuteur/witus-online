@@ -20,7 +20,7 @@ export const COMMODITIES: Commodity[] = [
     geo: "Yunnan Province, China",
     lat: 25,
     lon: 101,
-    body: "The oldest documented tea cultivation traces to Yunnan Province in southwest China. The British Empire's global tea trade reshaped the geography of India, Sri Lanka, and Kenya — all to supply a commodity that didn't originate there.",
+    body: "The oldest documented tea cultivation traces to Yunnan Province in southwest China. The British Empire's global tea trade reshaped the geography of India, Sri Lanka, and Kenya. They all to supply a commodity that didn't originate there.",
   },
   {
     id: 3,
@@ -30,7 +30,7 @@ export const COMMODITIES: Commodity[] = [
     geo: "Mesoamerica (Maya origin)",
     lat: 16,
     lon: -90,
-    body: "Cacao has been cultivated in Mesoamerica since at least 1900 BCE. The Maya and Aztec used it as sacred currency and ceremony. Today 70 percent of the world's cacao grows in West Africa — a geographic displacement caused entirely by colonialism.",
+    body: "Cacao has been cultivated in Mesoamerica since at least 1900 BCE. The Maya and Aztec used it as sacred currency and ceremony. Today 70 percent of the world's cacao grows in West Africa. That's a geographic displacement caused entirely by colonialism.",
   },
   {
     id: 4,
@@ -40,7 +40,7 @@ export const COMMODITIES: Commodity[] = [
     geo: "Caribbean (colonial plantation zone)",
     lat: 18,
     lon: -66,
-    body: "Sugar plantations in the Caribbean and Brazil were the economic engine of the Atlantic slave trade. Haiti supplied 50 percent of the world's sugar and coffee in 1788 — entirely on enslaved labor. The Haitian Revolution of 1791 was a direct response.",
+    body: "Sugar plantations in the Caribbean and Brazil were the economic engine of the Atlantic slave trade. Haiti supplied 50 percent of the world's sugar and coffee in 1788, entirely on enslaved labor. The Haitian Revolution of 1791 was a direct response.",
   },
   {
     id: 5,
@@ -50,7 +50,7 @@ export const COMMODITIES: Commodity[] = [
     geo: "Ecuadorian Amazon",
     lat: 0,
     lon: -77,
-    body: "Guayusa is a caffeinated holly leaf used by Kichwa communities in the Ecuadorian Amazon for centuries. Dream-sharing ceremonies held around guayusa tea are a living governance tradition — and a target of biopiracy by supplement companies.",
+    body: "Guayusa is a caffeinated holly leaf used by Kichwa communities in the Ecuadorian Amazon for centuries. Dream-sharing ceremonies held around guayusa tea are a living governance tradition and a target of biopiracy by supplement companies.",
   },
   {
     id: 6,
@@ -60,7 +60,7 @@ export const COMMODITIES: Commodity[] = [
     geo: "West Africa (Nigeria, Ghana)",
     lat: 7,
     lon: 3,
-    body: "Kola nut is the original caffeinated ingredient in Coca-Cola, used in West African ceremony and trade for centuries. The industry removed it from the formula but kept the name — and the economic relationship between West Africa and the soft drink industry.",
+    body: "Kola nut is the original caffeinated ingredient in Coca-Cola, used in West African ceremony and trade for centuries. The industry removed it from the formula but kept the name and the economic relationship between West Africa and the soft drink industry.",
   },
   {
     id: 7,
@@ -80,7 +80,7 @@ export const COMMODITIES: Commodity[] = [
     geo: "Mesopotamia (modern Iraq)",
     lat: 32,
     lon: 44,
-    body: "The Hymn to Ninkasi, written around 1800 BCE, is the world's oldest surviving beer recipe — and simultaneously a prayer. Beer originated in Mesopotamia as a sacred agricultural product before it became the world's most consumed alcoholic beverage.",
+    body: "The Hymn to Ninkasi, written around 1800 BCE, is the world's oldest surviving beer recipe and simultaneously a prayer. Beer originated in Mesopotamia as a sacred agricultural product before it became the world's most consumed alcoholic beverage.",
   },
   {
     id: 9,
@@ -100,7 +100,7 @@ export const COMMODITIES: Commodity[] = [
     geo: "Scotland and Ireland",
     lat: 56,
     lon: -4,
-    body: "Scotch whisky's geographic designation is one of the most legally protected in the world. Indiana's MGP Ingredients in Lawrenceburg distills roughly 40 percent of American whiskey — including dozens of brands that imply heritage they don't have.",
+    body: "Scotch whisky's geographic designation is one of the most legally protected in the world. Indiana's MGP Ingredients in Lawrenceburg distills roughly 40 percent of American whiskey, including dozens of brands that imply heritage they don't have.",
   },
   {
     id: 11,
@@ -120,7 +120,7 @@ export const COMMODITIES: Commodity[] = [
     geo: "Jalisco, Mexico",
     lat: 21,
     lon: -103,
-    body: "Tequila can only be produced legally in five Mexican states, with Jalisco at the center. The jimadores who harvest agave by hand are the last human link in a 4,000-year cultivation tradition — before the celebrity-brand economy takes over the value chain.",
+    body: "Tequila can only be produced legally in five Mexican states, with Jalisco at the center. The jimadores who harvest agave by hand are the last human link in a 4,000-year cultivation tradition, before the celebrity-brand economy takes over the value chain.",
   },
   {
     id: 13,
@@ -130,7 +130,7 @@ export const COMMODITIES: Commodity[] = [
     geo: "Japan",
     lat: 35,
     lon: 137,
-    body: "Sake has been produced in Japan for at least 2,000 years. Wabi-sabi aesthetics — the beauty of impermanence — shape how sake is consumed, presented, and understood. The cup itself carries as much cultural meaning as the liquid inside it.",
+    body: "Sake has been produced in Japan for at least 2,000 years. Wabi-sabi aesthetics, the beauty of impermanence, shape how sake is consumed, presented, and understood. The cup itself carries as much cultural meaning as the liquid inside it.",
   },
   {
     id: 14,
@@ -180,7 +180,7 @@ export const COMMODITIES: Commodity[] = [
     geo: "Colombian Andes",
     lat: 4,
     lon: -74,
-    body: "Coca leaf has been chewed in Andean communities for 8,000 years as a mild stimulant and medicine. It's legal in Bolivia and Peru. Indianapolis sits at the intersection of I-65 and I-70 — documented as a distribution crossroads for cocaine moving from the Gulf Coast into the Midwest.",
+    body: "Coca leaf has been chewed in Andean communities for 8,000 years as a mild stimulant and medicine. It's legal in Bolivia and Peru. Indianapolis sits at the intersection of I-65 and I-70, it's documented as a distribution crossroads for cocaine moving from the Gulf Coast into the Midwest.",
   },
   {
     id: 19,
@@ -190,7 +190,7 @@ export const COMMODITIES: Commodity[] = [
     geo: "Oaxacan highlands, Mexico",
     lat: 17,
     lon: -96,
-    body: "Mazatec curandera María Sabina conducted psilocybin mushroom velada ceremonies in the Oaxacan highlands. A 1957 Life Magazine article disrupted her community permanently — a documented case of cultural extraction without consent. FDA clinical trials now show psilocybin's significant therapeutic value for treatment-resistant depression.",
+    body: "Mazatec curandera María Sabina conducted psilocybin mushroom velada ceremonies in the Oaxacan highlands. A 1957 Life Magazine article disrupted her community permanently. It's a documented case of cultural extraction without consent. FDA clinical trials now show psilocybin's significant therapeutic value for treatment-resistant depression.",
   },
   {
     id: 20,
@@ -200,7 +200,7 @@ export const COMMODITIES: Commodity[] = [
     geo: "Ethiopian highlands (Harar)",
     lat: 9.5,
     lon: 42,
-    body: "Khat is Ethiopia's second-largest export crop and a living governance tradition in Somali, Yemeni, and Ethiopian communities. Indianapolis has a significant Somali community in the Lawrence Township area for whom qaad sessions are cultural practice — and a federal offense. The UK banned khat in 2014 against its own scientific advisory body's recommendation.",
+    body: "Khat is Ethiopia's second-largest export crop and a living governance tradition in Somali, Yemeni, and Ethiopian communities. Indianapolis has a significant Somali community in the Lawrence Township area for whom qaad sessions are cultural practice and a federal offense. The UK banned khat in 2014 against its own scientific advisory body's recommendation.",
   },
   {
     id: 21,
@@ -211,7 +211,7 @@ export const COMMODITIES: Commodity[] = [
     lat: 39.8,
     lon: -86.2,
     isHome: true,
-    body: "The three-season synthesis episode. The full map of 21 commodities reveals the same pattern across centuries: geography determines what grows, colonial history determines who profits, and political power determines what's legal. Now that you know — what will you do with that knowledge?",
+    body: "The three-season synthesis episode. The full map of 21 commodities reveals the same pattern across centuries: geography determines what grows, colonial history determines who profits, and political power determines what's legal. Now that you know, what will you do with that knowledge?",
   },
 ];
 
