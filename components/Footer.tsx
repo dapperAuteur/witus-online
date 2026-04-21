@@ -81,6 +81,11 @@ export default function Footer() {
                   Overview
                 </Link>
               </li>
+              <li>
+                <Link href="/educators" className={linkClasses}>
+                  For educators
+                </Link>
+              </li>
               {learnSubRoutes.map((route) => (
                 <li key={route.slug}>
                   <Link href={`/learn/${route.slug}`} className={linkClasses}>

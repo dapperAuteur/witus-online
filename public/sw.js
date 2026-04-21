@@ -5,7 +5,7 @@
  *   - Sitemap / robots / API -> network only (bypass cache)
  */
 
-const VERSION = "v4";
+const VERSION = "v5";
 const SHELL_CACHE = `witus-shell-${VERSION}`;
 const RUNTIME_CACHE = `witus-runtime-${VERSION}`;
 
@@ -13,6 +13,7 @@ const PRECACHE_URLS = [
   "/",
   "/offline",
   "/explore",
+  "/educators",
   "/brand/04-orbit-type/favicon.svg",
   "/brand/04-orbit-type/favicon-16.png",
   "/brand/04-orbit-type/favicon-32.png",

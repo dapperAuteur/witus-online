@@ -25,6 +25,16 @@ export const ogEntries: Record<string, OgEntry> = {
     subtitle:
       "21 Better Vice Club episodes across 3 seasons, plotted by origin.",
   },
+  educators: {
+    title: "Pilot BVC in your classroom.",
+    subtitle:
+      "Sample teacher packets plus a pilot program for Geography, Social Studies, Economics, and ELA.",
+  },
+  "educators-feedback": {
+    title: "How did the BVC packet go?",
+    subtitle:
+      "Two minutes of feedback makes the next packet better.",
+  },
   learn: {
     title: "Learn.WitUS.",
     subtitle: "BAM's practitioner-scholar profile.",

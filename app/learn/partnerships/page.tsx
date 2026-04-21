@@ -104,18 +104,26 @@ export default function PartnershipsPage() {
 
       <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-6 mb-6">
         <p className="text-sm font-semibold text-white mb-1">
-          Want to see the full curriculum before deciding?
+          Teacher evaluating BVC for your classroom?
         </p>
-        <p className="text-sm text-slate-400 leading-relaxed mb-2">
-          The episode map shows all 21 Better Vice Club commodities across
-          three seasons. Click any pin for episode details.
+        <p className="text-sm text-slate-400 leading-relaxed mb-3">
+          Download a sample teacher packet or apply to the curriculum
+          pilot on the Educators page.
         </p>
-        <Link
-          href="/explore"
-          className="text-sm font-semibold text-teal-300 hover:text-teal-200 transition-colors focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-300 rounded"
-        >
-          Explore all 21 episodes &rarr;
-        </Link>
+        <div className="flex flex-wrap gap-x-5 gap-y-2">
+          <Link
+            href="/educators"
+            className="text-sm font-semibold text-teal-300 hover:text-teal-200 transition-colors focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-300 rounded"
+          >
+            For educators &rarr;
+          </Link>
+          <Link
+            href="/explore"
+            className="text-sm font-semibold text-teal-300 hover:text-teal-200 transition-colors focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-300 rounded"
+          >
+            Explore the map &rarr;
+          </Link>
+        </div>
       </div>
 
       <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-6">
