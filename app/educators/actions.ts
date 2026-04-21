@@ -158,5 +158,3 @@ export async function pilotSignupAction(
       "Thanks. BAM will follow up within a few days. Check your spam folder if you do not see a reply.",
   };
 }
-
-export const PACKETS_PUBLIC = PACKETS; // re-export so client form can read it
