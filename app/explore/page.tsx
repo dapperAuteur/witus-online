@@ -89,7 +89,7 @@ export default function ExplorePage() {
           </span>
         </a>
         <a
-          href="/learn/partnerships"
+          href="/educators"
           className="flex flex-col min-h-11 p-6 rounded-xl border border-fuchsia-500/30 hover:border-fuchsia-500/60 bg-slate-900/50 transition-colors group focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fuchsia-300"
         >
           <span className="text-xs font-semibold tracking-widest text-fuchsia-300 uppercase mb-2">

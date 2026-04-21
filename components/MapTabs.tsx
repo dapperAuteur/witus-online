@@ -4,8 +4,8 @@
  * MapTabs.tsx
  *
  * Tab wrapper around the two BVC map views:
- *   Tab 1 — Episode Origins (CommodityMap, pin-based, Natural Earth)
- *   Tab 2 — Growing Belts (CommodityBeltMap, latitude bands, Equal Earth)
+ *   Tab 1: Episode Origins (CommodityMap, pin-based, Natural Earth)
+ *   Tab 2: Growing Belts (CommodityBeltMap, latitude bands, Equal Earth)
  *
  * Both maps stay mounted; switching tabs toggles visibility only. This keeps
  * per-map state (season filter, belt toggles) and avoids re-fetching the

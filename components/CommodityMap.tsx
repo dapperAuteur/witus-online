@@ -428,7 +428,7 @@ const CommodityMap: FC = () => {
           { color: "#BA7517", label: "Season 1: Daily Rituals (Eps 1–7)" },
           { color: "#185FA5", label: "Season 2: The Oldest Toast (Eps 8–14)" },
           { color: "#993C1D", label: "Season 3: The Forbidden Leaf (Eps 15–21)" },
-          { color: "#3B6D11", label: "Home base — Indianapolis" },
+          { color: "#3B6D11", label: "Home base: Indianapolis" },
         ].map((item) => (
           <div
             key={item.color}

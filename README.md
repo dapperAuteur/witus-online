@@ -1,10 +1,10 @@
 # WitUS.online
 
-The parent brand platform for the WitUS ecosystem — a philosophy-first site connecting [CentenarianOS](https://centenarianos.com) and [Work.WitUS](https://work.witus.online).
+The parent brand platform for the WitUS ecosystem. It's a philosophy-first site connecting [CentenarianOS](https://centenarianos.com) and [Work.WitUS](https://work.witus.online).
 
 ## About
 
-WitUS.online establishes the brand and philosophy behind the WitUS platform: **Live Long. Work Free.** It serves as the public-facing home for the ecosystem before a user ever logs into either product — the "why" behind both apps.
+WitUS.online establishes the brand and philosophy behind the WitUS platform: **Live Long. Work Free.** It serves as the public-facing home for the ecosystem before a user ever logs into either product. It's the "why" behind both apps.
 
 Operated by B4C LLC / AwesomeWebStore.com. Built by [Brand Anthony McDonald](https://brandanthonymcdonald.com).
 
@@ -71,10 +71,10 @@ witus-online/
 
 ## Design
 
-- **Navy foundation** (`#020617`) with white text — neutral, not product-specific
+- **Navy foundation** (`#020617`) with white text, neutral, not product-specific
 - **Amber** accents for Work.WitUS elements
 - **Fuchsia** accents for CentenarianOS elements
-- Fully static — no database, no auth, no server-side rendering
+- Fully static, no database, no auth, no server-side rendering
 
 ## Deployment
 
@@ -87,4 +87,4 @@ npx vercel --prod
 
 ## License
 
-Proprietary — B4C LLC / AwesomeWebStore.com
+Proprietary B4C LLC / AwesomeWebStore.com

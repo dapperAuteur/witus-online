@@ -9,6 +9,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "",
     "/about",
     "/explore",
+    "/educators",
     "/roadmap",
     "/account",
     "/terms",
@@ -17,7 +18,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     url: `${SITE_URL}${path}`,
     lastModified: now,
     changeFrequency: "monthly" as const,
-    priority: path === "" ? 1.0 : path === "/explore" ? 0.8 : 0.7,
+    priority:
+      path === ""
+        ? 1.0
+        : path === "/explore" || path === "/educators"
+        ? 0.8
+        : 0.7,
   }));
 
   const learnIndex = {
@@ -34,5 +40,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.5,
   }));
 
-  return [...top, learnIndex, ...learnLeaves];
+  const feedback = {
+    url: `${SITE_URL}/educators/feedback`,
+    lastModified: now,
+    changeFrequency: "monthly" as const,
+    priority: 0.5,
+  };
+
+  return [...top, learnIndex, ...learnLeaves, feedback];
 }
