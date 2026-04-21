@@ -83,6 +83,7 @@ export const products: Product[] = [
     accent: "emerald",
     status: "beta",
     external: true,
+    signInHref: "https://fly.witus.online/login",
   },
   {
     slug: "flashlearnai",
@@ -94,6 +95,7 @@ export const products: Product[] = [
     accent: "rose",
     status: "beta",
     external: true,
+    signInHref: "https://flashlearnai.witus.online/login",
   },
   {
     slug: "learn-witus",
@@ -105,6 +107,10 @@ export const products: Product[] = [
     accent: "teal",
     status: "live",
     external: true,
+    // Academy lives inside CentenarianOS — sign-in is the same account as the
+    // CentenarianOS tile, but we list it here too so teachers looking for the
+    // Academy find a door.
+    signInHref: "https://centenarianos.com/login",
   },
   {
     slug: "awesomewebstore",
@@ -116,5 +122,8 @@ export const products: Product[] = [
     accent: "lime",
     status: "live",
     external: true,
+    // Commerce checkout, not a WitUS account. Linked to the store homepage
+    // where returning customers can view orders.
+    signInHref: "https://awesomewebstore.com",
   },
 ];
