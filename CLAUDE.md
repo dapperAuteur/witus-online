@@ -12,6 +12,7 @@ When a new product joins the WitUS ecosystem (a new app, sub-site, or shared inf
 
 1. **Add a CLAUDE.md to the new repo** that opens with the same "Ecosystem repo identity" warning as above (the bam-landing-page / bam-portfolio note). This is a one-paragraph paste; the same text lives in every other ecosystem repo. The note pre-empts a recurring identity mistake — every new repo gets it on day one.
 2. **Add the operator-task rule below** to the new repo's CLAUDE.md too — same paragraph as in every other ecosystem repo.
+3. **Add the branch-hygiene rule below** to the new repo's CLAUDE.md — the short pointer version that names both halves of the rule (Claude branches/commits/pushes only; BAM merges between sessions) and points back here for the full text.
 3. **Update this list** (the witus repo's CLAUDE.md) so the new product is named in the ecosystem identity section if it has a name that's confusable with anything else.
 4. **Add the new product to `plans/ecosystem/README.md`** product index in this repo.
 5. **Update [the consolidated playbook ebook](plans/playbook/2026-04-27-witus-commercial-playbook.md)** §0 Master Source Index and §9 Pre-Launch Features so the new product's launch-prep doc is linked.
@@ -70,3 +71,34 @@ The **Blocks** column is the column BAM scans to triage the queue. Every row mus
 ### Why this rule exists
 
 Without it, Claude proposes work that silently depends on BAM having done a dashboard step, and BAM has no central queue to scan. The bam-landing-page launch came within reach of shipping `/hire` and `/partner` forms that would 401 on every submission because the HMAC secret + Inbox slug registration were never written down as user tasks. The user-tasks queue is the single artifact BAM scans before each session to know what's blocking what — if it isn't there, it doesn't get done in time.
+
+---
+
+## Branch-hygiene rule — BAM merges, and BAM merges between sessions
+
+In force across **every** ecosystem repo. Two halves to the rule:
+
+### Half 1 — Claude branches, commits, pushes; BAM merges.
+
+Anytime Claude is about to make a code change, the contract is **branch → commit → push → stop.** Never `git checkout main && git merge`. Never `git push --force` to a shared branch. After pushing, hand back the branch name + a one-line summary and stop.
+
+- Before any `git commit`, run `git branch --show-current`. If it is `main`, branch first (`feat/`, `fix/`, `chore/`, etc.).
+- Re-check the current branch **before every commit**, not just at branch creation. (See Half 2 for why this matters mid-session.)
+- After `git commit`, push with `git push -u origin <branch>` on the first push; plain `git push` thereafter.
+- The only exception: if BAM explicitly says "merge X into main" or "I'm not going to merge this myself," that one-off is authorized. The default stays hands-off.
+
+### Half 2 — BAM merges committed branches between sessions by default.
+
+When a session ends with one or more pushed feature branches, BAM merges them via the GitHub UI before starting the next session, unless explicitly told otherwise. This means:
+
+- **At session start,** assume any prior session's pushed branches are already merged into `main` and the local checkout is fresh-from-main. Run `git status` + `git log --oneline -5` first; don't build follow-up work on a stale branch from the previous session without checking.
+- **Mid-session, after a push,** BAM may merge in a separate window. The local checkout may fast-forward to `main` quietly. **This is the trap.** If you commit again without re-checking the current branch, you can land code directly on `main` by accident, bypassing the merge gate. Re-check `git branch --show-current` before every commit, not just at the start of work.
+- **If you need a continuous branch across multiple commits in one session,** keep working on it locally and push at the end. Don't push partial work expecting the branch to stay un-merged.
+
+### Why this rule exists
+
+The recurring failure mode: Claude pushes a feature branch, BAM merges via GitHub UI mid-session (a few-second action that's invisible from the editor), Claude's local `main` fast-forwards, Claude makes follow-up edits and commits, the commit lands directly on `main`. The work itself is fine but the merge gate is bypassed and the change skips review. Re-checking `git branch --show-current` before every commit prevents the silent-fast-forward trap.
+
+### Onboarding action when adding a new ecosystem repo
+
+Per the "Ecosystem onboarding rule" above, every new repo's `CLAUDE.md` opens with the identity warning and the operator-task rule. **Add this branch-hygiene rule too** — same shape as the operator-task paragraph: short summary in the new repo's CLAUDE.md, full text here.
