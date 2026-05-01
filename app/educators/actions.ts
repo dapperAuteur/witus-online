@@ -1,6 +1,8 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { after } from "next/server";
+import { sendToInbox } from "@/lib/inbox-sender";
 import {
   BVC_SUBMISSIONS_EMAIL,
   bvcFromAddress,
@@ -151,6 +153,41 @@ export async function pilotSignupAction(
       error: `Submission did not reach BAM: ${result.detail ?? "unknown error"}. Please try again or email bvc.witus.submissions@witus.online directly.`,
     };
   }
+
+  after(async () => {
+    const inbox = await sendToInbox({
+      inboxUrl:   process.env.INBOX_INGEST_URL!,
+      sourceSlug: process.env.INBOX_SOURCE_SLUG!,
+      hmacSecret: process.env.INBOX_INGEST_SECRET!,
+      submission: {
+        form_type: "bvc-pilot-signup",
+        priority: "high",
+        submitter_email: email,
+        submitter_name: name,
+        payload: {
+          role,
+          school,
+          district,
+          country,
+          subjects,
+          grades,
+          "years-teaching": years,
+          timeline,
+          "students-per-class": students,
+          "how-heard": howHeard,
+          "commodity-interests": interests,
+          other,
+        },
+      },
+    });
+    if (!inbox.ok) {
+      console.error("[inbox-sender] failed", {
+        source: process.env.INBOX_SOURCE_SLUG,
+        form_type: "bvc-pilot-signup",
+        http_status: inbox.status,
+      });
+    }
+  });
 
   if (result.detail === "dev-log") {
     return {

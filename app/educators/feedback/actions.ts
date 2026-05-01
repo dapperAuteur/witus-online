@@ -1,5 +1,7 @@
 "use server";
 
+import { after } from "next/server";
+import { sendToInbox } from "@/lib/inbox-sender";
 import {
   BVC_SUBMISSIONS_EMAIL,
   bvcFromAddress,
@@ -110,6 +112,38 @@ export async function feedbackAction(
       error: `Submission did not reach BAM: ${result.detail ?? "unknown error"}. Try again in a minute or email bvc.witus.submissions@witus.online directly.`,
     };
   }
+
+  after(async () => {
+    const inbox = await sendToInbox({
+      inboxUrl:   process.env.INBOX_INGEST_URL!,
+      sourceSlug: process.env.INBOX_SOURCE_SLUG!,
+      hmacSecret: process.env.INBOX_INGEST_SECRET!,
+      submission: {
+        form_type: "bvc-feedback",
+        priority: "normal",
+        ...(email && { submitter_email: email }),
+        ...(name && { submitter_name: name }),
+        payload: {
+          packet: packetId,
+          "subject-taught": subjectTaught,
+          grades,
+          country,
+          students,
+          "what-worked": whatWorked,
+          "what-didnt": whatDidnt,
+          recommend,
+          rating,
+        },
+      },
+    });
+    if (!inbox.ok) {
+      console.error("[inbox-sender] failed", {
+        source: process.env.INBOX_SOURCE_SLUG,
+        form_type: "bvc-feedback",
+        http_status: inbox.status,
+      });
+    }
+  });
 
   if (result.detail === "dev-log") {
     return {
