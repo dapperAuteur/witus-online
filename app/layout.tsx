@@ -4,6 +4,7 @@ import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ServiceWorkerRegister from "@/components/ServiceWorkerRegister";
+import { Providers } from "@/app/providers";
 import { SITE_URL } from "@/lib/products";
 
 const geist = Geist({
@@ -77,11 +78,13 @@ export default function RootLayout({
         >
           Skip to content
         </a>
-        <Header />
-        <main id="main" className="flex-1">
-          {children}
-        </main>
-        <Footer />
+        <Providers>
+          <Header />
+          <main id="main" className="flex-1">
+            {children}
+          </main>
+          <Footer />
+        </Providers>
         <ServiceWorkerRegister />
       </body>
     </html>
