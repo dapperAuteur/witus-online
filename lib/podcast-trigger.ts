@@ -30,7 +30,8 @@ export interface PodcastEpisodeTriggerArgs {
   show: PodcastShow;
   triggerUserEmail: string | null | undefined;
   episodeId: string;
-  episodeNumber: number;
+  /** May be null for episodes imported from RSS without <itunes:episode>. */
+  episodeNumber: number | null;
   title: string;
   showNotesExcerpt: string;
   artworkUrl: string;
@@ -86,8 +87,12 @@ function buildLongFormCaption(
   args: PodcastEpisodeTriggerArgs,
   productName: string
 ): string {
+  const header =
+    args.episodeNumber != null
+      ? `New ${productName} episode (#${args.episodeNumber}): "${args.title}"`
+      : `New ${productName} episode: "${args.title}"`;
   return [
-    `New ${productName} episode (#${args.episodeNumber}): "${args.title}"`,
+    header,
     "",
     args.showNotesExcerpt,
     "",

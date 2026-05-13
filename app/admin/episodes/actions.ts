@@ -15,7 +15,10 @@ const ShowSchema = z.enum(["wfc", "aamsaz"]);
 
 const EpisodeFormSchema = z.object({
   show: ShowSchema,
-  episodeNumber: z.coerce.number().int().positive(),
+  episodeNumber: z
+    .union([z.coerce.number().int().positive(), z.literal("").transform(() => null)])
+    .nullable()
+    .default(null),
   title: z.string().min(1).max(300),
   showNotes: z.string().min(1).max(20000),
   showNotesExcerpt: z.string().min(1).max(600),
@@ -109,12 +112,8 @@ export async function createEpisodeAction(
       })
       .returning({ id: episodes.id });
     newId = inserted[0]!.id;
-  } catch (err: unknown) {
-    const message =
-      err instanceof Error && err.message.includes("episode_show_number_unique")
-        ? `Episode #${result.episodeNumber} already exists for ${result.show}.`
-        : "Could not create episode.";
-    return { status: "error", error: message };
+  } catch {
+    return { status: "error", error: "Could not create episode." };
   }
 
   revalidatePath("/admin/episodes");
@@ -145,12 +144,8 @@ export async function updateEpisodeAction(
         updatedAt: new Date(),
       })
       .where(eq(episodes.id, id));
-  } catch (err: unknown) {
-    const message =
-      err instanceof Error && err.message.includes("episode_show_number_unique")
-        ? `Episode #${result.episodeNumber} already exists for ${result.show}.`
-        : "Could not update episode.";
-    return { status: "error", error: message };
+  } catch {
+    return { status: "error", error: "Could not update episode." };
   }
 
   revalidatePath("/admin/episodes");

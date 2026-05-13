@@ -70,7 +70,10 @@ export const episodes = pgTable(
   {
     id: uuid("id").defaultRandom().primaryKey(),
     show: podcastShow("show").notNull(),
-    episodeNumber: integer("episode_number").notNull(),
+    // Nullable: Disctopia's <itunes:episode> isn't unique across sub-series
+    // within one podcast (BVC, NASM, All-the-Spoilers all number from 1).
+    // Manually-created episodes still set a number via the create form.
+    episodeNumber: integer("episode_number"),
     title: text("title").notNull(),
     showNotes: text("show_notes").notNull(),
     showNotesExcerpt: text("show_notes_excerpt").notNull(),
@@ -78,6 +81,10 @@ export const episodes = pgTable(
     disctopiaUrl: text("disctopia_url").notNull(),
     status: episodeStatus("status").notNull().default("draft"),
     publishedAt: timestamp("published_at", { withTimezone: true }),
+    // Set by the RSS importer; null for manually-created episodes. Unique
+    // across all rows when not null — RSS <guid> is the only reliable
+    // per-episode identifier from Disctopia.
+    disctopiaGuid: text("disctopia_guid"),
     createdBy: text("created_by")
       .notNull()
       .references(() => users.id, { onDelete: "restrict" }),
@@ -88,5 +95,7 @@ export const episodes = pgTable(
       .notNull()
       .defaultNow(),
   },
-  (t) => [unique("episode_show_number_unique").on(t.show, t.episodeNumber)]
+  (t) => [
+    unique("episode_disctopia_guid_unique").on(t.disctopiaGuid),
+  ]
 );
