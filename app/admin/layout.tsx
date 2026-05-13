@@ -3,6 +3,7 @@ import Link from "next/link";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { getEnv } from "@/lib/env";
+import { SignOutButton } from "./SignOutButton";
 
 export const dynamic = "force-dynamic";
 
@@ -31,6 +32,9 @@ export default async function AdminLayout({
             <span className="font-mono">{session.user.email}</span>, which is
             not the admin account.
           </p>
+          <div className="pt-2">
+            <SignOutButton />
+          </div>
         </div>
       </main>
     );
@@ -60,9 +64,12 @@ export default async function AdminLayout({
               Invitations
             </Link>
           </div>
-          <span className="text-xs text-slate-500">
-            {session.user.email}
-          </span>
+          <div className="flex items-center gap-3">
+            <span className="text-xs text-slate-500">
+              {session.user.email}
+            </span>
+            <SignOutButton />
+          </div>
         </div>
       </nav>
       {children}

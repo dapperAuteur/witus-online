@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { HeaderAuth } from "@/components/HeaderAuth";
 
 export default function Header() {
   return (
@@ -42,12 +43,7 @@ export default function Header() {
           >
             Roadmap
           </Link>
-          <Link
-            href="/account"
-            className="inline-flex items-center min-h-11 px-3 hover:text-white transition-colors focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white rounded"
-          >
-            Sign in
-          </Link>
+          <HeaderAuth />
         </nav>
       </div>
     </header>

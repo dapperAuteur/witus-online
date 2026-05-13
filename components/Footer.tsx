@@ -97,7 +97,7 @@ export default function Footer() {
               </li>
               <li>
                 <Link href="/account" className={linkClasses}>
-                  Sign in
+                  Apps
                 </Link>
               </li>
             </ul>
