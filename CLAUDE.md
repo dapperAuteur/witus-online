@@ -122,3 +122,42 @@ The principle: small branches for *authoring* (one concern per change, easy to r
 ### Onboarding action when adding a new ecosystem repo
 
 Per the "Ecosystem onboarding rule" above, every new repo's `CLAUDE.md` opens with the identity warning and the operator-task rule. **Add this branch-hygiene rule too** — same shape as the operator-task paragraph: short summary of all three halves in the new repo's CLAUDE.md, full text here.
+
+---
+
+## Citation rule — APA 7 in-line + References for all curriculum and professional/business writing
+
+All **curriculum content** (course materials, episode outlines, teacher packets, lesson plans), all **professional writing** (white papers, partnership briefs, partner-facing decks), and all **business writing** (proposals, grant applications, sponsor pitches, investor materials) ecosystem-wide uses **APA 7 in-line citations** with a `## References` section at the end of each document.
+
+This convention was established by the BetterViceClub (BVC) curriculum at CentenarianOS Academy. Sibling curricula and writing must match for cross-product consistency, educator credibility, and grant-reader expectations.
+
+### How to apply
+
+- **In-line parenthetical:** `(Author, Year)` for paraphrases; `(Author, Year, p. X)` for direct quotes.
+- **In-line narrative:** `Author (Year)` when the author's name is the sentence subject; `Author (Year, p. X)` for a quote.
+- **Organization as author, first reference:** `(Centers for Disease Control and Prevention [CDC], 2024)`. Subsequent references: `(CDC, 2024)`.
+- **Multiple authors:** two — `(Smith & Jones, 2020)`. Three or more — `(Smith et al., 2020)`.
+- **Undated source:** `(Author, n.d.)`. Common for internal documents and undated webpages.
+- **Every file with citations ends with a `## References` section** in alphabetical order, hanging-indent format. Standard APA 7 reference entries for each source cited.
+- **Vocabulary CSVs and similar tabular sources:** the source column may use the shortened parenthetical form (e.g., `Park Tool, 2020`) with the full reference appearing in the packet's main `mechanics.md` (or wherever the source first appears in long-form prose).
+- **One reference list per file** is the default. For tightly-coupled files (a packet's `mechanics.md` + `engineering.md` + `pedagogy.md` + `community.md`), each file carries its own `## References` listing only the sources cited *in that file*. Some duplication across sibling files is acceptable.
+
+### When NOT to use APA in-line
+
+These categories are out of scope for the rule:
+
+- Code comments, code-level documentation (READMEs, ARCHITECTURE.md), engineering decision logs.
+- Internal Slack / Discord / SMS / email exchanges.
+- `plans/user-tasks/*` files and other operator-facing working notes.
+- `BACKLOG.md`-style triage files.
+- Conversation transcripts.
+
+The rule applies to anything that's *publishable*, *teachable*, or *partner-facing* — content that an outside reader (educator, grantmaker, partner organization) will judge for rigor and trustworthiness.
+
+### Why this rule exists
+
+The BVC curriculum was built with academic-grade citation discipline because a fraction of its eventual audience is teachers who will only adopt material that meets their professional standards. The same is true of every ecosystem curriculum (RideWitUS apron-tier content, Wanderlearn 360° lessons, FlashLearnAI deck commentary). It is also true of grant applications and sponsor materials: foundations and corporate sponsors evaluate writing partly on its scholarly rigor. Loose attribution loses both classrooms and dollars; in-line APA earns both.
+
+### Onboarding action when adding a new ecosystem repo or new curriculum product
+
+Per the "Ecosystem onboarding rule" above, every new repo's `CLAUDE.md` includes the identity warning, the operator-task rule, and the branch-hygiene rule. **Add a short pointer to this citation rule** as well — one paragraph in the new repo's CLAUDE.md that names the rule and points back here for the full text.
