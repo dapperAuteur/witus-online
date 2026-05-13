@@ -75,18 +75,34 @@ const accentStyles: Record<Accent, AccentStyle> = {
     dot: "bg-lime-400",
     focus: "focus-visible:outline-lime-300",
   },
+  slate: {
+    border: "border-slate-500/30 hover:border-slate-500/60",
+    badge: "bg-slate-500/10 text-slate-300 border border-slate-500/20",
+    button: "bg-slate-500 hover:bg-slate-400 text-slate-950",
+    dot: "bg-slate-400",
+    focus: "focus-visible:outline-slate-300",
+  },
+  cyan: {
+    border: "border-cyan-500/30 hover:border-cyan-500/60",
+    badge: "bg-cyan-500/10 text-cyan-300 border border-cyan-500/20",
+    button: "bg-cyan-500 hover:bg-cyan-400 text-slate-950",
+    dot: "bg-cyan-400",
+    focus: "focus-visible:outline-cyan-300",
+  },
 };
 
 const statusLabel: Record<ProductStatus, string> = {
   live: "Live",
   beta: "Beta",
   "coming-soon": "Coming soon",
+  infrastructure: "Infrastructure",
 };
 
 const statusBadge: Record<ProductStatus, string> = {
   live: "bg-slate-800 text-slate-300 border border-slate-700",
   beta: "bg-amber-500/10 text-amber-300 border border-amber-500/20",
   "coming-soon": "bg-slate-900 text-slate-400 border border-slate-800",
+  infrastructure: "bg-slate-900 text-slate-400 border border-slate-800",
 };
 
 export default function ProductCard({
