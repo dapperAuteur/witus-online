@@ -44,10 +44,16 @@ const organizationJsonLd = {
   ],
 };
 
+// Marketing-facing list: hide operator infrastructure (inbox/outbox/witus.online
+// hub admin). Those live on /account + Footer where the audience is operators.
+const marketingProducts = products.filter(
+  (p) => p.status !== "infrastructure"
+);
+
 const itemListJsonLd = {
   "@context": "https://schema.org",
   "@type": "ItemList",
-  itemListElement: products.map((product, index) => ({
+  itemListElement: marketingProducts.map((product, index) => ({
     "@type": "ListItem",
     position: index + 1,
     url: product.href,
@@ -143,7 +149,7 @@ export default function HomePage() {
           The Platform
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {products.map((product) => (
+          {marketingProducts.map((product) => (
             <ProductCard
               key={product.slug}
               name={product.name}

@@ -1,4 +1,4 @@
-export type ProductStatus = "live" | "beta" | "coming-soon";
+export type ProductStatus = "live" | "beta" | "coming-soon" | "infrastructure";
 
 export type Accent =
   | "amber"
@@ -8,7 +8,9 @@ export type Accent =
   | "emerald"
   | "rose"
   | "teal"
-  | "lime";
+  | "lime"
+  | "slate"
+  | "cyan";
 
 export interface Product {
   slug: string;
@@ -33,9 +35,33 @@ export const products: Product[] = [
       "The WitUS apex site — operator admin for podcast publishing and shared ecosystem infrastructure.",
     href: SITE_URL,
     accent: "teal",
-    status: "live",
+    status: "infrastructure",
     external: false,
     signInHref: "/auth/sign-in",
+  },
+  {
+    slug: "witus-inbox",
+    name: "WitUS Inbox",
+    tagline: "Form-submission triage for the ecosystem",
+    description:
+      "Receives signed webhook submissions from every WitUS form (pilot signups, educator feedback, partner inquiries). One operator inbox.",
+    href: "https://inbox.witus.online",
+    accent: "violet",
+    status: "infrastructure",
+    external: true,
+    signInHref: "https://inbox.witus.online/auth/sign-in",
+  },
+  {
+    slug: "witus-outbox",
+    name: "WitUS Outbox",
+    tagline: "Social-publishing drafts for the ecosystem",
+    description:
+      "Receives signed webhooks from publisher apps (podcast publish, episode events) and lands drafts for operator review before scheduling to social.",
+    href: "https://outbox.witus.online",
+    accent: "cyan",
+    status: "infrastructure",
+    external: true,
+    signInHref: "https://outbox.witus.online/auth/sign-in",
   },
   {
     slug: "centenarianos",

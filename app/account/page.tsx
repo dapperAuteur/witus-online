@@ -70,6 +70,16 @@ const tileStyles: Record<Accent, { border: string; dot: string; focus: string }>
     dot: "bg-lime-400",
     focus: "focus-visible:outline-lime-300",
   },
+  slate: {
+    border: "border-slate-500/30 hover:border-slate-500/60",
+    dot: "bg-slate-400",
+    focus: "focus-visible:outline-slate-300",
+  },
+  cyan: {
+    border: "border-cyan-500/30 hover:border-cyan-500/60",
+    dot: "bg-cyan-400",
+    focus: "focus-visible:outline-cyan-300",
+  },
 };
 
 const faqs = [
@@ -98,8 +108,8 @@ const faqs = [
     a: "Use the password-reset flow on the app you're signing into. Each app's reset is independent today.",
   },
   {
-    q: "Do all eight tiles work the same way?",
-    a: "Mostly. Seven of the eight lead to a standalone sign-in page on their own domain. AwesomeWebStore is a commerce site, so its tile opens the store homepage where order history and checkout live. Learn.WitUS and CentenarianOS share an account today since the Academy runs on CentenarianOS, so both tiles point at the same login.",
+    q: "Do all the tiles work the same way?",
+    a: "Mostly. Each product tile leads to a standalone sign-in page on its own domain. AwesomeWebStore is a commerce site, so its tile opens the store homepage where order history and checkout live. Learn.WitUS and CentenarianOS share an account today since the Academy runs on CentenarianOS, so both tiles point at the same login. The Infrastructure tiles (WitUS hub admin, WitUS Inbox, WitUS Outbox) are operator-only — sign-in is restricted to the ecosystem admin.",
   },
 ];
 

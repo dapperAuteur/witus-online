@@ -30,17 +30,44 @@ export default function Footer() {
           <div>
             <p className="text-white font-medium mb-2">Products</p>
             <ul className="space-y-1">
-              {products.map((product) =>
-                product.status === "coming-soon" ? (
-                  <li key={product.slug} className="text-slate-400 italic">
-                    {product.name}
-                  </li>
-                ) : (
+              {products
+                .filter((p) => p.status !== "infrastructure")
+                .map((product) =>
+                  product.status === "coming-soon" ? (
+                    <li key={product.slug} className="text-slate-400 italic">
+                      {product.name}
+                    </li>
+                  ) : (
+                    <li key={product.slug}>
+                      <a
+                        href={product.href}
+                        target={product.external ? "_blank" : undefined}
+                        rel={
+                          product.external ? "noopener noreferrer" : undefined
+                        }
+                        className={linkClasses}
+                      >
+                        {product.name}
+                        {product.external && (
+                          <span className="sr-only"> (opens in new tab)</span>
+                        )}
+                      </a>
+                    </li>
+                  )
+                )}
+            </ul>
+            <p className="text-white font-medium mt-4 mb-2">Infrastructure</p>
+            <ul className="space-y-1">
+              {products
+                .filter((p) => p.status === "infrastructure")
+                .map((product) => (
                   <li key={product.slug}>
                     <a
                       href={product.href}
                       target={product.external ? "_blank" : undefined}
-                      rel={product.external ? "noopener noreferrer" : undefined}
+                      rel={
+                        product.external ? "noopener noreferrer" : undefined
+                      }
                       className={linkClasses}
                     >
                       {product.name}
@@ -49,8 +76,7 @@ export default function Footer() {
                       )}
                     </a>
                   </li>
-                )
-              )}
+                ))}
             </ul>
           </div>
           <div>
