@@ -99,3 +99,21 @@ export const episodes = pgTable(
     unique("episode_disctopia_guid_unique").on(t.disctopiaGuid),
   ]
 );
+
+// Invitations gate sign-in. Auth flow: signIn callback allows session.user.email
+// when it === ADMIN_EMAIL OR when an active (non-revoked, non-expired)
+// invitation matches. acceptedAt is stamped on first successful sign-in so the
+// admin UI can distinguish pending vs. accepted invites.
+export const invitations = pgTable("invitation", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  email: text("email").notNull(),
+  invitedBy: text("invited_by")
+    .notNull()
+    .references(() => users.id, { onDelete: "restrict" }),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+  acceptedAt: timestamp("accepted_at", { withTimezone: true }),
+  revokedAt: timestamp("revoked_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
