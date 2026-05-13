@@ -53,6 +53,12 @@ export default async function AdminLayout({
             >
               Episodes
             </Link>
+            <Link
+              href="/admin/invitations"
+              className="text-slate-300 hover:text-teal-300"
+            >
+              Invitations
+            </Link>
           </div>
           <span className="text-xs text-slate-500">
             {session.user.email}
