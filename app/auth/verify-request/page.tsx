@@ -1,0 +1,29 @@
+export default function VerifyRequestPage() {
+  return (
+    <main
+      id="main"
+      className="flex flex-1 items-center justify-center px-4 py-10"
+    >
+      <div className="w-full max-w-sm space-y-4 text-center">
+        <h1 className="text-2xl font-semibold tracking-tight text-slate-100">
+          Check your email
+        </h1>
+        <p className="text-sm text-slate-400">
+          A single-use sign-in link is on its way. Open it on the same device to
+          finish signing in.
+        </p>
+        <p className="text-xs text-slate-500">
+          The link expires in a few minutes. If it doesn&rsquo;t arrive, check
+          spam, then{" "}
+          <a
+            href="/auth/sign-in"
+            className="underline underline-offset-4 hover:text-teal-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-300"
+          >
+            request a new one
+          </a>
+          .
+        </p>
+      </div>
+    </main>
+  );
+}
