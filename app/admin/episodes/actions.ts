@@ -9,6 +9,7 @@ import { authOptions } from "@/lib/auth";
 import { getEnv } from "@/lib/env";
 import { getDb } from "@/db";
 import { episodes, users } from "@/db/schema";
+import { firePodcastEpisodePublished } from "@/lib/podcast-trigger";
 
 const ShowSchema = z.enum(["wfc", "aamsaz"]);
 
@@ -50,6 +51,16 @@ async function requireAdminUserId(): Promise<string> {
     throw new Error("admin user row not minted — sign in via magic link first");
   }
   return existing.id;
+}
+
+async function requireAdminEmail(): Promise<string> {
+  const session = await getServerSession(authOptions);
+  const email = session?.user?.email?.toLowerCase();
+  const adminEmail = getEnv().ADMIN_EMAIL.toLowerCase();
+  if (!email || email !== adminEmail) {
+    throw new Error("not authorized");
+  }
+  return email;
 }
 
 function readForm(formData: FormData): FormState | EpisodeFormValues {
@@ -148,15 +159,31 @@ export async function updateEpisodeAction(
 }
 
 export async function publishEpisodeAction(id: string): Promise<void> {
-  await requireAdminUserId();
+  const triggerUserEmail = await requireAdminEmail();
   const db = getDb();
 
-  // Slice B: persist status + publishedAt only. Slice C adds firePodcastEpisodePublished()
-  // AFTER this update succeeds so re-publish is idempotent on (source, external_ref).
-  await db
+  const [updated] = await db
     .update(episodes)
     .set({ status: "published", publishedAt: new Date(), updatedAt: new Date() })
-    .where(eq(episodes.id, id));
+    .where(eq(episodes.id, id))
+    .returning();
+
+  if (!updated) return;
+
+  // Fire AFTER the DB write succeeds. External_ref is keyed on episode.id so
+  // a re-publish (or re-fire from edit) is idempotent at the outbox receiver.
+  // The trigger is fire-and-forget via next/server's after() — does not block
+  // the user-facing redirect.
+  firePodcastEpisodePublished({
+    show: updated.show,
+    triggerUserEmail,
+    episodeId: updated.id,
+    episodeNumber: updated.episodeNumber,
+    title: updated.title,
+    showNotesExcerpt: updated.showNotesExcerpt,
+    artworkUrl: updated.artworkUrl,
+    disctopiaUrl: updated.disctopiaUrl,
+  });
 
   revalidatePath("/admin/episodes");
   revalidatePath(`/admin/episodes/${id}`);
