@@ -152,14 +152,21 @@ export default function AccountPage() {
         >
           {signInProducts.map((product) => {
             const styles = tileStyles[product.accent];
+            const sameSite = !product.external;
+            const hostLabel = sameSite
+              ? new URL(SITE_URL).host
+              : new URL(product.signInHref!).host;
+            const ariaLabel = sameSite
+              ? `Sign in to ${product.name}`
+              : `Sign in to ${product.name} (opens in new tab)`;
             return (
               <a
                 key={product.slug}
                 role="listitem"
                 href={product.signInHref}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label={`Sign in to ${product.name} (opens in new tab)`}
+                target={sameSite ? undefined : "_blank"}
+                rel={sameSite ? undefined : "noopener noreferrer"}
+                aria-label={ariaLabel}
                 className={`flex flex-col min-h-11 p-6 rounded-xl border bg-slate-900/50 transition-colors group focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 ${styles.border} ${styles.focus}`}
               >
                 <span className="flex items-center gap-2 mb-2">
@@ -172,7 +179,7 @@ export default function AccountPage() {
                   </span>
                 </span>
                 <span className="text-xs text-slate-400 group-hover:text-slate-400 transition-colors">
-                  Sign in at {new URL(product.signInHref!).host} &rarr;
+                  Sign in at {hostLabel} &rarr;
                 </span>
               </a>
             );
