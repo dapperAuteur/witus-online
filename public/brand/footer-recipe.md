@@ -68,7 +68,7 @@ const SIBLING_PRODUCTS: SiblingProduct[] = [
 
 // [swap] — the only block that changes per app.
 const linkClasses =
-  "inline-flex items-center min-h-[28px] text-gray-600 hover:text-sky-700 hover:underline transition-colors focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600 rounded";
+  "inline-flex items-center min-h-7 text-gray-600 hover:text-sky-700 hover:underline transition-colors focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600 rounded";
 
 export function SiteFooter() {
   const year = new Date().getFullYear();
@@ -254,8 +254,10 @@ For each app: existing palette · suggested logo variant · the swap pattern · 
 
 ### witus.online — `witus.online`
 
-- **Status:** the parent brand site itself. **Doesn't render the ecosystem footer** — it IS the ecosystem brand site. Sibling apps link to it; it doesn't need to link to itself.
-- **Footer here:** existing site footer (philosophy-first, amber/fuchsia accents) stays. The brand package documents what other apps reference, not what this app shows.
+- **Status:** the parent brand site. **Renders the Rise Wellness callout** above its existing footer grid (policy updated 2026-05-13 — mental-health resource visibility takes precedence over the earlier "parent brand doesn't repeat ecosystem links" carve-out). The full ecosystem footer is NOT used here — only the Rise Wellness callout is inlined above the apex site's custom 4-column footer.
+- **Palette:** dark theme (`bg-slate-950` body), teal accent (`border-teal-500/30 bg-teal-500/5` for the callout container).
+- **Logo variant:** N/A — apex site has its own wordmark in the header; footer brand attribution is "A B4C LLC / AwesomeWebStore.com brand" text only.
+- **Existing footer:** [`gemini/witus/components/Footer.tsx`](../../components/Footer.tsx) — Rise Wellness callout added 2026-05-13. App-name token in the disclaimer is "WitUS" (not "WitUS.online" or other variants).
 
 ---
 
@@ -317,7 +319,7 @@ The container className is the only swap target. Everything inside the section s
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1 pt-2 text-xs">
         <a
           href="tel:+13179650299"
-          className="inline-flex items-center min-h-[28px] font-medium text-sky-700 hover:underline focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600 rounded"
+          className="inline-flex items-center min-h-7 font-medium text-sky-700 hover:underline focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600 rounded"
           /* [swap] accent + focus color */
         >
           317-965-0299
@@ -327,7 +329,7 @@ The container className is the only swap target. Everything inside the section s
           href="https://risewellnessofindiana.com"
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center min-h-[28px] font-medium text-sky-700 hover:underline focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600 rounded"
+          className="inline-flex items-center min-h-7 font-medium text-sky-700 hover:underline focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600 rounded"
         >
           risewellnessofindiana.com
           <span className="sr-only"> (opens in new tab)</span>
@@ -337,7 +339,7 @@ The container className is the only swap target. Everything inside the section s
           href="https://www.centenarianos.com/safety#rise-wellness"
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center min-h-[28px] font-medium text-sky-700 hover:underline focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600 rounded"
+          className="inline-flex items-center min-h-7 font-medium text-sky-700 hover:underline focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600 rounded"
         >
           Full safety page
           <span className="sr-only"> on centenarianos.com (opens in new tab)</span>
