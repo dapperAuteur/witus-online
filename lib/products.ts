@@ -26,6 +26,18 @@ export const SITE_URL = "https://witus.online";
 
 export const products: Product[] = [
   {
+    slug: "witus-online",
+    name: "WitUS",
+    tagline: "The ecosystem hub",
+    description:
+      "The WitUS apex site — operator admin for podcast publishing and shared ecosystem infrastructure.",
+    href: SITE_URL,
+    accent: "teal",
+    status: "live",
+    external: false,
+    signInHref: "/auth/sign-in",
+  },
+  {
     slug: "centenarianos",
     name: "CentenarianOS",
     tagline: "The multi-decade personal operating system",
