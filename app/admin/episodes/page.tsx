@@ -41,16 +41,24 @@ export default async function EpisodesListPage() {
 
   return (
     <main id="main" className="mx-auto max-w-5xl flex-1 px-4 py-8">
-      <header className="mb-6 flex items-center justify-between">
+      <header className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-semibold tracking-tight text-slate-100">
           Episodes
         </h1>
-        <Link
-          href="/admin/episodes/new"
-          className="inline-flex items-center min-h-11 px-4 py-2 rounded-lg bg-teal-500 hover:bg-teal-400 text-slate-950 text-sm font-semibold transition-colors focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-300"
-        >
-          New episode
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/admin/episodes/import"
+            className="inline-flex items-center min-h-11 px-4 py-2 rounded-lg border border-slate-700 hover:border-teal-400 hover:text-teal-300 text-slate-100 text-sm font-semibold transition-colors focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-300"
+          >
+            Import from RSS
+          </Link>
+          <Link
+            href="/admin/episodes/new"
+            className="inline-flex items-center min-h-11 px-4 py-2 rounded-lg bg-teal-500 hover:bg-teal-400 text-slate-950 text-sm font-semibold transition-colors focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-300"
+          >
+            New episode
+          </Link>
+        </div>
       </header>
 
       <div className="space-y-10">
@@ -63,7 +71,7 @@ export default async function EpisodesListPage() {
 
 type Row = {
   id: string;
-  episodeNumber: number;
+  episodeNumber: number | null;
   title: string;
   status: "draft" | "published";
   publishedAt: Date | null;
@@ -83,7 +91,7 @@ function ShowSection({ show, rows }: { show: "wfc" | "aamsaz"; rows: Row[] }) {
           {rows.map((row) => (
             <li key={row.id} className="flex items-center gap-4 px-4 py-3">
               <span className="font-mono text-xs text-slate-500 w-10 shrink-0">
-                #{row.episodeNumber}
+                {row.episodeNumber != null ? `#${row.episodeNumber}` : "—"}
               </span>
               <div className="flex-1 min-w-0">
                 <Link

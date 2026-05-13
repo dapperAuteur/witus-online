@@ -16,7 +16,7 @@ const errorClass = "text-xs text-red-400";
 
 export type EpisodeDefaults = {
   show?: "wfc" | "aamsaz";
-  episodeNumber?: number;
+  episodeNumber?: number | null;
   title?: string;
   showNotes?: string;
   showNotesExcerpt?: string;
@@ -67,14 +67,13 @@ export function EpisodeForm({
         </div>
         <div className="space-y-1.5">
           <label htmlFor="episodeNumber" className={labelClass}>
-            Episode #
+            Episode # <span className="text-slate-500 font-normal">(optional)</span>
           </label>
           <input
             id="episodeNumber"
             name="episodeNumber"
             type="number"
             min={1}
-            required
             defaultValue={defaults?.episodeNumber ?? ""}
             className={inputClass}
           />

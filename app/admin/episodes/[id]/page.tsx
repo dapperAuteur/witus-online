@@ -36,7 +36,9 @@ export default async function EditEpisodePage({
       <header className="mt-2 mb-6 flex items-start justify-between gap-4">
         <div className="min-w-0">
           <h1 className="text-2xl font-semibold tracking-tight text-slate-100 truncate">
-            Episode #{episode.episodeNumber} — {episode.title}
+            {episode.episodeNumber != null
+              ? `Episode #${episode.episodeNumber} — ${episode.title}`
+              : episode.title}
           </h1>
           <p className="text-xs text-slate-500 mt-1">
             {episode.status === "published" && episode.publishedAt
