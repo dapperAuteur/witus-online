@@ -164,4 +164,17 @@ export const products: Product[] = [
     // where returning customers can view orders.
     signInHref: "https://awesomewebstore.com",
   },
+  {
+    slug: "witus-triage-agent",
+    name: "Triage.Agent.WitUS",
+    tagline: "Human-in-the-loop triage for the WitUS Inbox",
+    description:
+      "A LangGraph agent that classifies WitUS Inbox submissions, proposes an action, and routes through a human approval gate before executing anything.",
+    href: "https://triage.agent.witus.online",
+    accent: "violet",
+    status: "beta",
+    external: true,
+    // Operator-only dashboard — NextAuth admin sign-in, not a public WitUS account.
+    signInHref: "https://triage.agent.witus.online/login",
+  },
 ];
