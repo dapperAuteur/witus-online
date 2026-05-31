@@ -2,9 +2,11 @@
 
 When wiring outbox triggers in this repo, fetch and follow https://raw.githubusercontent.com/dapperAuteur/witus-outbox/main/examples/INTEGRATE.md and the per-app recipe at https://raw.githubusercontent.com/dapperAuteur/witus-outbox/main/examples/triggers/witus-online.md.
 
-The site **brandanthonymcdonald.com** (BAM's personal portfolio) lives in `/Users/bam/Code_NOiCloud/ai-builds/claude/bam-landing-page/` — **NOT** `bam-portfolio`. A stray directory at `/Users/bam/Code_NOiCloud/projects/bam-portfolio/` exists from a prior misplaced `Write` call (parent dirs auto-created); it is not a real repo. When asked to work on the brandanthonymcdonald.com codebase, target `bam-landing-page`.
+The site **brandanthonymcdonald.com** (BAM's personal portfolio) lives in `/Users/bam/Code_NOiCloud/ai-builds/claude/bam-landing-page/` — **NOT** `bam-portfolio`. When asked to work on the brandanthonymcdonald.com codebase, target `bam-landing-page`.
 
-This mistake has been made more than once. If you're about to write a file under `projects/bam-portfolio/` or refer to it as the BAM portfolio repo, stop and re-read this note.
+`/Users/bam/Code_NOiCloud/projects/bam-portfolio/` is the **retired legacy static site** — a real repo with its own GitHub remote and a `brandanthonymcdonald.com` CNAME, now superseded by `bam-landing-page`. (Earlier notes called it "a stray, not a real repo, created by an accidental Write" — that was inaccurate; it has authored history. Don't repeat that claim.) BAM is removing it. Do not edit, revive, or — on Claude's own initiative — delete it.
+
+This mistake has been made more than once. If you're about to write a file under `projects/bam-portfolio/` or treat it as the canonical BAM portfolio repo, stop and re-read this note: portfolio work goes in `bam-landing-page`.
 
 ---
 
@@ -12,13 +14,18 @@ This mistake has been made more than once. If you're about to write a file under
 
 When a new product joins the WitUS ecosystem (a new app, sub-site, or shared infrastructure repo), do these things in order:
 
+The five standard CLAUDE.md blocks are kept paste-ready in [`docs/ecosystem-claude-md-blocks.md`](docs/ecosystem-claude-md-blocks.md) (tracked — `plans/` is gitignored). Paste from there so the text never drifts.
+
 1. **Add a CLAUDE.md to the new repo** that opens with the same "Ecosystem repo identity" warning as above (the bam-landing-page / bam-portfolio note). This is a one-paragraph paste; the same text lives in every other ecosystem repo. The note pre-empts a recurring identity mistake — every new repo gets it on day one.
-2. **Add the operator-task rule below** to the new repo's CLAUDE.md too — same paragraph as in every other ecosystem repo.
-3. **Add the branch-hygiene rule below** to the new repo's CLAUDE.md — the short pointer version that names all three halves (Half 1: Claude branches/commits/pushes; Half 2: BAM merges between sessions; Half 3: keep branches small and bundle multiple branches before handoff) and points back here for the full text.
-3. **Update this list** (the witus repo's CLAUDE.md) so the new product is named in the ecosystem identity section if it has a name that's confusable with anything else.
-4. **Add the new product to `plans/ecosystem/README.md`** product index in this repo.
-5. **Update [the consolidated playbook ebook](plans/playbook/2026-04-27-witus-commercial-playbook.md)** §0 Master Source Index and §9 Pre-Launch Features so the new product's launch-prep doc is linked.
-6. **Update the witus auto-memory** at `~/.claude/projects/-Users-bam-Code-NOiCloud-ai-builds-gemini-witus/memory/` so the rule list reflects the new product's existence.
+2. **Add the operator-task rule** to the new repo's CLAUDE.md — same paragraph as in every other ecosystem repo.
+3. **Add the branch-hygiene rule** to the new repo's CLAUDE.md — the pointer version that names all three halves (Half 1: Claude branches/commits/pushes, never touches main; Half 2: BAM merges between sessions; Half 3: keep branches small and bundle multiple branches into one `bundle/<slug>-YYYY-MM-DD` before handoff) and points back here for the full text.
+4. **Add the plans convention** — all implementation plans in `./plans/` named `NN-description-of-plan.md`.
+5. **Add the `.githooks/pre-commit` guard** that refuses commits on `main`/`master`, and note that each clone activates it once with `git config core.hooksPath .githooks`.
+6. **Add the citation-rule pointer** (APA 7 for curriculum/professional/business writing).
+7. **Update this list** (the witus repo's CLAUDE.md) so the new product is named in the ecosystem identity section if it has a name that's confusable with anything else.
+8. **Add the new product to `plans/ecosystem/README.md`** product index in this repo (local-only — `plans/` is gitignored).
+9. **Update [the consolidated playbook ebook](plans/playbook/2026-04-27-witus-commercial-playbook.md)** §0 Master Source Index and §9 Pre-Launch Features so the new product's launch-prep doc is linked.
+10. **Update the witus auto-memory** at `~/.claude/projects/-Users-bam-Code-NOiCloud-ai-builds-gemini-witus/memory/` so the rule list reflects the new product's existence.
 
 The principle: identity confusion is a *first-day* problem. Catching it on day one in CLAUDE.md is cheap; catching it after multiple sessions of misnamed work is expensive and BAM has paid that cost more than once.
 
@@ -73,6 +80,18 @@ The **Blocks** column is the column BAM scans to triage the queue. Every row mus
 ### Why this rule exists
 
 Without it, Claude proposes work that silently depends on BAM having done a dashboard step, and BAM has no central queue to scan. The bam-landing-page launch came within reach of shipping `/hire` and `/partner` forms that would 401 on every submission because the HMAC secret + Inbox slug registration were never written down as user tasks. The user-tasks queue is the single artifact BAM scans before each session to know what's blocking what — if it isn't there, it doesn't get done in time.
+
+---
+
+## Plans convention — `./plans/NN-description-of-plan.md`
+
+In force across **every** ecosystem repo. All implementation plans live in `./plans/` as markdown named **`NN-description-of-plan.md`** — two-digit numeric prefix, kebab-case slug, `.md`. Use the next available number; do not skip or reuse numbers. Sub-queues under `./plans/`:
+
+- `./plans/user-tasks/NN-slug.md` — operator tasks (see the Operator-task rule above), indexed by `00-descriptions.md`.
+- `./plans/bugs/` — bug reports.
+- `./plans/future/` — parked / future ideas.
+
+Note: in most ecosystem repos `plans/` is **gitignored** (local working notes, not committed). That's intentional — the convention is about where files live on disk for the next session to find, not about committing them. Anything that must be tracked (e.g. the canonical CLAUDE.md blocks) lives outside `plans/`, in `docs/`.
 
 ---
 
