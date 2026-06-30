@@ -15,7 +15,17 @@ export function IdentityMagicLinkForm() {
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setStatus("sending");
-    const callbackURL = `${window.location.origin}/`;
+    // When this page was reached via an OAuth authorize request, better-auth
+    // redirected here as `${loginPage}?${original authorize query}`. After sign-in
+    // we must return to the authorize endpoint (now with a session) so the OIDC
+    // flow continues back to the client app — NOT land on the IdP home page, which
+    // would strand the user on accounts.witus.online. Direct sign-ins (no client_id)
+    // fall back to home.
+    const params = new URLSearchParams(window.location.search);
+    const origin = window.location.origin;
+    const callbackURL = params.has("client_id")
+      ? `${origin}/api/idp/oauth2/authorize?${params.toString()}`
+      : `${origin}/`;
     const { error } = await identityAuthClient.signIn.magicLink({ email, callbackURL });
     setStatus(error ? "error" : "sent");
   }
