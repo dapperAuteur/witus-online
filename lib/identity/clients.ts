@@ -40,6 +40,13 @@ export type EcosystemApp = {
    * Confirm + update per app as it converts; the redirect URI must match exactly.
    */
   callbackPath: string;
+  /**
+   * Additional absolute redirect URIs to register beyond `origin + callbackPath`.
+   * The IdP validates the incoming `redirect_uri` by EXACT match, so any host the
+   * app actually sends from must be listed. Use this for apex/`www` pairs or for a
+   * second domain (e.g. *.witus.online aliases). Each entry is a full absolute URL.
+   */
+  extraRedirectUris?: readonly string[];
 };
 
 const BETTER_AUTH_CB = "/api/auth/oauth2/callback/witus";
@@ -68,7 +75,16 @@ export const ECOSYSTEM_APPS: readonly EcosystemApp[] = [
   { slug: "tour", name: "Tour Manager OS", origin: "https://tour.witus.online", callbackPath: BETTER_AUTH_CB },
   // Supabase app: uses a custom OIDC code flow (app/api/auth/witus/*), so its
   // redirect URI is /api/auth/witus/callback, not the better-auth default.
-  { slug: "centenarianos", name: "CentenarianOS", origin: "https://centenarianos.com", callbackPath: "/api/auth/witus/callback" },
+  // The deployed site serves from `www.` and sends that as its redirect_uri
+  // (confirmed from the live authorize request), so `www` is primary and the
+  // apex is registered as a fallback in case the canonical host ever flips.
+  {
+    slug: "centenarianos",
+    name: "CentenarianOS",
+    origin: "https://www.centenarianos.com",
+    callbackPath: "/api/auth/witus/callback",
+    extraRedirectUris: ["https://centenarianos.com/api/auth/witus/callback"],
+  },
   { slug: "work", name: "Work.WitUS", origin: "https://work.witus.online", callbackPath: BETTER_AUTH_CB },
   // learnwitus — WitUS-branded base tenant ONLY (white-label tenants excluded above).
   { slug: "learn", name: "Learn.WitUS", origin: "https://learn.witus.online", callbackPath: BETTER_AUTH_CB },
@@ -103,9 +119,17 @@ export function clientSecretEnvVar(slug: string): string {
   return `WITUS_OIDC_SECRET__${slug.toUpperCase().replace(/-/g, "_")}`;
 }
 
-/** The redirect URI registered for an app (absolute). Must match what the app sends. */
+/** The primary redirect URI registered for an app (absolute). Must match what the app sends. */
 export function redirectUriFor(app: EcosystemApp): string {
   return new URL(app.callbackPath, app.origin).toString();
+}
+
+/**
+ * All redirect URIs registered for an app — the primary plus any `extraRedirectUris`,
+ * de-duplicated. The IdP exact-matches the incoming `redirect_uri` against this set.
+ */
+export function redirectUrisFor(app: EcosystemApp): string[] {
+  return [...new Set([redirectUriFor(app), ...(app.extraRedirectUris ?? [])])];
 }
 
 /**
@@ -129,7 +153,7 @@ export function buildTrustedClients(
       clientSecret,
       name: app.name,
       type: "web",
-      redirectUrls: [redirectUriFor(app)],
+      redirectUrls: redirectUrisFor(app),
       metadata: null,
       disabled: false,
       skipConsent: true,
