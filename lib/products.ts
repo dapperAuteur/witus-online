@@ -177,4 +177,52 @@ export const products: Product[] = [
     // Operator-only dashboard — NextAuth admin sign-in, not a public WitUS account.
     signInHref: "https://triage.agent.witus.online/login",
   },
+  {
+    slug: "stream-witus",
+    name: "Stream.WitUS",
+    tagline: "Cross-media tracker + All The Spoilers companion",
+    description:
+      "A personal-first tracker for the books, movies, and TV you watch and read — tie each title to the All The Spoilers podcast episode that discusses it, with the ReadWitUS book club running on the same library.",
+    href: "https://stream.witus.online",
+    accent: "rose",
+    status: "beta",
+    external: true,
+    signInHref: "https://stream.witus.online/login",
+  },
+  {
+    slug: "centenarian-coach",
+    name: "Centenarian Coach",
+    tagline: "Multi-agent coaching — ask once, get a cited answer",
+    description:
+      "A LangGraph supervisor with specialist agents: ask one question, the supervisor decides which specialists to consult, each runs its own retrieval and tools, and the answer comes back synthesized with citations.",
+    href: "https://centenarian.coach.multiagent.witus.online",
+    accent: "fuchsia",
+    status: "beta",
+    external: true,
+    signInHref: "https://centenarian.coach.multiagent.witus.online/login",
+  },
+  {
+    slug: "shop-witus",
+    name: "Shop.WitUS",
+    tagline: "Embeddable ecommerce-catalog layer",
+    description:
+      "A self-service, embeddable ecommerce-catalog layer for the WitUS ecosystem — drop a product catalog into any WitUS surface. (Distinct from AwesomeWebStore, the Shopify merch storefront.)",
+    href: "https://shop.witus.online",
+    accent: "slate",
+    status: "infrastructure",
+    external: true,
+    signInHref: "https://shop.witus.online/login",
+  },
+  {
+    slug: "wanderlearn-field-reporter",
+    name: "Wanderlearn Field Reporter",
+    tagline: "Turns a raw capture into a publishable lesson",
+    description:
+      "A LangGraph agent that turns a raw Wanderlearn capture (location transcript, GPS, photo metadata) into a publishable lesson — it researches the location, drafts an outline, writes a cited script, then self-critiques against a rubric and revises until it passes.",
+    href: "https://wanderlearn.field.reporter.witus.online",
+    accent: "cyan",
+    status: "infrastructure",
+    external: true,
+    signInHref: "https://wanderlearn.field.reporter.witus.online/login",
+  },
 ];
