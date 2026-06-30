@@ -182,3 +182,21 @@ The BVC curriculum was built with academic-grade citation discipline because a f
 ### Onboarding action when adding a new ecosystem repo or new curriculum product
 
 Per the "Ecosystem onboarding rule" above, every new repo's `CLAUDE.md` includes the identity warning, the operator-task rule, and the branch-hygiene rule. **Add a short pointer to this citation rule** as well — one paragraph in the new repo's CLAUDE.md that names the rule and points back here for the full text.
+
+## Authoritative-values rule — never assert guessed external values
+
+When a value is owned by an external system — DNS / a registrar, a host like Vercel, a third-party API, or **another app in this ecosystem** (its URLs, routes, IDs, env names, DB schema) — do NOT hardcode a generic/assumed default and present it to the user as correct.
+
+### How to apply
+1. **Read it from the authoritative source** — the system's API/config/env, the registrar/host's own dashboard, or the actual data. For a sibling ecosystem app, confirm against that app's code/CLAUDE.md, don't infer.
+2. **If you must ship a fallback default, label it as a fallback** and point to the real source — in the UI copy *and* a code comment (e.g. "common Vercel default; use what Vercel shows for your domain").
+3. **Verify by behavior, not by exact-match against the guess.** Ask "does the end-to-end flow actually work?" ("does the domain serve the site?" — true for an A record *or* a CNAME) rather than "does it equal IP `76.76.21.21`?".
+4. **When unsure of an external value, flag it or ask — never assert it.**
+
+### Why this rule exists
+
+A hardcoded "apex domain → A record `76.76.21.21`" check in witus-learn declared a **working** Vercel CNAME setup "incorrect" — a false negative that would make a school owner undo a correct configuration. Guessed external values that look authoritative are worse than no value: they actively mislead. This is doubly important across the ecosystem, where one app assuming another's shape (auth routes, domains, schema) silently breaks integration.
+
+### Onboarding action when adding a new ecosystem repo
+
+Add a short pointer to this rule in the new repo's `CLAUDE.md` (name it, point back here for the full text), alongside the identity / operator-task / branch-hygiene / citation pointers.
