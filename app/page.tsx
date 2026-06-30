@@ -50,6 +50,10 @@ const marketingProducts = products.filter(
   (p) => p.status !== "infrastructure"
 );
 
+const infrastructureProducts = products.filter(
+  (p) => p.status === "infrastructure"
+);
+
 const itemListJsonLd = {
   "@context": "https://schema.org",
   "@type": "ItemList",
@@ -164,26 +168,60 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* One Account: roadmap framing, honest about today */}
+      {/* Infrastructure & agents — the rest of the ecosystem */}
+      {infrastructureProducts.length > 0 && (
+        <section
+          aria-labelledby="infrastructure-heading"
+          className="max-w-5xl mx-auto px-6 pb-20"
+        >
+          <h2
+            id="infrastructure-heading"
+            className="text-xs font-semibold tracking-widest text-slate-400 uppercase mb-2"
+          >
+            Infrastructure &amp; Agents
+          </h2>
+          <p className="text-slate-500 text-sm mb-6 max-w-2xl">
+            The shared services and AI agents that the products run on — operator
+            tools, not consumer apps.
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {infrastructureProducts.map((product) => (
+              <ProductCard
+                key={product.slug}
+                name={product.name}
+                tagline={product.tagline}
+                description={product.description}
+                href={product.href}
+                accentColor={product.accent}
+                status={product.status}
+                external={product.external}
+              />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* One Account: SSO is now rolling out across the ecosystem */}
       <section
         aria-labelledby="one-account-heading"
         className="border-y border-slate-800 bg-slate-900/40"
       >
         <div className="max-w-5xl mx-auto px-6 py-14 flex flex-col sm:flex-row items-start sm:items-center gap-6">
           <div className="flex-1">
-            <span className="inline-block text-[10px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700 mb-3">
-              On the roadmap
+            <span className="inline-block text-[10px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded-full bg-fuchsia-500/10 text-fuchsia-300 border border-fuchsia-500/20 mb-3">
+              Now rolling out
             </span>
             <h2
               id="one-account-heading"
               className="text-xl font-bold text-white mb-2"
             >
-              One WitUS account. Coming soon.
+              One WitUS account, across the ecosystem
             </h2>
             <p className="text-slate-400 text-sm leading-relaxed max-w-lg">
-              Today, each WitUS tool has its own sign-in. A unified WitUS account,
-              one login across the whole ecosystem, is on the roadmap. When it
-              ships, your existing accounts migrate in.
+              We&apos;re rolling out <span className="text-white font-medium">Sign in with WitUS</span> —
+              one login for CentenarianOS, Wanderlearn, FlashLearnAI, Learn.WitUS, and
+              the rest. Look for the &ldquo;Sign in with WitUS&rdquo; button as each app
+              comes online; your existing account links in by email.
             </p>
           </div>
           <Link
