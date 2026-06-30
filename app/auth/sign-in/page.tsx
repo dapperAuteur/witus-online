@@ -92,6 +92,20 @@ export default function SignInPage() {
             {pending ? "Sending link…" : "Email me a sign-in link"}
           </button>
         </form>
+
+        <p className="text-center text-xs uppercase tracking-wide text-slate-500">or</p>
+
+        <button
+          type="button"
+          onClick={() => {
+            const callbackUrl =
+              new URLSearchParams(window.location.search).get("callbackUrl") ?? "/admin";
+            void signIn("witus", { callbackUrl });
+          }}
+          className="inline-flex w-full items-center justify-center min-h-11 px-5 py-2.5 rounded-lg border border-slate-700 bg-slate-900 hover:bg-slate-800 text-slate-100 text-sm font-semibold transition-colors focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-300"
+        >
+          Sign in with WitUS
+        </button>
       </div>
     </main>
   );
