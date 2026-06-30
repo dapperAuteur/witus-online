@@ -83,11 +83,12 @@ export const ECOSYSTEM_APPS: readonly EcosystemApp[] = [
   { slug: "inbox", name: "WitUS Inbox", origin: "https://inbox.witus.online", callbackPath: NEXTAUTH_CB },
   { slug: "triage", name: "WitUS Triage Agent", origin: "https://triage.agent.witus.online", callbackPath: BETTER_AUTH_CB }, // TODO: confirm approval-UI auth lib
   { slug: "outbox", name: "WitUS Outbox", origin: "https://outbox.witus.online", callbackPath: BETTER_AUTH_CB }, // TODO: confirm domain + auth lib
-  { slug: "coach", name: "Centenarian Coach", origin: "https://coach.centenarianos.com", callbackPath: BETTER_AUTH_CB }, // TODO: confirm domain + auth lib
+  // Also at centenarian-coach-multiagent.witus.online; add as a 2nd redirect URI if used.
+  { slug: "coach", name: "Centenarian Coach", origin: "https://centenarian.coach.multiagent.witus.online", callbackPath: BETTER_AUTH_CB }, // TODO: confirm auth lib
   // Also reachable at wanderlearn.stories.witus.online; register that as a second
   // redirect URI too if users sign in from it.
   { slug: "stories", name: "Wanderlearn Stories", origin: "https://stories.wanderlearn.witus.online", callbackPath: BETTER_AUTH_CB }, // TODO: confirm auth lib
-  { slug: "field-reporter", name: "Wanderlearn Field Reporter", origin: "https://field-reporter.witus.online", callbackPath: BETTER_AUTH_CB }, // TODO: confirm domain + auth lib
+  { slug: "field-reporter", name: "Wanderlearn Field Reporter", origin: "https://wanderlearn.field.reporter.witus.online", callbackPath: BETTER_AUTH_CB }, // TODO: confirm auth lib
 ] as const;
 
 /** The OAuth client_id for an app. Stable, derived from the slug. */
