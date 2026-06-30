@@ -9,11 +9,14 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "db:identity:generate": "drizzle-kit generate --config drizzle.identity.config.ts",
+    "db:identity:migrate": "drizzle-kit migrate --config drizzle.identity.config.ts"
   },
   "dependencies": {
     "@auth/drizzle-adapter": "^1.11.2",
     "@neondatabase/serverless": "^1.1.0",
+    "better-auth": "^1.6.23",
     "d3": "^7.9.0",
     "drizzle-orm": "^0.45.2",
     "fast-xml-parser": "^4.5.3",
