@@ -1,6 +1,7 @@
 import "server-only";
 import type { NextAuthOptions } from "next-auth";
 import EmailProvider from "next-auth/providers/email";
+import type { OAuthConfig } from "next-auth/providers/oauth";
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
 import { and, eq, gt, isNull } from "drizzle-orm";
 import { getDb } from "@/db";
@@ -15,6 +16,43 @@ import { getEnv } from "@/lib/env";
 
 const env = getEnv();
 const adminEmail = env.ADMIN_EMAIL.toLowerCase();
+
+interface WitusProfile {
+  sub: string;
+  email?: string;
+  name?: string;
+}
+
+/**
+ * "Sign in with WitUS" — the ecosystem IdP (accounts.witus.online) as a NextAuth
+ * OIDC provider. Only added when WITUS_OIDC_CLIENT_ID is set, so a missing env
+ * never breaks the build. The discovery URL is owned by the IdP; override via
+ * WITUS_OIDC_DISCOVERY_URL — the literal below is a labeled fallback, not an
+ * assumed value (per the authoritative-values rule).
+ */
+function witusProvider(): OAuthConfig<WitusProfile> {
+  return {
+    id: "witus",
+    name: "WitUS",
+    type: "oauth",
+    wellKnown:
+      process.env.WITUS_OIDC_DISCOVERY_URL ??
+      "https://accounts.witus.online/api/idp/.well-known/openid-configuration",
+    clientId: process.env.WITUS_OIDC_CLIENT_ID,
+    clientSecret: process.env.WITUS_OIDC_CLIENT_SECRET,
+    authorization: { params: { scope: "openid email profile" } },
+    idToken: true,
+    checks: ["pkce", "state"],
+    profile(profile) {
+      return {
+        id: profile.sub,
+        email: profile.email ?? null,
+        name: profile.name ?? null,
+        image: null,
+      };
+    },
+  };
+}
 
 /**
  * Look up a non-revoked, non-expired invitation matching the given email.
@@ -55,6 +93,7 @@ export const authOptions: NextAuthOptions = {
       server: env.EMAIL_SERVER,
       from: env.EMAIL_FROM,
     }),
+    ...(process.env.WITUS_OIDC_CLIENT_ID ? [witusProvider()] : []),
   ],
   session: { strategy: "jwt" },
   secret: env.NEXTAUTH_SECRET,
