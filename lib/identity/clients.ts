@@ -66,7 +66,9 @@ export const ECOSYSTEM_APPS: readonly EcosystemApp[] = [
   { slug: "wanderlearn", name: "Wanderlearn", origin: "https://wanderlearn.witus.online", callbackPath: BETTER_AUTH_CB },
   { slug: "fly", name: "Fly.WitUS", origin: "https://fly.witus.online", callbackPath: BETTER_AUTH_CB },
   { slug: "tour", name: "Tour Manager OS", origin: "https://tour.witus.online", callbackPath: BETTER_AUTH_CB },
-  { slug: "centenarianos", name: "CentenarianOS", origin: "https://centenarianos.com", callbackPath: BETTER_AUTH_CB },
+  // Supabase app: uses a custom OIDC code flow (app/api/auth/witus/*), so its
+  // redirect URI is /api/auth/witus/callback, not the better-auth default.
+  { slug: "centenarianos", name: "CentenarianOS", origin: "https://centenarianos.com", callbackPath: "/api/auth/witus/callback" },
   { slug: "work", name: "Work.WitUS", origin: "https://work.witus.online", callbackPath: BETTER_AUTH_CB },
   // learnwitus — WitUS-branded base tenant ONLY (white-label tenants excluded above).
   { slug: "learn", name: "Learn.WitUS", origin: "https://learn.witus.online", callbackPath: BETTER_AUTH_CB },
