@@ -53,8 +53,9 @@ const NEXTAUTH_CB = "/api/auth/callback/witus";
  *    keep isolated tenant-branded magic-link auth; a redirect to the IdP would
  *    reveal the shared backend. SSO is gated per-tenant inside learnwitus; only
  *    the WitUS-branded `learn.witus.online` tenant participates (the `learn` entry).
- *  - `awesomewebstore.com` — Shopify today. Add a `shop` entry once it migrates to
- *    the shop-witus (better-auth) app.
+ *  - `awesomewebstore.com` — the Shopify storefront. Stays out until it migrates off
+ *    Shopify. (Distinct from `shop.witus.online`, the better-auth shop-witus app, which
+ *    IS a client below as `shop`.)
  */
 export const ECOSYSTEM_APPS: readonly EcosystemApp[] = [
   // The host app itself. Currently NextAuth v4; migrates to better-auth (then use
@@ -70,6 +71,11 @@ export const ECOSYSTEM_APPS: readonly EcosystemApp[] = [
   // learnwitus — WitUS-branded base tenant ONLY (white-label tenants excluded above).
   { slug: "learn", name: "Learn.WitUS", origin: "https://learn.witus.online", callbackPath: BETTER_AUTH_CB },
   { slug: "stream", name: "Stream.WitUS", origin: "https://stream.witus.online", callbackPath: BETTER_AUTH_CB },
+  // Commerce surfaces. shop.witus.online is the better-auth shop-witus app (distinct
+  // from awesomewebstore.com, still on Shopify — see exclusion note above).
+  { slug: "shop", name: "Shop.WitUS", origin: "https://shop.witus.online", callbackPath: BETTER_AUTH_CB },
+  // TODO: confirm RideWitUS's auth lib; switch to NEXTAUTH_CB if it's NextAuth.
+  { slug: "ride", name: "RideWitUS", origin: "https://ride.witus.online", callbackPath: BETTER_AUTH_CB },
 ] as const;
 
 /** The OAuth client_id for an app. Stable, derived from the slug. */
