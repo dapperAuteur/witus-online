@@ -49,6 +49,20 @@ export const auth = betterAuth({
       // would hit centos too). Only switch away from "plain" if/when clients move to
       // DB-backed dynamic registration (where secrets are stored hashed at rest).
       storeClientSecret: "plain",
+      // Guarantee a non-empty `name` claim. Users sign up here via magic link, which
+      // collects only email, so user.name is often "" — and the oidcProvider builds
+      // the `name` claim straight from user.name. A client's better-auth genericOAuth
+      // rejects a profile with no name (redirects with ?error=name_is_missing, seen on
+      // learn.witus.online). This runs in the /userinfo claim builder AFTER the base
+      // profile claims and overrides them, so it fixes existing accounts at runtime
+      // (no DB backfill) for every client. Only fills a name when one is actually
+      // missing; users with a real name are untouched.
+      getAdditionalUserInfoClaim: (user, scopes) => {
+        if (!scopes?.includes("profile")) return {};
+        if (user.name && user.name.trim()) return {};
+        const fallback = user.email?.split("@")[0] || "WitUS user";
+        return { name: fallback, given_name: fallback };
+      },
       trustedClients: buildTrustedClients((name) => process.env[name]),
     }),
     nextCookies(),
