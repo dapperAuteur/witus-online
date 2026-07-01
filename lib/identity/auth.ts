@@ -39,7 +39,16 @@ export const auth = betterAuth({
       loginPage: "/accounts/sign-in",
       useJWTPlugin: true,
       requirePKCE: true,
-      storeClientSecret: "hashed",
+      // MUST be "plain" (the default) while we authenticate apps via `trustedClients`.
+      // `storeClientSecret` governs how the token endpoint VERIFIES secrets for ALL
+      // clients, and trusted clients carry their secret as plaintext (from the
+      // WITUS_OIDC_SECRET__<SLUG> env var, via buildTrustedClients). With "hashed",
+      // verifyStoredClientSecret compares hash(incoming_secret) against the stored
+      // PLAINTEXT trusted-client secret — which can never match, so EVERY trusted
+      // client got 401 invalid_client at POST /oauth2/token (observed on learn +
+      // would hit centos too). Only switch away from "plain" if/when clients move to
+      // DB-backed dynamic registration (where secrets are stored hashed at rest).
+      storeClientSecret: "plain",
       trustedClients: buildTrustedClients((name) => process.env[name]),
     }),
     nextCookies(),
