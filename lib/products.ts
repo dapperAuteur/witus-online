@@ -1,5 +1,16 @@
 export type ProductStatus = "live" | "beta" | "coming-soon" | "infrastructure";
 
+// Which ecosystem "surfaces" (lists) an app belongs to. This file is the CANONICAL
+// ecosystem registry — every other list should reconcile against it, and app counts
+// come from here, never from counting directories on disk.
+//   "public-directory" — rendered in the on-site product/infra directory (homepage + footer).
+//   "oidc-client"      — a first-party "Sign in with WitUS" client; MUST have a matching
+//                        entry in lib/identity/clients.ts (accounts.witus.online).
+// Surfaces owned by OTHER repos are intentionally not modeled here (authoritative-values rule):
+//   - inbox INGEST_SOURCES is owned by claude/witus-inbox/.env (do not mirror it here).
+//   - the footer sibling recipe is published in public/brand/footer-recipe.md.
+export type Surface = "public-directory" | "oidc-client";
+
 export type Accent =
   | "amber"
   | "fuchsia"
@@ -22,6 +33,7 @@ export interface Product {
   status: ProductStatus;
   external: boolean;
   signInHref?: string;
+  surfaces: Surface[];
 }
 
 export const SITE_URL = "https://witus.online";
@@ -38,6 +50,7 @@ export const products: Product[] = [
     status: "infrastructure",
     external: false,
     signInHref: "/auth/sign-in",
+    surfaces: ["public-directory", "oidc-client"],
   },
   {
     slug: "witus-inbox",
@@ -50,6 +63,7 @@ export const products: Product[] = [
     status: "infrastructure",
     external: true,
     signInHref: "https://inbox.witus.online/auth/sign-in",
+    surfaces: ["public-directory", "oidc-client"],
   },
   {
     slug: "witus-outbox",
@@ -62,6 +76,7 @@ export const products: Product[] = [
     status: "infrastructure",
     external: true,
     signInHref: "https://outbox.witus.online/auth/sign-in",
+    surfaces: ["public-directory", "oidc-client"],
   },
   {
     slug: "centenarianos",
@@ -74,6 +89,7 @@ export const products: Product[] = [
     status: "live",
     external: true,
     signInHref: "https://centenarianos.com/login",
+    surfaces: ["public-directory", "oidc-client"],
   },
   {
     slug: "work-witus",
@@ -86,6 +102,7 @@ export const products: Product[] = [
     status: "live",
     external: true,
     signInHref: "https://work.witus.online/login",
+    surfaces: ["public-directory", "oidc-client"],
   },
   {
     slug: "tour-witus",
@@ -98,6 +115,7 @@ export const products: Product[] = [
     status: "beta",
     external: true,
     signInHref: "https://tour.witus.online/login",
+    surfaces: ["public-directory", "oidc-client"],
   },
   {
     slug: "wanderlearn",
@@ -110,6 +128,7 @@ export const products: Product[] = [
     status: "beta",
     external: true,
     signInHref: "https://wanderlearn.witus.online/login",
+    surfaces: ["public-directory", "oidc-client"],
   },
   {
     slug: "fly-witus",
@@ -122,6 +141,7 @@ export const products: Product[] = [
     status: "beta",
     external: true,
     signInHref: "https://fly.witus.online/login",
+    surfaces: ["public-directory", "oidc-client"],
   },
   {
     slug: "flashlearnai",
@@ -134,6 +154,7 @@ export const products: Product[] = [
     status: "beta",
     external: true,
     signInHref: "https://flashlearnai.witus.online/login",
+    surfaces: ["public-directory", "oidc-client"],
   },
   {
     slug: "learn-witus",
@@ -149,6 +170,7 @@ export const products: Product[] = [
     // CentenarianOS tile, but we list it here too so teachers looking for the
     // Academy find a door.
     signInHref: "https://centenarianos.com/login",
+    surfaces: ["public-directory", "oidc-client"],
   },
   {
     slug: "awesomewebstore",
@@ -163,6 +185,8 @@ export const products: Product[] = [
     // Commerce checkout, not a WitUS account. Linked to the store homepage
     // where returning customers can view orders.
     signInHref: "https://awesomewebstore.com",
+    // Shopify storefront — deliberately NOT an OIDC client (no "Sign in with WitUS").
+    surfaces: ["public-directory"],
   },
   {
     slug: "witus-triage-agent",
@@ -176,6 +200,7 @@ export const products: Product[] = [
     external: true,
     // Operator-only dashboard — NextAuth admin sign-in, not a public WitUS account.
     signInHref: "https://triage.agent.witus.online/login",
+    surfaces: ["public-directory", "oidc-client"],
   },
   {
     slug: "stream-witus",
@@ -188,6 +213,7 @@ export const products: Product[] = [
     status: "beta",
     external: true,
     signInHref: "https://stream.witus.online/login",
+    surfaces: ["public-directory", "oidc-client"],
   },
   {
     slug: "centenarian-coach",
@@ -200,6 +226,7 @@ export const products: Product[] = [
     status: "beta",
     external: true,
     signInHref: "https://centenarian.coach.multiagent.witus.online/login",
+    surfaces: ["public-directory", "oidc-client"],
   },
   {
     slug: "shop-witus",
@@ -212,6 +239,22 @@ export const products: Product[] = [
     status: "infrastructure",
     external: true,
     signInHref: "https://shop.witus.online/login",
+    surfaces: ["public-directory", "oidc-client"],
+  },
+  {
+    slug: "ride-witus",
+    name: "RideWitUS",
+    tagline: "Community transport, built on the Monon",
+    description:
+      "Rideshare and community transport for the WitUS ecosystem — driver and rider tools with the Monon-Chalk brand identity.",
+    href: "https://ride.witus.online",
+    accent: "lime",
+    status: "beta",
+    external: true,
+    signInHref: "https://ride.witus.online/login",
+    // Real standalone product; was missing from this registry while present in
+    // lib/identity/clients.ts. Added 2026-07-04 during registry reconciliation.
+    surfaces: ["public-directory", "oidc-client"],
   },
   {
     slug: "wanderlearn-field-reporter",
@@ -224,5 +267,22 @@ export const products: Product[] = [
     status: "infrastructure",
     external: true,
     signInHref: "https://wanderlearn.field.reporter.witus.online/login",
+    surfaces: ["public-directory", "oidc-client"],
+  },
+  {
+    slug: "wanderlearn-stories",
+    name: "Wanderlearn Stories",
+    tagline: "Story-format module of Wanderlearn",
+    description:
+      "The stories module of Wanderlearn — a distinct deploy and SSO client, but a sub-surface of the Wanderlearn product rather than a standalone marketing tile.",
+    href: "https://stories.wanderlearn.witus.online",
+    accent: "sky",
+    status: "beta",
+    external: true,
+    signInHref: "https://stories.wanderlearn.witus.online/login",
+    // Registered as an OIDC client (present in lib/identity/clients.ts as `stories`)
+    // but intentionally NOT surfaced in the public product directory — it's part of
+    // Wanderlearn, not a separate product. Added 2026-07-04 during reconciliation.
+    surfaces: ["oidc-client"],
   },
 ];

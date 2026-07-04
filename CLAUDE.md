@@ -14,7 +14,7 @@ This mistake has been made more than once. If you're about to write a file under
 
 When a new product joins the WitUS ecosystem (a new app, sub-site, or shared infrastructure repo), do these things in order:
 
-The five standard CLAUDE.md blocks are kept paste-ready in [`docs/ecosystem-claude-md-blocks.md`](docs/ecosystem-claude-md-blocks.md) (tracked — `plans/` is gitignored). Paste from there so the text never drifts.
+**Rules now propagate by a loader, not by hand-paste.** The canonical shared rules live in [`docs/shared-rules.md`](docs/shared-rules.md) as a machine-injected managed block (`<!-- BEGIN/END:witus-shared-rules vN -->`); the consolidated UI/UX/DX standard is [`docs/shared-ui-ux-dx.md`](docs/shared-ui-ux-dx.md). Edit the canonical file, then run `node scripts/sync-claude-rules.mjs --write` (target repos listed in [`docs/ecosystem-repos.json`](docs/ecosystem-repos.json)) to re-propagate — each repo's `CLAUDE.md` keeps its hand-owned identity + stack above the block. To onboard a new repo: add it to `docs/ecosystem-repos.json` `targets`, run the sync, then write its identity line. (The older [`docs/ecosystem-claude-md-blocks.md`](docs/ecosystem-claude-md-blocks.md) paste file is retained for reference but superseded by the loader.) See [`plans/24-shared-rules-loader-and-registry.md`](plans/24-shared-rules-loader-and-registry.md).
 
 1. **Add a CLAUDE.md to the new repo** that opens with the same "Ecosystem repo identity" warning as above (the bam-landing-page / bam-portfolio note). This is a one-paragraph paste; the same text lives in every other ecosystem repo. The note pre-empts a recurring identity mistake — every new repo gets it on day one.
 2. **Add the operator-task rule** to the new repo's CLAUDE.md — same paragraph as in every other ecosystem repo.
@@ -106,6 +106,7 @@ Anytime Claude is about to make a code change, the contract is **branch → comm
 - Before any `git commit`, run `git branch --show-current`. If it is `main`, branch first (`feat/`, `fix/`, `chore/`, etc.).
 - Re-check the current branch **before every commit**, not just at branch creation. (See Half 2 for why this matters mid-session.)
 - After `git commit`, push with `git push -u origin <branch>` on the first push; plain `git push` thereafter.
+- **Commit often.** Commit at every working checkpoint — a passing build, a finished sub-step, a green test — not just at the end. A usage-limit cutoff, a dropped connection, or a crashed session must never cost more than the last few minutes of work. Small frequent commits stay on the feature branch (Half 1 still holds) and give BAM clean per-step history. Push periodically, not only at handoff, so pushed work survives a dead local session.
 - The only exception: if BAM explicitly says "merge X into main" or "I'm not going to merge this myself," that one-off is authorized. The default stays hands-off.
 
 ### Half 2 — BAM merges committed branches between sessions by default.

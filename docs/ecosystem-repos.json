@@ -1,0 +1,41 @@
+{
+  "_comment": "Canonical list of WitUS ecosystem repos for the shared-rules sync. Paths are absolute (BAM's machine layout). 'source' is where the canonical rules live and is NOT a sync target. 'targets' receive the managed block. 'excluded' are on-disk repos that are deliberately NOT part of the ecosystem rollout — verified with BAM 2026-07-04. App counts come from lib/products.ts, never from counting these directories.",
+  "source": "/Users/bam/Code_NOiCloud/ai-builds/gemini/witus",
+  "targets": [
+    "/Users/bam/Code_NOiCloud/ai-builds/claude/witus-learn",
+    "/Users/bam/Code_NOiCloud/ai-builds/claude/flashlearn-ai",
+    "/Users/bam/Code_NOiCloud/ai-builds/claude/shop-witus",
+    "/Users/bam/Code_NOiCloud/ai-builds/claude/stream-witus",
+    "/Users/bam/Code_NOiCloud/ai-builds/claude/fly-witus",
+    "/Users/bam/Code_NOiCloud/ai-builds/claude/witus-inbox",
+    "/Users/bam/Code_NOiCloud/ai-builds/claude/witus-outbox",
+    "/Users/bam/Code_NOiCloud/ai-builds/gemini/contractor-os",
+    "/Users/bam/Code_NOiCloud/ai-builds/gemini/ride-wit-us",
+    "/Users/bam/Code_NOiCloud/ai-builds/gemini/centenarian-os",
+    "/Users/bam/Code_NOiCloud/ai-builds/gemini/tour-manager-os",
+    "/Users/bam/Code_NOiCloud/ai-builds/gemini/wanderlearn/wanderlearn-app",
+    "/Users/bam/Code_NOiCloud/ai-builds/gemini/wanderlearn/wanderlearn-stories",
+    "/Users/bam/Code_NOiCloud/ai-builds/claude/lang-chain/witus-triage-agent",
+    "/Users/bam/Code_NOiCloud/ai-builds/claude/lang-chain/wanderlearn-field-reporter",
+    "/Users/bam/Code_NOiCloud/ai-builds/claude/lang-chain/centenarian-coach-multiagent",
+    "/Users/bam/Code_NOiCloud/ai-builds/claude/bam-landing-page"
+  ],
+  "excluded": {
+    "/Users/bam/Code_NOiCloud/ai-builds/gemini/centenarian-academy": "NASM cert LMS — not an ecosystem product",
+    "/Users/bam/Code_NOiCloud/ai-builds/claude/cent-agility": "Agility Engine fitness module — not an ecosystem product",
+    "/Users/bam/Code_NOiCloud/ai-builds/claude/my-health-blueprint": "Health Blueprint intake form — not an ecosystem product",
+    "/Users/bam/Code_NOiCloud/ai-builds/gemini/project-chronicle": "Chronicle AI — not an ecosystem product",
+    "/Users/bam/Code_NOiCloud/projects/fit-t-cent-blogging": "legacy blog (2024) — retired",
+    "/Users/bam/Code_NOiCloud/ai-builds/claude/signlearn-pro": "SignLearn Pro MVP guide only — not an ecosystem product",
+    "/Users/bam/Code_NOiCloud/ai-builds/claude/my-media-app": "stale scaffold boilerplate",
+    "/Users/bam/Code_NOiCloud/ai-builds/claude/she-did-the-work": "stale scaffold boilerplate",
+    "/Users/bam/Code_NOiCloud/ai-builds/gemini/study-budy": "study-buddy scaffold boilerplate",
+    "/Users/bam/Code_NOiCloud/projects/content-mgmt-pwa/content-management-pwa": "CMS PWA scaffold boilerplate",
+    "/Users/bam/Code_NOiCloud/projects/wed-wed-list": "wedding-list scaffold boilerplate",
+    "/Users/bam/Code_NOiCloud/projects/bam-portfolio": "retired Dev-Rel portfolio — superseded by bam-landing-page",
+    "/Users/bam/Code_NOiCloud/projects/ollama-open-webui": "Ollama/Open-WebUI fork experiment",
+    "/Users/bam/Code_NOiCloud/projects/tbc/fda/food-recall-app": "FDA food-recall FastAPI experiment",
+    "/Users/bam/Code_NOiCloud/projects/tbc/tutorial": "FastAPI tutorial throwaway",
+    "/Users/bam/Code_NOiCloud/ai-builds/claude/witus-learn-feat-wt": "git worktree of witus-learn, not a separate repo"
+  }
+}
