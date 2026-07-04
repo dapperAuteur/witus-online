@@ -47,11 +47,11 @@ const organizationJsonLd = {
 // Marketing-facing list: hide operator infrastructure (inbox/outbox/witus.online
 // hub admin). Those live on /account + Footer where the audience is operators.
 const marketingProducts = products.filter(
-  (p) => p.status !== "infrastructure"
+  (p) => p.status !== "infrastructure" && p.surfaces.includes("public-directory")
 );
 
 const infrastructureProducts = products.filter(
-  (p) => p.status === "infrastructure"
+  (p) => p.status === "infrastructure" && p.surfaces.includes("public-directory")
 );
 
 const itemListJsonLd = {

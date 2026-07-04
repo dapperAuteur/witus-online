@@ -34,7 +34,11 @@ export default function Footer() {
             <p className="text-white font-medium mb-2">Products</p>
             <ul className="space-y-1">
               {products
-                .filter((p) => p.status !== "infrastructure")
+                .filter(
+                  (p) =>
+                    p.status !== "infrastructure" &&
+                    p.surfaces.includes("public-directory")
+                )
                 .map((product) =>
                   product.status === "coming-soon" ? (
                     <li key={product.slug} className="text-slate-400 italic">
@@ -62,7 +66,11 @@ export default function Footer() {
             <p className="text-white font-medium mt-4 mb-2">Infrastructure</p>
             <ul className="space-y-1">
               {products
-                .filter((p) => p.status === "infrastructure")
+                .filter(
+                  (p) =>
+                    p.status === "infrastructure" &&
+                    p.surfaces.includes("public-directory")
+                )
                 .map((product) => (
                   <li key={product.slug}>
                     <a
