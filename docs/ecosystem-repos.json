@@ -1,5 +1,5 @@
 {
-  "_comment": "Canonical list of WitUS ecosystem repos for the shared-rules sync. Paths are absolute (BAM's machine layout). 'source' is where the canonical rules live and is NOT a sync target. 'targets' receive the managed block. 'excluded' are on-disk repos that are deliberately NOT part of the ecosystem rollout — verified with BAM 2026-07-04. App counts come from lib/products.ts, never from counting these directories.",
+  "_comment": "Canonical list of WitUS ecosystem repos for the shared-rules sync. Paths are absolute (BAM's machine layout). Ecosystem repos live under THREE trees: ai-builds/claude, ai-builds/gemini, AND cent/bam (the latter was missed in the first inventory — always scan it). 'source' is where the canonical rules live and is NOT a sync target. 'targets' receive the managed block. 'excluded' are on-disk repos that are deliberately NOT part of the ecosystem rollout — verified with BAM 2026-07-04. App counts come from lib/products.ts, never from counting directories. Note: the inbox/outbox source slugs 'betterbud-ecs' (= ecs-specialization-course-landing-page) and 'fdac' (= fitness-data-analytics-course-landing-page) are REAL, registered in both inbox and outbox INGEST_SOURCES — not phantoms.",
   "source": "/Users/bam/Code_NOiCloud/ai-builds/gemini/witus",
   "targets": [
     "/Users/bam/Code_NOiCloud/ai-builds/claude/witus-learn",
@@ -18,7 +18,9 @@
     "/Users/bam/Code_NOiCloud/ai-builds/claude/lang-chain/witus-triage-agent",
     "/Users/bam/Code_NOiCloud/ai-builds/claude/lang-chain/wanderlearn-field-reporter",
     "/Users/bam/Code_NOiCloud/ai-builds/claude/lang-chain/centenarian-coach-multiagent",
-    "/Users/bam/Code_NOiCloud/ai-builds/claude/bam-landing-page"
+    "/Users/bam/Code_NOiCloud/ai-builds/claude/bam-landing-page",
+    "/Users/bam/Code_NOiCloud/cent/bam/ecs-specialization-course-landing-page",
+    "/Users/bam/Code_NOiCloud/cent/bam/fitness-data-analytics-course-landing-page"
   ],
   "excluded": {
     "/Users/bam/Code_NOiCloud/ai-builds/gemini/centenarian-academy": "NASM cert LMS — not an ecosystem product",
