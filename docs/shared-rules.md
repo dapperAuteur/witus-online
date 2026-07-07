@@ -2,11 +2,19 @@
 # WitUS shared CLAUDE.md rules (canonical source)
 
 **This file is the single source of truth for the process rules every WitUS ecosystem repo carries.**
-Do not hand-copy it into other repos. Edit it here, then run `node scripts/sync-claude-rules.mjs`
-(from the witus repo) to re-propagate. The script writes the section below — everything between the
-`BEGIN:witus-shared-rules` / `END:witus-shared-rules` markers — verbatim into each target repo's
-`CLAUDE.md`. Repo-specific content (the identity one-liner, the stack section) stays hand-owned
-*above* the managed block and is never touched by the sync.
+Do not hand-copy it into other repos. Edit it here, then propagate:
+
+```
+node scripts/propagate-claude-rules.mjs           # preview every repo that would change
+node scripts/propagate-claude-rules.mjs --write    # write the block + branch/commit/push each changed repo
+```
+
+`propagate-claude-rules.mjs` wraps `sync-claude-rules.mjs` (which writes the section below —
+everything between the `BEGIN:witus-shared-rules` / `END:witus-shared-rules` markers — verbatim into
+each target repo's `CLAUDE.md`) and then does the per-repo git so you don't hand-commit ~19 repos;
+you just merge the pushed branches. Repo-specific content (the identity one-liner, the stack section)
+stays hand-owned *above* the managed block and is never touched. You do not need to bump the version
+marker to propagate — the sync replaces the block whenever its content differs.
 
 Full rationale for each rule lives in this repo's [`CLAUDE.md`](../CLAUDE.md). The consolidated
 UI/UX/DX conventions are a separate managed file: [`shared-ui-ux-dx.md`](./shared-ui-ux-dx.md).
