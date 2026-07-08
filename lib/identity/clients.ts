@@ -99,8 +99,8 @@ export const ECOSYSTEM_APPS: readonly EcosystemApp[] = [
   // fails closed (sign-in won't work until corrected), so confirm before that app
   // integrates. inbox + triage domains are confirmed.
   { slug: "inbox", name: "WitUS Inbox", origin: "https://inbox.witus.online", callbackPath: NEXTAUTH_CB },
-  { slug: "triage", name: "WitUS Triage Agent", origin: "https://triage.agent.witus.online", callbackPath: BETTER_AUTH_CB }, // TODO: confirm approval-UI auth lib
-  { slug: "outbox", name: "WitUS Outbox", origin: "https://outbox.witus.online", callbackPath: BETTER_AUTH_CB }, // TODO: confirm domain + auth lib
+  { slug: "triage", name: "WitUS Triage Agent", origin: "https://triage.agent.witus.online", callbackPath: NEXTAUTH_CB }, // NextAuth v4 (confirmed 2026-07 — witus provider added)
+  { slug: "outbox", name: "WitUS Outbox", origin: "https://outbox.witus.online", callbackPath: NEXTAUTH_CB }, // NextAuth v4 (confirmed 2026-07 — witus provider added)
   // Coach is NextAuth v5 (confirmed 2026-07 — genericOAuth "witus" provider added
   // to its auth.ts), so it uses NEXTAUTH_CB, not BETTER_AUTH_CB. The live-serving
   // origin is the HYPHENATED host (verified: it serves the app and /signin); the
@@ -118,7 +118,11 @@ export const ECOSYSTEM_APPS: readonly EcosystemApp[] = [
   // Also reachable at wanderlearn.stories.witus.online; register that as a second
   // redirect URI too if users sign in from it.
   { slug: "stories", name: "Wanderlearn Stories", origin: "https://stories.wanderlearn.witus.online", callbackPath: BETTER_AUTH_CB }, // TODO: confirm auth lib
-  { slug: "field-reporter", name: "Wanderlearn Field Reporter", origin: "https://wanderlearn.field.reporter.witus.online", callbackPath: BETTER_AUTH_CB }, // TODO: confirm auth lib
+  // Custom OIDC code flow (bespoke HS256 session, no NextAuth/Better-Auth), so it
+  // uses its own /api/auth/witus/callback. The app derives its origin from request
+  // headers unless NEXT_PUBLIC_SITE_URL is set — set that on the app to match this
+  // registered origin, or the redirect_uri won't match. Origin still unverified.
+  { slug: "field-reporter", name: "Wanderlearn Field Reporter", origin: "https://wanderlearn.field.reporter.witus.online", callbackPath: "/api/auth/witus/callback" },
 ] as const;
 
 /** The OAuth client_id for an app. Stable, derived from the slug. */
