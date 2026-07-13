@@ -242,6 +242,20 @@ export const products: Product[] = [
     surfaces: ["public-directory", "oidc-client"],
   },
   {
+    slug: "stay-witus",
+    name: "Stay.WitUS",
+    tagline: "Hotel websites that take bookings themselves",
+    description:
+      "White-label hotel websites with real-time booking (mobile money and cards), self-service content management, a vetted concierge partner network, and guest broadcast messaging. Repo: ai-builds/claude/stay-witus.",
+    href: "https://stay.witus.online",
+    accent: "emerald",
+    status: "coming-soon",
+    external: true,
+    // Auth is product-local Better Auth (white-label tenants stay isolated, the
+    // learnwitus precedent) — deliberately NOT an OIDC client.
+    surfaces: ["public-directory"],
+  },
+  {
     slug: "ride-witus",
     name: "RideWitUS",
     tagline: "Community transport, built on the Monon",
