@@ -13,7 +13,8 @@
 // a docs reminder must never wedge a session.
 
 import { execSync } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { readFileSync, statSync, readdirSync } from "node:fs";
+import { join } from "node:path";
 
 function readStdin() {
   try {
@@ -96,7 +97,33 @@ const isDoc = (f) =>
 const featureChanges = changed.filter(isFeature);
 const docChanges = changed.filter(isDoc);
 
-if (featureChanges.length > 0 && docChanges.length === 0) {
+// In this ecosystem `plans/` is gitignored, so the sanctioned "file a plans/ task"
+// deferral never shows up in the git diff. Recognize it directly: if a plans/
+// user-task (or plans/ note) was written/updated recently, treat docs as covered.
+// Keeps the enforcing gate honest without false-blocking registry/config changes
+// whose docs live in plans/.
+function recentPlansActivity(hours = 6) {
+  const cutoff = Date.now() - hours * 3600 * 1000;
+  for (const dir of ["plans/user-tasks", "plans/bugs", "plans"]) {
+    let entries;
+    try {
+      entries = readdirSync(dir);
+    } catch {
+      continue;
+    }
+    for (const e of entries) {
+      if (!/\.md$/.test(e)) continue;
+      try {
+        if (statSync(join(dir, e)).mtimeMs >= cutoff) return true;
+      } catch {
+        /* ignore */
+      }
+    }
+  }
+  return false;
+}
+
+if (featureChanges.length > 0 && docChanges.length === 0 && !recentPlansActivity()) {
   const list = featureChanges.slice(0, 12).map((f) => `  - ${f}`).join("\n");
   const more = featureChanges.length > 12 ? `\n  …and ${featureChanges.length - 12} more` : "";
   block(
