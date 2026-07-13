@@ -101,8 +101,20 @@ export const ECOSYSTEM_APPS: readonly EcosystemApp[] = [
   { slug: "inbox", name: "WitUS Inbox", origin: "https://inbox.witus.online", callbackPath: NEXTAUTH_CB },
   { slug: "triage", name: "WitUS Triage Agent", origin: "https://triage.agent.witus.online", callbackPath: BETTER_AUTH_CB }, // TODO: confirm approval-UI auth lib
   { slug: "outbox", name: "WitUS Outbox", origin: "https://outbox.witus.online", callbackPath: BETTER_AUTH_CB }, // TODO: confirm domain + auth lib
-  // Also at centenarian-coach-multiagent.witus.online; add as a 2nd redirect URI if used.
-  { slug: "coach", name: "Centenarian Coach", origin: "https://centenarian.coach.multiagent.witus.online", callbackPath: BETTER_AUTH_CB }, // TODO: confirm auth lib
+  // Coach is NextAuth v5 (confirmed 2026-07 — genericOAuth "witus" provider added
+  // to its auth.ts), so it uses NEXTAUTH_CB, not BETTER_AUTH_CB. The live-serving
+  // origin is the HYPHENATED host (verified: it serves the app and /signin); the
+  // dotted host is registered as a fallback pending confirmation of the canonical
+  // domain + that NEXTAUTH_URL matches it.
+  {
+    slug: "coach",
+    name: "Centenarian Coach",
+    origin: "https://centenarian-coach-multiagent.witus.online",
+    callbackPath: NEXTAUTH_CB,
+    extraRedirectUris: [
+      "https://centenarian.coach.multiagent.witus.online/api/auth/callback/witus",
+    ],
+  },
   // Also reachable at wanderlearn.stories.witus.online; register that as a second
   // redirect URI too if users sign in from it.
   { slug: "stories", name: "Wanderlearn Stories", origin: "https://stories.wanderlearn.witus.online", callbackPath: BETTER_AUTH_CB }, // TODO: confirm auth lib
