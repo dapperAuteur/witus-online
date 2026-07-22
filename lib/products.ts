@@ -249,10 +249,25 @@ export const products: Product[] = [
       "White-label hotel websites with real-time booking (mobile money and cards), self-service content management, a vetted concierge partner network, and guest broadcast messaging. Repo: ai-builds/claude/stay-witus.",
     href: "https://stay.witus.online",
     accent: "emerald",
-    status: "coming-soon",
+    // Flipped 2026-07-15: live demo at demo.stay.witus.online, booking +
+    // admin + billing all functional; first customer launches Dec 2026.
+    status: "beta",
     external: true,
     // Auth is product-local Better Auth (white-label tenants stay isolated, the
     // learnwitus precedent) — deliberately NOT an OIDC client.
+    surfaces: ["public-directory"],
+  },
+  {
+    slug: "realestate-witus",
+    name: "RealEstate.WitUS",
+    tagline: "360° tours that sell property, embeddable anywhere",
+    description:
+      "Virtual tours for commercial and residential real estate for sale: professionally captured 360° tours as branded listing pages, with copy-paste embeds for agents' own websites. Repo: ai-builds/claude/realestate-witus.",
+    href: "https://realestate.witus.online",
+    accent: "slate",
+    status: "coming-soon",
+    external: true,
+    // Product-local Better Auth like Stay.WitUS — not an OIDC client.
     surfaces: ["public-directory"],
   },
   {
