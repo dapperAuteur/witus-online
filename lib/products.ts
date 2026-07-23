@@ -271,6 +271,20 @@ export const products: Product[] = [
     surfaces: ["public-directory"],
   },
   {
+    slug: "create-witus",
+    name: "Create.WitUS",
+    tagline: "Find someone to make the thing with",
+    description:
+      "A collaboration call board for creators, makers, STEAM folks, and artists. Post a time-bound call — a sign painter for a 3-week mural, a welder for Saturday, a co-writer for a track — and approved members answer it. Profiles show what you make, not your face. Repo: ai-builds/claude/create-witus.",
+    href: "https://create.witus.online",
+    accent: "amber",
+    status: "coming-soon",
+    external: true,
+    signInHref: "https://create.witus.online/auth/sign-in",
+    // "Sign in with WitUS" client — matching entry in lib/identity/clients.ts (slug `create`).
+    surfaces: ["public-directory", "oidc-client"],
+  },
+  {
     slug: "ride-witus",
     name: "RideWitUS",
     tagline: "Community transport, built on the Monon",
