@@ -34,6 +34,25 @@ export interface Product {
   external: boolean;
   signInHref?: string;
   surfaces: Surface[];
+  /**
+   * The matching `slug` in ECOSYSTEM_APPS (lib/identity/clients.ts). REQUIRED whenever
+   * `surfaces` includes "oidc-client"; omit otherwise.
+   *
+   * This exists because the two registries use DIFFERENT slugs for the same product —
+   * `flashlearnai` here is `flashlearn` there, `witus-triage-agent` is `triage`,
+   * `centenarian-coach` is `coach`. Nothing connected them, so "MUST have a matching
+   * entry" was a comment that no code could check: a product could claim SSO with no
+   * registered client and the first sign of it would be a user hitting `invalid_client`.
+   * That is the same class of silent registry gap that took ecosystem sign-in down twice
+   * in July 2026 (centenarianos, then witus.online itself).
+   *
+   * Enforced at runtime by `scripts/check-registries.mjs`, not by the type system:
+   * ECOSYSTEM_APPS is annotated `readonly EcosystemApp[]`, which widens `slug` to
+   * `string`, so a literal union cannot be derived without changing that annotation.
+   * The script also checks things types could not — uniqueness, and clients with no
+   * product entry.
+   */
+  oidcSlug?: string;
 }
 
 export const SITE_URL = "https://witus.online";
@@ -50,6 +69,7 @@ export const products: Product[] = [
     status: "infrastructure",
     external: false,
     signInHref: "/auth/sign-in",
+    oidcSlug: "online",
     surfaces: ["public-directory", "oidc-client"],
   },
   {
@@ -63,6 +83,7 @@ export const products: Product[] = [
     status: "infrastructure",
     external: true,
     signInHref: "https://inbox.witus.online/auth/sign-in",
+    oidcSlug: "inbox",
     surfaces: ["public-directory", "oidc-client"],
   },
   {
@@ -76,6 +97,7 @@ export const products: Product[] = [
     status: "infrastructure",
     external: true,
     signInHref: "https://outbox.witus.online/auth/sign-in",
+    oidcSlug: "outbox",
     surfaces: ["public-directory", "oidc-client"],
   },
   {
@@ -89,6 +111,7 @@ export const products: Product[] = [
     status: "live",
     external: true,
     signInHref: "https://centenarianos.com/login",
+    oidcSlug: "centenarianos",
     surfaces: ["public-directory", "oidc-client"],
   },
   {
@@ -102,6 +125,7 @@ export const products: Product[] = [
     status: "live",
     external: true,
     signInHref: "https://work.witus.online/login",
+    oidcSlug: "work",
     surfaces: ["public-directory", "oidc-client"],
   },
   {
@@ -115,6 +139,7 @@ export const products: Product[] = [
     status: "beta",
     external: true,
     signInHref: "https://tour.witus.online/login",
+    oidcSlug: "tour",
     surfaces: ["public-directory", "oidc-client"],
   },
   {
@@ -128,6 +153,7 @@ export const products: Product[] = [
     status: "beta",
     external: true,
     signInHref: "https://wanderlearn.witus.online/login",
+    oidcSlug: "wanderlearn",
     surfaces: ["public-directory", "oidc-client"],
   },
   {
@@ -141,6 +167,7 @@ export const products: Product[] = [
     status: "beta",
     external: true,
     signInHref: "https://fly.witus.online/login",
+    oidcSlug: "fly",
     surfaces: ["public-directory", "oidc-client"],
   },
   {
@@ -154,6 +181,7 @@ export const products: Product[] = [
     status: "beta",
     external: true,
     signInHref: "https://flashlearnai.witus.online/login",
+    oidcSlug: "flashlearn",
     surfaces: ["public-directory", "oidc-client"],
   },
   {
@@ -170,6 +198,7 @@ export const products: Product[] = [
     // CentenarianOS tile, but we list it here too so teachers looking for the
     // Academy find a door.
     signInHref: "https://centenarianos.com/login",
+    oidcSlug: "learn",
     surfaces: ["public-directory", "oidc-client"],
   },
   {
@@ -200,6 +229,7 @@ export const products: Product[] = [
     external: true,
     // Operator-only dashboard — NextAuth admin sign-in, not a public WitUS account.
     signInHref: "https://triage.agent.witus.online/login",
+    oidcSlug: "triage",
     surfaces: ["public-directory", "oidc-client"],
   },
   {
@@ -213,6 +243,7 @@ export const products: Product[] = [
     status: "beta",
     external: true,
     signInHref: "https://stream.witus.online/login",
+    oidcSlug: "stream",
     surfaces: ["public-directory", "oidc-client"],
   },
   {
@@ -226,6 +257,7 @@ export const products: Product[] = [
     status: "beta",
     external: true,
     signInHref: "https://centenarian.coach.multiagent.witus.online/login",
+    oidcSlug: "coach",
     surfaces: ["public-directory", "oidc-client"],
   },
   {
@@ -239,6 +271,7 @@ export const products: Product[] = [
     status: "infrastructure",
     external: true,
     signInHref: "https://shop.witus.online/login",
+    oidcSlug: "shop",
     surfaces: ["public-directory", "oidc-client"],
   },
   {
@@ -282,6 +315,7 @@ export const products: Product[] = [
     external: true,
     signInHref: "https://create.witus.online/auth/sign-in",
     // "Sign in with WitUS" client — matching entry in lib/identity/clients.ts (slug `create`).
+    oidcSlug: "create",
     surfaces: ["public-directory", "oidc-client"],
   },
   {
@@ -297,6 +331,7 @@ export const products: Product[] = [
     signInHref: "https://ride.witus.online/login",
     // Real standalone product; was missing from this registry while present in
     // lib/identity/clients.ts. Added 2026-07-04 during registry reconciliation.
+    oidcSlug: "ride",
     surfaces: ["public-directory", "oidc-client"],
   },
   {
@@ -310,6 +345,7 @@ export const products: Product[] = [
     status: "infrastructure",
     external: true,
     signInHref: "https://wanderlearn.field.reporter.witus.online/login",
+    oidcSlug: "field-reporter",
     surfaces: ["public-directory", "oidc-client"],
   },
   {
@@ -326,6 +362,7 @@ export const products: Product[] = [
     // Registered as an OIDC client (present in lib/identity/clients.ts as `stories`)
     // but intentionally NOT surfaced in the public product directory — it's part of
     // Wanderlearn, not a separate product. Added 2026-07-04 during reconciliation.
+    oidcSlug: "stories",
     surfaces: ["oidc-client"],
   },
 ];
