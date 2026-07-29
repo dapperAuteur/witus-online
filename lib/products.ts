@@ -249,11 +249,40 @@ export const products: Product[] = [
       "White-label hotel websites with real-time booking (mobile money and cards), self-service content management, a vetted concierge partner network, and guest broadcast messaging. Repo: ai-builds/claude/stay-witus.",
     href: "https://stay.witus.online",
     accent: "emerald",
-    status: "coming-soon",
+    // Flipped 2026-07-15: live demo at demo.stay.witus.online, booking +
+    // admin + billing all functional; first customer launches Dec 2026.
+    status: "beta",
     external: true,
     // Auth is product-local Better Auth (white-label tenants stay isolated, the
     // learnwitus precedent) — deliberately NOT an OIDC client.
     surfaces: ["public-directory"],
+  },
+  {
+    slug: "realestate-witus",
+    name: "RealEstate.WitUS",
+    tagline: "360° tours that sell property, embeddable anywhere",
+    description:
+      "Virtual tours for commercial and residential real estate for sale: professionally captured 360° tours as branded listing pages, with copy-paste embeds for agents' own websites. Repo: ai-builds/claude/realestate-witus.",
+    href: "https://realestate.witus.online",
+    accent: "slate",
+    status: "coming-soon",
+    external: true,
+    // Product-local Better Auth like Stay.WitUS — not an OIDC client.
+    surfaces: ["public-directory"],
+  },
+  {
+    slug: "create-witus",
+    name: "Create.WitUS",
+    tagline: "Find someone to make the thing with",
+    description:
+      "A collaboration call board for creators, makers, STEAM folks, and artists. Post a time-bound call — a sign painter for a 3-week mural, a welder for Saturday, a co-writer for a track — and approved members answer it. Profiles show what you make, not your face. Repo: ai-builds/claude/create-witus.",
+    href: "https://create.witus.online",
+    accent: "amber",
+    status: "coming-soon",
+    external: true,
+    signInHref: "https://create.witus.online/auth/sign-in",
+    // "Sign in with WitUS" client — matching entry in lib/identity/clients.ts (slug `create`).
+    surfaces: ["public-directory", "oidc-client"],
   },
   {
     slug: "ride-witus",
