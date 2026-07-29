@@ -1,4 +1,5 @@
 import type { Accent, ProductStatus } from "@/lib/products";
+import { ProductLink } from "@/components/ProductLink";
 
 interface ProductCardProps {
   name: string;
@@ -8,6 +9,8 @@ interface ProductCardProps {
   accentColor: Accent;
   status?: ProductStatus;
   external?: boolean;
+  /** Stable product slug, used as the analytics identity for this card. */
+  slug: string;
 }
 
 type AccentStyle = {
@@ -113,6 +116,7 @@ export default function ProductCard({
   accentColor,
   status = "live",
   external = true,
+  slug,
 }: ProductCardProps) {
   const styles = accentStyles[accentColor];
   const isDisabled = status === "coming-soon";
@@ -157,20 +161,14 @@ export default function ProductCard({
           Coming soon
         </span>
       ) : (
-        <a
+        <ProductLink
           href={href}
-          target={external ? "_blank" : undefined}
-          rel={external ? "noopener noreferrer" : undefined}
+          name={name}
+          slug={slug}
+          status={status}
+          external={external}
           className={ctaClasses}
-        >
-          <span>Open {name}</span>
-          <span aria-hidden="true" className="ml-2">
-            &rarr;
-          </span>
-          {external && (
-            <span className="sr-only"> (opens in new tab)</span>
-          )}
-        </a>
+        />
       )}
     </article>
   );
