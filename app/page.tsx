@@ -156,6 +156,7 @@ export default function HomePage() {
           {marketingProducts.map((product) => (
             <ProductCard
               key={product.slug}
+              slug={product.slug}
               name={product.name}
               tagline={product.tagline}
               description={product.description}
@@ -188,6 +189,7 @@ export default function HomePage() {
             {infrastructureProducts.map((product) => (
               <ProductCard
                 key={product.slug}
+                slug={product.slug}
                 name={product.name}
                 tagline={product.tagline}
                 description={product.description}
