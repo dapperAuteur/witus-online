@@ -115,6 +115,7 @@ to. That host is what must be registered; no env var can override it.
 ```bash
 node scripts/gen-oidc-client.mjs <slug>   # mint an OAuth client for a registered app
 node scripts/check-oidc-env.mjs [file]    # audit WITUS_OIDC_* against the registry
+node scripts/sync-library.mjs <files...>  # upsert local markdown into the private library
 ```
 
 **`gen-oidc-client.mjs`** generates a `client_id` + `client_secret` for one app and prints which
@@ -131,6 +132,13 @@ safe to run in a shared terminal or CI log.
 Both know that the host app legitimately sets the same secret under two names
 (`WITUS_OIDC_CLIENT_SECRET` and `WITUS_OIDC_SECRET__ONLINE`), since it is its own client, and
 report that pair as correct rather than as reuse.
+
+**`sync-library.mjs`** uploads long-form internal documents (interview prep, the commercial
+playbook, per-app chapters) into the `library_document` table, readable at `/admin/library` by
+the `ADMIN_EMAIL` account only. The content deliberately lives in the database rather than the
+repo: this repo is public, so committing the markdown would publish it regardless of the auth
+gate. Slug comes from the filename (minus any `YYYY-MM-DD-` prefix), title from the first `# `
+heading, ordering from argument position. Re-running upserts in place.
 
 ### Database
 
