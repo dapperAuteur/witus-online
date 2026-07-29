@@ -68,7 +68,22 @@ export const ECOSYSTEM_APPS: readonly EcosystemApp[] = [
   // The host app itself. Currently NextAuth v4; migrates to better-auth (then use
   // BETTER_AUTH_CB). As the IdP host it can also read the session directly, but it
   // is registered as a client so the flow is uniform.
-  { slug: "online", name: "WitUS.online", origin: "https://witus.online", callbackPath: NEXTAUTH_CB },
+  //
+  // `www` is PRIMARY here, and that is not a style choice. Verified live 2026-07-28:
+  // https://witus.online 307s to https://www.witus.online, so www is the host that
+  // actually serves the app. NextAuth v4 builds redirect_uri from the REQUEST HOST,
+  // not from env — on Vercel `detectOrigin()` reads x-forwarded-host and ignores
+  // NEXTAUTH_URL entirely (next-auth/utils/detect-origin.js). So the app sends
+  // https://www.witus.online/api/auth/callback/witus and setting NEXTAUTH_URL cannot
+  // change that. The apex is kept as a fallback in case the canonical host ever flips.
+  // Same failure + same fix as centenarianos below (commit 8303045).
+  {
+    slug: "online",
+    name: "WitUS.online",
+    origin: "https://www.witus.online",
+    callbackPath: NEXTAUTH_CB,
+    extraRedirectUris: ["https://witus.online/api/auth/callback/witus"],
+  },
   { slug: "flashlearn", name: "FlashLearnAI", origin: "https://flashlearnai.witus.online", callbackPath: NEXTAUTH_CB },
   { slug: "wanderlearn", name: "Wanderlearn", origin: "https://wanderlearn.witus.online", callbackPath: BETTER_AUTH_CB },
   { slug: "fly", name: "Fly.WitUS", origin: "https://fly.witus.online", callbackPath: BETTER_AUTH_CB },
