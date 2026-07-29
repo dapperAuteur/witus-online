@@ -115,6 +115,7 @@ to. That host is what must be registered; no env var can override it.
 ```bash
 node scripts/gen-oidc-client.mjs <slug>   # mint an OAuth client for a registered app
 node scripts/check-oidc-env.mjs [file]    # audit WITUS_OIDC_* against the registry
+node scripts/check-sentry-scrub.mjs       # prove the error-report scrubber removes credentials
 ```
 
 **`gen-oidc-client.mjs`** generates a `client_id` + `client_secret` for one app and prints which
@@ -131,6 +132,35 @@ safe to run in a shared terminal or CI log.
 Both know that the host app legitimately sets the same secret under two names
 (`WITUS_OIDC_CLIENT_SECRET` and `WITUS_OIDC_SECRET__ONLINE`), since it is its own client, and
 report that pair as correct rather than as reuse.
+
+**`check-sentry-scrub.mjs`** builds a Sentry event carrying realistically-shaped credentials (a
+magic-link callback URL, an OIDC `code` and `client_secret`, a `postgres://` and an `smtp://` URI
+with the password inline, a JWT, a session cookie, an HMAC, a learner email), runs it through
+`lib/sentry-scrub.ts`, then fails if any of those values survives **anywhere** in the serialised
+payload. Needs no DSN, no network, and no test runner. It caught two real leaks on its first run.
+
+## Error monitoring
+
+Crash reporting goes to **Better Stack**, which ingests over the Sentry protocol, so the code is the
+standard `@sentry/nextjs` SDK and switching vendors later is one env var.
+
+**It is inert until a DSN is set.** Every init is guarded (`SENTRY_DSN` for the server and edge
+runtimes, `NEXT_PUBLIC_SENTRY_DSN` for the browser), so with the vars unset nothing initialises and
+nothing is sent. See `.env.example` for the full list, and `plans/user-tasks/` for the provisioning
+task.
+
+| File | Role |
+|---|---|
+| `lib/sentry-scrub.ts` | `beforeSend` scrubber. Drops `user.email` / `ip_address` / `username`, request cookies, and the `cookie` / `authorization` / `set-cookie` / `x-witus-signature` headers; redacts token-bearing URLs, credentialed `postgres://` + `smtp://` URIs, JWTs, emails, and labelled secrets from messages, exception values, request data, breadcrumbs, and `extra` |
+| `instrumentation.ts` | `register()` per runtime + `onRequestError`, tagging the request host (this deployment answers as both the marketing site and the IdP) |
+| `instrumentation-client.ts` | Browser init + `onRouterTransitionStart` |
+| `sentry.server.config.ts` / `sentry.edge.config.ts` | Per-runtime init, `tracesSampleRate: 0`, `sendDefaultPii: false` |
+| `app/global-error.tsx` | `captureException` for root-layout crashes, which never reach `onRequestError` |
+
+The scrubber is deliberately stricter than a default install because this deployment is the
+ecosystem's **IdP**: a crash here can carry a magic-link token, an OIDC client secret, or the
+inline password from `EMAIL_SERVER` / `STORAGE_DATABASE_URL`. Run `node scripts/check-sentry-scrub.mjs`
+after touching it.
 
 ### Database
 
