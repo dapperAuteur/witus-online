@@ -60,6 +60,11 @@ const NEXTAUTH_CB = "/api/auth/callback/witus";
  *    keep isolated tenant-branded magic-link auth; a redirect to the IdP would
  *    reveal the shared backend. SSO is gated per-tenant inside learnwitus; only
  *    the WitUS-branded `learn.witus.online` tenant participates (the `learn` entry).
+ *  - Stay.WitUS HOTEL TENANT DOMAINS (custom domains and any `*.stay.witus.online`
+ *    tenant host) — same rule, same reason. Only the WitUS-branded `stay.witus.online`
+ *    operator surface participates (the `stay` entry below). Deliberately NOT
+ *    registering tenant hosts is what makes the rule self-enforcing: a tenant site
+ *    attempting the WitUS flow sends an unregistered redirect_uri and gets a 400.
  *  - `awesomewebstore.com` — the Shopify storefront. Stays out until it migrates off
  *    Shopify. (Distinct from `shop.witus.online`, the better-auth shop-witus app, which
  *    IS a client below as `shop`.)
@@ -103,6 +108,20 @@ export const ECOSYSTEM_APPS: readonly EcosystemApp[] = [
   { slug: "work", name: "Work.WitUS", origin: "https://work.witus.online", callbackPath: BETTER_AUTH_CB },
   // learnwitus — WitUS-branded base tenant ONLY (white-label tenants excluded above).
   { slug: "learn", name: "Learn.WitUS", origin: "https://learn.witus.online", callbackPath: BETTER_AUTH_CB },
+  // Stay.WitUS — WitUS-branded operator surface ONLY. Hotel tenant domains keep
+  // product-local magic-link auth (see the exclusion note above).
+  //
+  // Better Auth 1.6.23 confirmed in stay-witus/package.json, so BETTER_AUTH_CB is
+  // correct — but the genericOAuth plugin is NOT wired there yet: its auth.ts currently
+  // runs magicLink + nextCookies only. This entry therefore lands AHEAD of the client,
+  // the same way `create` did. It stays inert until WITUS_OIDC_SECRET__STAY is set here,
+  // because buildTrustedClients() skips any app whose secret is unset.
+  //
+  // NOTE for whoever wires the client side: stay-witus resolves tenants by hostname
+  // (getTenantByHost) and its trustedOrigins include the wildcard `https://*.witus.online`.
+  // The WitUS sign-in option must be gated to the WitUS-branded host, NOT rendered on
+  // tenant hosts — otherwise a hotel's guests get redirected to accounts.witus.online.
+  { slug: "stay", name: "Stay.WitUS", origin: "https://stay.witus.online", callbackPath: BETTER_AUTH_CB },
   { slug: "stream", name: "Stream.WitUS", origin: "https://stream.witus.online", callbackPath: BETTER_AUTH_CB },
   // Commerce surfaces. shop.witus.online is the better-auth shop-witus app (distinct
   // from awesomewebstore.com, still on Shopify — see exclusion note above).
