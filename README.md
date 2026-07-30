@@ -116,6 +116,7 @@ to. That host is what must be registered; no env var can override it.
 node scripts/gen-oidc-client.mjs <slug>   # mint an OAuth client for a registered app
 node scripts/check-oidc-env.mjs [file]    # audit WITUS_OIDC_* against the registry
 node scripts/check-sentry-scrub.mjs       # prove the error-report scrubber removes credentials
+node scripts/sync-library.mjs <files...>  # upsert local markdown into the private library
 ```
 
 **`gen-oidc-client.mjs`** generates a `client_id` + `client_secret` for one app and prints which
@@ -139,6 +140,22 @@ with the password inline, a JWT, a session cookie, an HMAC, a learner email), ru
 `lib/sentry-scrub.ts`, then fails if any of those values survives **anywhere** in the serialised
 payload. Needs no DSN, no network, and no test runner. It caught two real leaks on its first run.
 
+**`sync-library.mjs`** uploads long-form internal documents (interview prep, the commercial
+playbook, per-app chapters) into the `library_document` table, readable at `/admin/library` by
+the `ADMIN_EMAIL` account only. The content deliberately lives in the database rather than the
+repo: this repo is public, so committing the markdown would publish it regardless of the auth
+gate. Slug comes from the filename (minus any `YYYY-MM-DD-` prefix), title from the first `# `
+heading, ordering from argument position. Re-running upserts in place.
+
+### Database
+
+```bash
+npm run db:generate          # site DB — generate migration from schema
+npm run db:migrate           # site DB — apply migrations
+npm run db:identity:generate # identity DB — generate migration
+npm run db:identity:migrate  # identity DB — apply migrations
+```
+
 ## Error monitoring
 
 Crash reporting goes to **Better Stack**, which ingests over the Sentry protocol, so the code is the
@@ -161,15 +178,6 @@ The scrubber is deliberately stricter than a default install because this deploy
 ecosystem's **IdP**: a crash here can carry a magic-link token, an OIDC client secret, or the
 inline password from `EMAIL_SERVER` / `STORAGE_DATABASE_URL`. Run `node scripts/check-sentry-scrub.mjs`
 after touching it.
-
-### Database
-
-```bash
-npm run db:generate          # site DB — generate migration from schema
-npm run db:migrate           # site DB — apply migrations
-npm run db:identity:generate # identity DB — generate migration
-npm run db:identity:migrate  # identity DB — apply migrations
-```
 
 ## Design
 

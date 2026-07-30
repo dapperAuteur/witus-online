@@ -286,9 +286,17 @@ export const products: Product[] = [
     // admin + billing all functional; first customer launches Dec 2026.
     status: "beta",
     external: true,
-    // Auth is product-local Better Auth (white-label tenants stay isolated, the
-    // learnwitus precedent) — deliberately NOT an OIDC client.
-    surfaces: ["public-directory"],
+    signInHref: "https://stay.witus.online/sign-in",
+    // SSO applies to the WitUS-BRANDED host only (stay.witus.online) — the platform
+    // owner + staff surface. Hotel tenant sites keep product-local Better Auth magic
+    // links, sent from the hotel's own domain under the hotel's brand
+    // (stay-witus/src/lib/auth.ts, getTenantByHost) — the learnwitus white-label
+    // precedent. A "Sign in with WitUS" button on a hotel's site would reveal the
+    // shared backend to that hotel's guests, which is the thing the rule exists to
+    // prevent. Registering ONLY this origin enforces that: a tenant custom domain
+    // would send an unregistered redirect_uri and fail closed.
+    surfaces: ["public-directory", "oidc-client"],
+    oidcSlug: "stay",
   },
   {
     slug: "realestate-witus",

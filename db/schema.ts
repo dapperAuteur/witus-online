@@ -117,3 +117,19 @@ export const invitations = pgTable("invitation", {
     .notNull()
     .defaultNow(),
 });
+
+// Private library — long-form internal ebooks (interview prep, commercial
+// playbook) readable only by the ADMIN_EMAIL account at /admin/library.
+// Content lives in the DB, never in this (public) repo; it is upserted from
+// local markdown via `node scripts/sync-library.mjs <files...>`.
+export const libraryDocuments = pgTable("library_document", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  slug: text("slug").notNull().unique(),
+  title: text("title").notNull(),
+  description: text("description"),
+  content: text("content").notNull(),
+  sortOrder: integer("sort_order").notNull().default(0),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
