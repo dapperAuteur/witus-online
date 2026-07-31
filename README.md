@@ -156,6 +156,43 @@ npm run db:identity:generate # identity DB — generate migration
 npm run db:identity:migrate  # identity DB — apply migrations
 ```
 
+## Uptime monitoring
+
+**Point every uptime monitor at `/api/health`, not at `/`.**
+
+`/` is a statically prerendered marketing page, so it answers 200 from the CDN whether or not the
+database is reachable. A green check on it means "Vercel is up", which is not the question anyone
+is asking. `/api/health` (`app/api/health/route.ts`) runs a real `SELECT 1` against the site
+database on every request, so a green check means the app can serve real data.
+
+| Condition | Status | Body |
+|---|---|---|
+| Database answered | `200` | `{"ok":true,"checks":{"database":"ok"},"time":"<ISO>"}` |
+| Anything else | `503` | `{"ok":false,"error":"database_unreachable","time":"<ISO>"}` |
+
+`HEAD` is supported and returns the same status with no body, for monitors that probe that way.
+
+Four properties are load-bearing, so keep them if you touch the route:
+
+- **The failure body is a fixed literal.** It never contains the underlying error. `STORAGE_DATABASE_URL`
+  is a `postgres://` URI with the password **inline**, and a connection failure puts it verbatim in
+  the error message (the same hazard `lib/sentry-scrub.ts` exists to contain). This endpoint is
+  public and unauthenticated, so every failure collapses to `database_unreachable`: no message, no
+  stack, no host, no cause. The failure path logs a constant string for the same reason, rather than
+  the error object.
+- **It reports nothing else.** No version, no commit, no env values, no counts.
+- **Never cached**, via `dynamic = "force-dynamic"` plus `Cache-Control: no-store`. A cached health
+  check is the exact failure this route was added to fix.
+- **4 second ceiling**, enforced twice (an `AbortSignal.timeout` on the fetch and a `Promise.race`
+  around the query), so a hung database returns 503 quickly instead of holding the monitor open
+  until its own timeout fires and reports an ambiguous "request timed out".
+
+It deliberately does **not** go through `getEnv()` / `getDb()`. `lib/env.ts` validates the whole env
+at once, so a missing `NEXTAUTH_SECRET` or `EMAIL_FROM` would make the endpoint report "unhealthy"
+for a mail-config gap unrelated to whether the app and database are alive. It reads the connection
+string straight from `STORAGE_DATABASE_URL` / `DATABASE_URL` instead, accepting both names exactly
+as `lib/env.ts` normalizes them.
+
 ## Error monitoring
 
 Crash reporting goes to **Better Stack**, which ingests over the Sentry protocol, so the code is the
