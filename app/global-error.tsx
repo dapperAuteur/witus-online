@@ -1,5 +1,6 @@
 "use client";
 
+import * as Sentry from "@sentry/nextjs";
 import { useEffect } from "react";
 
 export default function GlobalError({
@@ -14,6 +15,10 @@ export default function GlobalError({
       digest: error.digest,
       message: error.message,
     });
+    // A root-layout crash never reaches onRequestError, so this boundary is the only place it can
+    // be reported from. No-op when no NEXT_PUBLIC_SENTRY_DSN is set (the SDK was never initialised),
+    // and the beforeSend scrub in lib/sentry-scrub.ts still applies when it is.
+    Sentry.captureException(error);
   }, [error]);
 
   return (

@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { withSentryConfig } from "@sentry/nextjs";
 
 const nextConfig: NextConfig = {
   // PostHog's endpoints use trailing slashes (/e/, /flags/, /s/). Without this, Next
@@ -51,4 +52,18 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+// Wrap with Sentry's build plugin (Better Stack ingests over the Sentry protocol). Safe with no
+// Sentry env set: without SENTRY_AUTH_TOKEN it simply skips source-map upload, so you just get
+// minified stack traces, and the runtime SDK stays inert without a DSN. org/project/authToken all
+// come from env so nothing secret is committed here.
+export default withSentryConfig(nextConfig, {
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+  silent: !process.env.CI,
+  widenClientFileUpload: true,
+  // Kept for parity with the rest of the ecosystem's Sentry setup. NOTE: on @sentry/nextjs 10 this
+  // prints a deprecation warning at build time and is a no-op under Turbopack (which `next build`
+  // uses by default in Next 16). Its replacement is `webpack.treeshake.removeDebugLogging`, which
+  // is webpack-only. Harmless either way; the warning is the only visible effect.
+  disableLogger: true,
+});
