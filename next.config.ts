@@ -61,9 +61,10 @@ export default withSentryConfig(nextConfig, {
   project: process.env.SENTRY_PROJECT,
   silent: !process.env.CI,
   widenClientFileUpload: true,
-  // Kept for parity with the rest of the ecosystem's Sentry setup. NOTE: on @sentry/nextjs 10 this
-  // prints a deprecation warning at build time and is a no-op under Turbopack (which `next build`
-  // uses by default in Next 16). Its replacement is `webpack.treeshake.removeDebugLogging`, which
-  // is webpack-only. Harmless either way; the warning is the only visible effect.
-  disableLogger: true,
+  webpack: {
+    // Strips the SDK's own debug logging from the bundle. Replaces the deprecated top-level
+    // `disableLogger` option. Webpack-only, so it is a no-op under Turbopack (same as the old
+    // flag was), but it silences the v10 deprecation warning.
+    treeshake: { removeDebugLogging: true },
+  },
 });
