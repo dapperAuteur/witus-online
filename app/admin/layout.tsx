@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { getEnv } from "@/lib/env";
+import { isAdminEmail } from "@/lib/admin-auth";
 import { SignOutButton } from "./SignOutButton";
 
 export const dynamic = "force-dynamic";
@@ -16,8 +16,7 @@ export default async function AdminLayout({
   if (!session?.user?.email) {
     redirect("/auth/sign-in?callbackUrl=/admin");
   }
-  const adminEmail = getEnv().ADMIN_EMAIL.toLowerCase();
-  if (session.user.email.toLowerCase() !== adminEmail) {
+  if (!isAdminEmail(session.user.email)) {
     return (
       <main
         id="main"

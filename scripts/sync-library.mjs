@@ -10,6 +10,10 @@
  * Slug = filename without extension and without a leading YYYY-MM-DD- prefix.
  * Title = first `# ` heading (falls back to the slug).
  * Sort order = position in the argument list.
+ * PDF = the sibling `<same-name>.pdf`, if one sits next to the markdown. It is
+ *   stored base64 encoded (see db/schema.ts for why base64 and not bytea) and
+ *   served by /admin/library/<slug>/download. No sibling file means the column
+ *   is cleared, so deleting a stale PDF locally removes it here on the next run.
  */
 import { readFileSync } from "node:fs";
 import { basename } from "node:path";
@@ -62,6 +66,18 @@ function descriptionFor(content) {
   return null;
 }
 
+/** Reads the sibling `<markdown path minus .md>.pdf`, or null when there is none. */
+function pdfFor(file) {
+  const path = file.replace(/\.md$/i, ".pdf");
+  try {
+    const buf = readFileSync(path);
+    return { base64: buf.toString("base64"), bytes: buf.length, path };
+  } catch (err) {
+    if (err.code === "ENOENT") return null;
+    throw err;
+  }
+}
+
 const sql = neon(dbUrl);
 
 let order = 0;
@@ -70,27 +86,34 @@ for (const file of files) {
   const slug = slugFor(file);
   const title = titleFor(content, slug);
   const description = descriptionFor(content);
+  const pdf = pdfFor(file);
   order += 10;
   await sql`
-    INSERT INTO library_document (slug, title, description, content, sort_order, updated_at)
-    VALUES (${slug}, ${title}, ${description}, ${content}, ${order}, now())
+    INSERT INTO library_document (slug, title, description, content, pdf, pdf_bytes, sort_order, updated_at)
+    VALUES (${slug}, ${title}, ${description}, ${content}, ${pdf?.base64 ?? null}, ${pdf?.bytes ?? null}, ${order}, now())
     ON CONFLICT (slug) DO UPDATE SET
       title = excluded.title,
       description = excluded.description,
       content = excluded.content,
+      pdf = excluded.pdf,
+      pdf_bytes = excluded.pdf_bytes,
       sort_order = excluded.sort_order,
       updated_at = now()
   `;
-  console.log(`upserted ${slug}  (${title})`);
+  const pdfNote = pdf
+    ? `+ pdf ${basename(pdf.path)} (${pdf.bytes}B)`
+    : "no sibling pdf";
+  console.log(`upserted ${slug}  (${title})  ${pdfNote}`);
 }
 
 const rows = await sql`
-  SELECT slug, title, length(content) AS bytes, sort_order, updated_at
+  SELECT slug, title, length(content) AS bytes, pdf_bytes, sort_order, updated_at
   FROM library_document ORDER BY sort_order, title
 `;
 console.log("\nlibrary_document now contains:");
 for (const r of rows) {
+  const pdfCol = r.pdf_bytes == null ? "no pdf" : `pdf ${r.pdf_bytes}B`;
   console.log(
-    `  ${String(r.sort_order).padStart(3)}  ${r.slug}  ${r.bytes}B  ${r.updated_at.toISOString?.() ?? r.updated_at}`
+    `  ${String(r.sort_order).padStart(3)}  ${r.slug}  ${r.bytes}B  ${pdfCol}  ${r.updated_at.toISOString?.() ?? r.updated_at}`
   );
 }

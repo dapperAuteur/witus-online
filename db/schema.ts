@@ -128,6 +128,19 @@ export const libraryDocuments = pgTable("library_document", {
   title: text("title").notNull(),
   description: text("description"),
   content: text("content").notNull(),
+  // The sibling PDF of the markdown source, base64 encoded, so the owner can
+  // download the typeset copy instead of only reading the rendered markdown.
+  // Base64 in `text` rather than `bytea` on purpose: the runtime client is the
+  // Neon HTTP driver (db/index.ts), which hands binary columns back as a
+  // driver-formatted string rather than a Buffer, and drizzle has no bytea
+  // column type, so a `customType` would have to re-parse that format on every
+  // read. Base64 round-trips losslessly through both the driver and the plain
+  // `sql` tagged template the sync script uses. Cost is roughly 33% extra
+  // storage on files under a megabyte. NULL when no sibling PDF was found.
+  pdf: text("pdf"),
+  // Size of the DECODED pdf in bytes, so the UI can show a file size without
+  // pulling the payload. Set together with `pdf`; NULL exactly when it is NULL.
+  pdfBytes: integer("pdf_bytes"),
   sortOrder: integer("sort_order").notNull().default(0),
   updatedAt: timestamp("updated_at", { withTimezone: true })
     .notNull()
