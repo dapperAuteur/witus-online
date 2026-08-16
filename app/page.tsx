@@ -181,7 +181,7 @@ export default function HomePage() {
           >
             Infrastructure &amp; Agents
           </h2>
-          <p className="text-slate-500 text-sm mb-6 max-w-2xl">
+          <p className="text-slate-400 text-sm mb-6 max-w-2xl">
             The shared services and AI agents that the products run on — operator
             tools, not consumer apps.
           </p>

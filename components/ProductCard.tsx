@@ -81,7 +81,9 @@ const accentStyles: Record<Accent, AccentStyle> = {
   slate: {
     border: "border-slate-500/30 hover:border-slate-500/60",
     badge: "bg-slate-500/10 text-slate-300 border border-slate-500/20",
-    button: "bg-slate-500 hover:bg-slate-400 text-slate-950",
+    // slate-500 only reaches 4.23:1 against slate-950 text, so this accent
+    // rests one shade lighter than the others (AA needs >= 4.5:1).
+    button: "bg-slate-400 hover:bg-slate-300 text-slate-950",
     dot: "bg-slate-400",
     focus: "focus-visible:outline-slate-300",
   },

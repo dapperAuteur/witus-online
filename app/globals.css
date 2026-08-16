@@ -12,9 +12,13 @@ body {
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
 }
 
-a {
-  color: inherit;
-}
+/*
+ * Do NOT add an unlayered `a { color: inherit; }` rule here. Tailwind's
+ * preflight (in @layer base) already makes anchors inherit color, and an
+ * unlayered duplicate outranks every text-* utility (unlayered CSS beats
+ * @layer utilities), silently forcing all link text to the body color —
+ * which broke WCAG AA contrast on the product-card CTAs.
+ */
 
 @media (prefers-reduced-motion: reduce) {
   *,

@@ -184,7 +184,7 @@ function RiseWellnessCallout() {
         >
           Rise Wellness of Indiana
         </h2>
-        <p className="text-xs text-slate-500 mt-0.5">
+        <p className="text-xs text-slate-400 mt-0.5">
           Independent mental health provider · Not affiliated with WitUS
         </p>
       </header>
@@ -198,7 +198,7 @@ function RiseWellnessCallout() {
 
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
         <div className="space-y-1">
-          <p className="text-[11px] uppercase tracking-wide text-slate-500 font-semibold">
+          <p className="text-[11px] uppercase tracking-wide text-slate-400 font-semibold">
             Services
           </p>
           <ul className="text-xs text-slate-300 space-y-0.5">
@@ -213,7 +213,7 @@ function RiseWellnessCallout() {
         </div>
 
         <div className="space-y-1">
-          <p className="text-[11px] uppercase tracking-wide text-slate-500 font-semibold">
+          <p className="text-[11px] uppercase tracking-wide text-slate-400 font-semibold">
             Visit or call
           </p>
           <address className="not-italic text-xs text-slate-300 leading-relaxed">
@@ -266,7 +266,7 @@ function RiseWellnessCallout() {
         above challenges and live a fulfilling, healthy life. Our care is
         guided by the belief that healing is personal, holistic, and rooted
         in compassion.&rdquo;
-        <span className="block not-italic mt-1 text-slate-500">
+        <span className="block not-italic mt-1 text-slate-400">
           Rise Wellness of Indiana
         </span>
       </blockquote>
@@ -274,7 +274,7 @@ function RiseWellnessCallout() {
       {/* === NON-NEGOTIABLE DISCLAIMER ===
            Edit ONLY the app name token. Don't paraphrase. Don't trim.
            Don't reorder. This was vetted with the partner. */}
-      <p className="mt-4 text-[11px] leading-relaxed text-slate-500">
+      <p className="mt-4 text-[11px] leading-relaxed text-slate-400">
         Rise Wellness of Indiana is an independent organization. They are
         not affiliated with, employed by, or endorsed by WitUS,
         CentenarianOS, B4C LLC, AwesomeWebStore.com, or Anthony McDonald.
