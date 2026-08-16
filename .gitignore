@@ -10,3 +10,7 @@ tsconfig.tsbuildinfo
 .env.local
 
 next-env.d.ts
+
+# Playwright output
+test-results/
+playwright-report/

@@ -216,6 +216,35 @@ ecosystem's **IdP**: a crash here can carry a magic-link token, an OIDC client s
 inline password from `EMAIL_SERVER` / `STORAGE_DATABASE_URL`. Run `node scripts/check-sentry-scrub.mjs`
 after touching it.
 
+## Distributed tracing
+
+Traces go to **Honeycomb** over OTLP via `@vercel/otel` (`otel.config.ts`, registered from
+`instrumentation.ts` **before** the Sentry configs load — whoever registers the global tracer
+provider first wins, and Sentry is told to stand down via `skipOpenTelemetrySetup`). Service name is
+`witus-online` for both hostnames; spans carry the request host for splitting.
+
+- **Inert until the key is set**: `HONEYCOMB_INGEST_API_KEY_SECRET` (fallback `HONEYCOMB_API_KEY`).
+  Same guard pattern as the Sentry DSN.
+- **`/api/health` spans are dropped at the sampler** — uptime monitors probe it around the clock,
+  and those requests must not spend Honeycomb's free-tier event budget.
+- The point is the **cross-app trace**: outbound `fetch` propagates W3C `traceparent`, the Inbox
+  persists it per submission, and the triage agent continues it — one waterfall from a form submit
+  to the triage run. Design + rollout: `plans/30-observability-e2e-tutorials-rollout.md`.
+
+## E2E + accessibility CI
+
+Playwright specs live in `e2e/`; the gate runs in `.github/workflows/e2e.yml` on `deployment_status`
+— it tests the **real Vercel deployment URL** (preview → full suite, production → `@smoke` only), so
+CI needs no secrets, database, or env. The suite runs desktop plus a 360px mobile project (the
+charter is mobile-first), and every covered page must pass an axe check with **zero serious or
+critical WCAG A/AA violations** — the gate is strict on purpose; fix the page, not the gate.
+
+- Local runs: `PLAYWRIGHT_BASE_URL=<url> npx playwright test` (drives installed Chrome; Playwright's
+  bundled chromium doesn't support macOS 13).
+- If the Vercel project enables Deployment Protection, set the project's "Protection Bypass for
+  Automation" secret as the `VERCEL_AUTOMATION_BYPASS_SECRET` Actions secret; public previews need
+  nothing.
+
 ## Design
 
 - **Navy foundation** (`#020617`) with white text, neutral, not product-specific

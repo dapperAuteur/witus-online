@@ -7,6 +7,11 @@ import type { Instrumentation } from "next";
 // No src/ directory in this repo, so both this file and the sentry.*.config.ts files live at the
 // project root and the imports below are siblings.
 export async function register() {
+  // OTel first: it must own the global tracer provider before Sentry loads (Sentry is told to skip
+  // its own OTel setup — see sentry.server.config.ts). Inert without the Honeycomb key.
+  const { registerHoneycombOtel } = await import("./otel.config");
+  registerHoneycombOtel();
+
   if (process.env.NEXT_RUNTIME === "nodejs") await import("./sentry.server.config");
   if (process.env.NEXT_RUNTIME === "edge") await import("./sentry.edge.config");
 }
