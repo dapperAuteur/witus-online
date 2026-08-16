@@ -139,8 +139,12 @@ export function SiteFooter() {
                   Rise Wellness
                   <span className="sr-only"> (mental-health partner — opens in new tab)</span>
                 </a>
-                {/* [swap] — muted text */}
-                <p className="text-xs text-gray-400 leading-tight">Mental-health partner</p>
+                {/* [swap] — muted text. Contrast rule: whatever muted class you swap in must
+                    still meet WCAG AA 4.5:1 on YOUR page background. gray-400/slate-400 on
+                    white is ~2.6:1 and fails axe as `serious` (this shipped in three apps
+                    before the e2e gate caught it). gray-500 on white ≈ 4.8:1; on dark
+                    backgrounds invert the pair (e.g. 500 light / 400 dark). */}
+                <p className="text-xs text-gray-500 leading-tight">Mental-health partner</p>
               </li>
               <li className="pt-2">
                 <a href="https://witus.online/terms" target="_blank" rel="noopener noreferrer" className={linkClasses}>Terms</a>
