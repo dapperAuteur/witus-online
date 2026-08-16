@@ -11,7 +11,10 @@
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
     "db:identity:generate": "drizzle-kit generate --config drizzle.identity.config.ts",
-    "db:identity:migrate": "drizzle-kit migrate --config drizzle.identity.config.ts"
+    "db:identity:migrate": "drizzle-kit migrate --config drizzle.identity.config.ts",
+    "tutorial:record": "playwright test --config playwright.tutorial.config.ts",
+    "tutorial:docs": "node scripts/tutorial-video/gen-docs.mjs",
+    "tutorial:video": "node scripts/tutorial-video/compose.mjs"
   },
   "dependencies": {
     "@auth/drizzle-adapter": "^1.11.2",
