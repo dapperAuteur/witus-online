@@ -244,6 +244,21 @@ critical WCAG A/AA violations** — the gate is strict on purpose; fix the page,
 - If the Vercel project enables Deployment Protection, set the project's "Protection Bypass for
   Automation" secret as the `VERCEL_AUTOMATION_BYPASS_SECRET` Actions secret; public previews need
   nothing.
+- **All Playwright traffic is tagged** with `x-witus-origin-test: playwright-synthetic` (ecosystem
+  convention, both the CI suite and tutorial recordings). `otel.config.ts` surfaces it as the
+  `witus.origin_test` span attribute, so Honeycomb queries separate synthetic runs from real users
+  — filter on attribute-absent for real traffic. Tag, not a drop: synthetic traces still flow.
+
+## Tutorials (tutorial-as-test)
+
+Tutorial flows are Playwright specs in `e2e/tutorials/*.tutorial.ts` — each step carries a `title`,
+the `narration` line BAM records, and the browser action, so the docs and video can never drift
+from the UI. `npm run tutorial:record` (against `PLAYWRIGHT_BASE_URL`, config
+`playwright.tutorial.config.ts`) captures per-step screenshots, timing marks, and video;
+`npm run tutorial:docs` writes the committed markdown + screenshots under `docs/tutorials/`;
+`npm run tutorial:video <slug>` composes the narrated mp4 from per-step audio in `audio/<slug>/`
+(videos, audio, and intermediates are gitignored). Narration master:
+`plans/31-tutorial-narration-scripts.md`.
 
 ## Design
 
