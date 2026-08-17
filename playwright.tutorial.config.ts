@@ -18,6 +18,9 @@ export default defineConfig({
     baseURL,
     viewport: { width: 1280, height: 720 },
     video: { mode: "on", size: { width: 1280, height: 720 } },
+    // Recording sessions are synthetic traffic too — same tag as the CI suite, so Honeycomb and
+    // analytics can separate tutorial takes from real users (tag, not a drop: traces still flow).
+    extraHTTPHeaders: { "x-witus-origin-test": "playwright-synthetic" },
     // slowMo makes cursor movement and typing legible at watching speed instead of robot speed.
     launchOptions: { slowMo: 350 },
     // Local recording drives installed Chrome (bundled chromium unsupported on macOS 13).
