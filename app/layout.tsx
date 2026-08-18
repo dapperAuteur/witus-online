@@ -4,6 +4,7 @@ import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ServiceWorkerRegister from "@/components/ServiceWorkerRegister";
+import { Analytics } from "@vercel/analytics/next";
 import { Providers } from "@/app/providers";
 import { PostHogProvider } from "@/lib/analytics/posthog-provider";
 import { SITE_URL } from "@/lib/products";
@@ -98,6 +99,10 @@ export default function RootLayout({
           <Footer />
         </Providers>
         <ServiceWorkerRegister />
+        {/* Vercel Web Analytics: cookieless pageview counts + Web Vitals, no consent surface.
+            Complements PostHog (which owns product events, plan 26) rather than replacing it.
+            Sends nothing until Web Analytics is ENABLED on the Vercel project (task 76). */}
+        <Analytics />
       </body>
     </html>
   );
