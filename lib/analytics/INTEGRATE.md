@@ -79,9 +79,13 @@ If this app has a `middleware.ts` / `proxy.ts` whose matcher is a broad negative
 (`/((?!api|_next|...).*)`), it **catches `/ingest/*`** — the path you just pointed analytics at.
 Two failure modes, both silent:
 
-- **Events die.** If the middleware redirects unauthenticated requests to a sign-in page, every
-  event from a logged-out visitor 302s away. No error, no events, nothing to notice — you conclude
-  the app has no anonymous traffic. (FlashLearnAI would have shipped exactly this.)
+- **Events die — and the page still looks instrumented.** Middleware runs **before** rewrites, so a
+  redirect wins over your `/ingest` rule. FlashLearnAI's auth gate would have 302'd every
+  logged-out visitor's event to sign-in; stay-witus and realestate-witus 307'd `/ingest/e/` to
+  `/en/ingest/e/`, which matches no rewrite and 404s. **The tell is that there is no tell:** a
+  matcher excluding paths with dots (`.*\..*`) still lets `/ingest/static/array.js` through, so
+  the PostHog snippet loads, the network tab looks alive, and not one event is ever recorded.
+  You would conclude the app has no anonymous traffic.
 - **Events get taxed.** If it only refreshes a session or resolves a tenant, each event now runs a
   database query on the hot path — the call-volume balloon these middlewares usually exist to avoid.
   (CentenarianOS and Tour Manager OS both did this.)
