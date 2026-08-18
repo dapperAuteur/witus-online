@@ -33,7 +33,11 @@ Analytics is **fire-and-forget and never load-bearing**. It must not block a ren
 
 1. **Two env vars on this repo's Vercel project** (Production + Preview + Development):
    - `NEXT_PUBLIC_POSTHOG_KEY` — the shared `phc_…` project key.
-   - `NEXT_PUBLIC_POSTHOG_HOST` — **`https://us.i.posthog.com`**, set explicitly.
+   - `NEXT_PUBLIC_POSTHOG_HOST` — **`https://us.i.posthog.com`**, set explicitly. Note what this
+     var does *not* do: the `/ingest` rewrite names the upstream host literally, so nothing reads
+     this at build or request time. It records the region for humans and is what a future
+     `posthog-node` server-side capture would read. Getting it wrong cannot misroute browser
+     ingest — and setting it right cannot fix a wrong rewrite.
 2. **A redeploy after they're added.** `NEXT_PUBLIC_*` is inlined at build time, so setting a var does nothing to already-deployed code.
 
 Both are publishable and ship in the browser bundle — the `phc_` key is not a secret. **Never use a `phx_` Personal API key**; that one is a real secret and isn't needed for capture.

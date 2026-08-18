@@ -88,8 +88,11 @@ export default function RootLayout({
             // supported keyless state instead of initialising with `undefined`.
             apiKey={process.env.NEXT_PUBLIC_POSTHOG_KEY ?? null}
             // "/ingest" is proxied to PostHog by next.config.ts so ad blockers can't
-            // drop events. NEXT_PUBLIC_POSTHOG_HOST stays the source of truth for the
-            // real upstream host and is used by the rewrite, not by the browser.
+            // drop events. The rewrite names the upstream host LITERALLY — nothing in
+            // this repo reads NEXT_PUBLIC_POSTHOG_HOST. That var is still set per
+            // INTEGRATE.md (it documents the region and is what a future posthog-node
+            // server-side capture would read), but it cannot affect browser ingest,
+            // so a typo in it will not misroute events.
             apiHost="/ingest"
           />
           <Header />
