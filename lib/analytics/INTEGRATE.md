@@ -69,6 +69,23 @@ The `/static` rule must come first — assets come from a different upstream hos
 
 ⚠️ **`skipTrailingSlashRedirect` is required** (PostHog's endpoints use trailing slashes; Next would 308 them before the rewrite runs), and it disables trailing-slash redirects **globally** — `/about/` stops redirecting to `/about`. Before merging, confirm this app's pages set `alternates.canonical` in their metadata, or you've silently created duplicate URLs.
 
+### ⚠️ Then check your middleware matcher
+
+If this app has a `middleware.ts` / `proxy.ts` whose matcher is a broad negative lookahead
+(`/((?!api|_next|...).*)`), it **catches `/ingest/*`** — the path you just pointed analytics at.
+Two failure modes, both silent:
+
+- **Events die.** If the middleware redirects unauthenticated requests to a sign-in page, every
+  event from a logged-out visitor 302s away. No error, no events, nothing to notice — you conclude
+  the app has no anonymous traffic. (FlashLearnAI would have shipped exactly this.)
+- **Events get taxed.** If it only refreshes a session or resolves a tenant, each event now runs a
+  database query on the hot path — the call-volume balloon these middlewares usually exist to avoid.
+  (CentenarianOS and Tour Manager OS both did this.)
+
+Fix: add `ingest` to the negative lookahead, e.g.
+`'/((?!api|_next|ingest|favicon|.*\\..*).*)'`. No app route may begin with `/ingest` — that prefix
+belongs to the proxy rewrite. Explicit-path matchers (`['/admin/:path*']`) need no change.
+
 ## Step 3 — copy the three files
 
 Copy byte-for-byte into `lib/analytics/` (or `src/lib/analytics/` if the repo uses `src/`):
