@@ -33,7 +33,11 @@ Analytics is **fire-and-forget and never load-bearing**. It must not block a ren
 
 1. **Two env vars on this repo's Vercel project** (Production + Preview + Development):
    - `NEXT_PUBLIC_POSTHOG_KEY` — the shared `phc_…` project key.
-   - `NEXT_PUBLIC_POSTHOG_HOST` — **`https://us.i.posthog.com`**, set explicitly.
+   - `NEXT_PUBLIC_POSTHOG_HOST` — **`https://us.i.posthog.com`**, set explicitly. Note what this
+     var does *not* do: the `/ingest` rewrite names the upstream host literally, so nothing reads
+     this at build or request time. It records the region for humans and is what a future
+     `posthog-node` server-side capture would read. Getting it wrong cannot misroute browser
+     ingest — and setting it right cannot fix a wrong rewrite.
 2. **A redeploy after they're added.** `NEXT_PUBLIC_*` is inlined at build time, so setting a var does nothing to already-deployed code.
 
 Both are publishable and ship in the browser bundle — the `phc_` key is not a secret. **Never use a `phx_` Personal API key**; that one is a real secret and isn't needed for capture.
@@ -68,6 +72,27 @@ async rewrites() {
 The `/static` rule must come first — assets come from a different upstream host than ingest.
 
 ⚠️ **`skipTrailingSlashRedirect` is required** (PostHog's endpoints use trailing slashes; Next would 308 them before the rewrite runs), and it disables trailing-slash redirects **globally** — `/about/` stops redirecting to `/about`. Before merging, confirm this app's pages set `alternates.canonical` in their metadata, or you've silently created duplicate URLs.
+
+### ⚠️ Then check your middleware matcher
+
+If this app has a `middleware.ts` / `proxy.ts` whose matcher is a broad negative lookahead
+(`/((?!api|_next|...).*)`), it **catches `/ingest/*`** — the path you just pointed analytics at.
+Two failure modes, both silent:
+
+- **Events die — and the page still looks instrumented.** Middleware runs **before** rewrites, so a
+  redirect wins over your `/ingest` rule. FlashLearnAI's auth gate would have 302'd every
+  logged-out visitor's event to sign-in; stay-witus and realestate-witus 307'd `/ingest/e/` to
+  `/en/ingest/e/`, which matches no rewrite and 404s. **The tell is that there is no tell:** a
+  matcher excluding paths with dots (`.*\..*`) still lets `/ingest/static/array.js` through, so
+  the PostHog snippet loads, the network tab looks alive, and not one event is ever recorded.
+  You would conclude the app has no anonymous traffic.
+- **Events get taxed.** If it only refreshes a session or resolves a tenant, each event now runs a
+  database query on the hot path — the call-volume balloon these middlewares usually exist to avoid.
+  (CentenarianOS and Tour Manager OS both did this.)
+
+Fix: add `ingest` to the negative lookahead, e.g.
+`'/((?!api|_next|ingest|favicon|.*\\..*).*)'`. No app route may begin with `/ingest` — that prefix
+belongs to the proxy rewrite. Explicit-path matchers (`['/admin/:path*']`) need no change.
 
 ## Step 3 — copy the three files
 

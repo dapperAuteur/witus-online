@@ -100,6 +100,59 @@ const RULES = [
   },
 ];
 
+/**
+ * Expected `ANALYTICS_APP` value per repo. The rule (INTEGRATE.md step 4) is: the analytics slug
+ * IS the identity slug from lib/identity/clients.ts — so a funnel can join PostHog events to the
+ * app that authenticated the user without a translation table. The two apps already emitting in
+ * production (witus "online", wanderlearn "wanderlearn") set the precedent; anything else
+ * fragments the shared project into two series for one app, and no back-fill merges them cleanly.
+ *
+ * Apps with no OIDC client (landing pages) have no identity slug, so their value is fixed here —
+ * this map is the authoritative source for those.
+ */
+const EXPECTED_APP_SLUG = {
+  // OIDC clients — must equal the slug in lib/identity/clients.ts
+  witus: "online",
+  "witus-learn": "learn",
+  "flashlearn-ai": "flashlearn",
+  "wanderlearn-app": "wanderlearn",
+  "fly-witus": "fly",
+  "tour-manager-os": "tour",
+  "centenarian-os": "centenarianos",
+  "contractor-os": "work",
+  "stay-witus": "stay",
+  "stream-witus": "stream",
+  "shop-witus": "shop",
+  "ride-wit-us": "ride",
+  "create-witus": "create",
+  "witus-inbox": "inbox",
+  "witus-outbox": "outbox",
+  "witus-triage-agent": "triage",
+  "centenarian-coach-multiagent": "coach",
+  "wanderlearn-stories": "stories",
+  "wanderlearn-field-reporter": "field-reporter",
+  // No OIDC client — slug defined here and nowhere else
+  "bam-landing-page": "bam-landing",
+  "realestate-witus": "realestate",
+  "ecs-specialization-course-landing-page": "ecs-course-lp",
+  "fitness-data-analytics-course-landing-page": "fdac-course-lp",
+};
+
+/** Reads the literal assigned to ANALYTICS_APP anywhere in the repo's analytics sources. */
+function readAppSlug(files) {
+  for (const f of files) {
+    try {
+      const m = readFileSync(f, "utf8").match(
+        /ANALYTICS_APP\s*(?::[^=]+)?=\s*["']([^"']+)["']/,
+      );
+      if (m) return m[1];
+    } catch {
+      /* unreadable file — treated as no match */
+    }
+  }
+  return null;
+}
+
 function auditRepo(repoPath) {
   const name = repoPath.split("/").slice(-1)[0];
   const result = { name, repoPath, status: "ok", errors: [], warnings: [], notes: [] };
@@ -135,6 +188,26 @@ function auditRepo(repoPath) {
       result.errors.push(`${rule.key}: set to the WRONG value — ${rule.why}`);
     } else if (!rule.want.test(src)) {
       result.errors.push(`${rule.key}: not set — ${rule.why}`);
+    }
+  }
+
+  // The app slug is a VALUE check, not a pattern check: register({ app }) can be present and
+  // still label events with the wrong name. Two independent ports got this wrong on the same
+  // day (long product slug instead of the identity slug), which is why it is enforced here.
+  const expectedSlug = EXPECTED_APP_SLUG[name];
+  if (expectedSlug) {
+    const analyticsSources = walk(repoPath, (f) => /\.(t|j)sx?$/.test(f)).filter((f) =>
+      /analytics/.test(f),
+    );
+    const actualSlug = readAppSlug([initFile, ...analyticsSources]);
+    if (actualSlug && actualSlug !== expectedSlug) {
+      result.errors.push(
+        `app slug: "${actualSlug}" should be "${expectedSlug}" — the analytics slug is the identity slug (INTEGRATE.md step 4); a mismatch splits one app into two series in the shared project`,
+      );
+    } else if (!actualSlug) {
+      result.warnings.push(
+        `app slug: could not find an ANALYTICS_APP literal to verify (expected "${expectedSlug}")`,
+      );
     }
   }
 

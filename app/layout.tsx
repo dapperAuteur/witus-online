@@ -4,6 +4,7 @@ import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ServiceWorkerRegister from "@/components/ServiceWorkerRegister";
+import { Analytics } from "@vercel/analytics/next";
 import { Providers } from "@/app/providers";
 import { PostHogProvider } from "@/lib/analytics/posthog-provider";
 import { SITE_URL } from "@/lib/products";
@@ -87,8 +88,11 @@ export default function RootLayout({
             // supported keyless state instead of initialising with `undefined`.
             apiKey={process.env.NEXT_PUBLIC_POSTHOG_KEY ?? null}
             // "/ingest" is proxied to PostHog by next.config.ts so ad blockers can't
-            // drop events. NEXT_PUBLIC_POSTHOG_HOST stays the source of truth for the
-            // real upstream host and is used by the rewrite, not by the browser.
+            // drop events. The rewrite names the upstream host LITERALLY — nothing in
+            // this repo reads NEXT_PUBLIC_POSTHOG_HOST. That var is still set per
+            // INTEGRATE.md (it documents the region and is what a future posthog-node
+            // server-side capture would read), but it cannot affect browser ingest,
+            // so a typo in it will not misroute events.
             apiHost="/ingest"
           />
           <Header />
@@ -98,6 +102,10 @@ export default function RootLayout({
           <Footer />
         </Providers>
         <ServiceWorkerRegister />
+        {/* Vercel Web Analytics: cookieless pageview counts + Web Vitals, no consent surface.
+            Complements PostHog (which owns product events, plan 26) rather than replacing it.
+            Sends nothing until Web Analytics is ENABLED on the Vercel project (task 76). */}
+        <Analytics />
       </body>
     </html>
   );
