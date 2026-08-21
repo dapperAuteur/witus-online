@@ -12,6 +12,13 @@ export type ProductStatus = "live" | "beta" | "coming-soon" | "infrastructure";
 export type Surface = "public-directory" | "oidc-client";
 
 export type Accent =
+  // Added 2026-08 for Wanderlust, whose Passport Stamp palette is built on
+  // tangerine. It was the only unclaimed hue left in this registry.
+  // Adding a value here is deliberately breaking: two exhaustive
+  // Record<Accent, …> style maps (ProductCard, /account) will fail to compile
+  // until they gain a matching entry, which is what stops a product rendering
+  // with no accent at all.
+  | "orange"
   | "amber"
   | "fuchsia"
   | "violet"
@@ -143,16 +150,30 @@ export const products: Product[] = [
     surfaces: ["public-directory", "oidc-client"],
   },
   {
-    slug: "wanderlearn",
-    name: "Wanderlearn",
+    // Renamed from Wanderlearn 2026-08. The old host stays attached and
+    // 308-redirects, so existing links keep working.
+    slug: "wanderlust",
+    name: "Wanderlust",
     tagline: "Immersive 360° place-based learning",
     description:
       "Step into locations and learn by being there. Built for curious minds and classroom expeditions alike.",
-    href: "https://wanderlearn.witus.online",
-    accent: "sky",
+    href: "https://wanderlust.witus.online",
+    // `sky` was this product's accent under the old name; `orange` matches the
+    // Passport Stamp palette it now ships and was the only unclaimed hue in
+    // this registry.
+    accent: "orange",
     status: "beta",
     external: true,
-    signInHref: "https://wanderlearn.witus.online/login",
+    signInHref: "https://wanderlust.witus.online/login",
+    // DELIBERATELY still "wanderlearn" after the product rename. The slug here
+    // is the OIDC client identity, not the product name: clientIdFor() derives
+    // `witus-<slug>` and the IdP secret is WITUS_OIDC_SECRET__<SLUG>, so
+    // renaming it means minting a new client, re-issuing a secret, and
+    // re-pointing the app's env — for no user-visible gain. BAM's call
+    // (2026-08-21): keep the existing credentials, rename the product only.
+    //
+    // The new host is handled in lib/identity/clients.ts via extraRedirectUris
+    // rather than by changing this.
     oidcSlug: "wanderlearn",
     surfaces: ["public-directory", "oidc-client"],
   },
@@ -190,14 +211,17 @@ export const products: Product[] = [
     tagline: "Practitioner-scholar profile and curriculum",
     description:
       "BAM's research, the Better Vice Club curriculum, and academy partnerships. The teaching layer of the WitUS ecosystem.",
-    href: "https://centenarianos.com/academy",
+    // CORRECTED 2026-08. This said centenarianos.com/academy, and the comment
+    // below it said the Academy lives inside CentenarianOS. Both were wrong:
+    // Learn.WitUS is a STANDALONE multi-tenant LMS at learn.witus.online (see
+    // its own README, titled "Learn.WitUS.Online"), whose launch tenant is
+    // Better Vice Club on its own domain. The wrong URL had been mirrored into
+    // roughly eighteen sibling repos from this entry.
+    href: "https://learn.witus.online",
     accent: "teal",
     status: "live",
     external: true,
-    // Academy lives inside CentenarianOS — sign-in is the same account as the
-    // CentenarianOS tile, but we list it here too so teachers looking for the
-    // Academy find a door.
-    signInHref: "https://centenarianos.com/login",
+    signInHref: "https://learn.witus.online/login",
     oidcSlug: "learn",
     surfaces: ["public-directory", "oidc-client"],
   },

@@ -90,7 +90,30 @@ export const ECOSYSTEM_APPS: readonly EcosystemApp[] = [
     extraRedirectUris: ["https://witus.online/api/auth/callback/witus"],
   },
   { slug: "flashlearn", name: "FlashLearnAI", origin: "https://flashlearnai.witus.online", callbackPath: NEXTAUTH_CB },
-  { slug: "wanderlearn", name: "Wanderlearn", origin: "https://wanderlearn.witus.online", callbackPath: BETTER_AUTH_CB },
+  // Wanderlust (the product formerly called Wanderlearn).
+  //
+  // The SLUG STAYS `wanderlearn` on purpose. It is the OIDC client identity,
+  // not the product name — clientIdFor() derives `witus-wanderlearn` and the
+  // IdP reads WITUS_OIDC_SECRET__WANDERLEARN — so renaming it would mean
+  // minting a new client, issuing a new secret, and re-pointing the app's env,
+  // to change a string no user ever sees. BAM's call, 2026-08-21.
+  //
+  // What DOES have to change is the redirect URI. The app is moving to
+  // wanderlust.witus.online, and redirect URIs are matched with strict `===`,
+  // so once BETTER_AUTH_URL flips the app will send a URI this registry does
+  // not know and sign-in fails with a 400. Both hosts are registered here so
+  // the cutover needs no coordination: the old one keeps working until the
+  // move, the new one works from the moment it happens.
+  //
+  // The old entry can be dropped once nothing reaches the old host directly —
+  // optional tidying, since it 308-redirects anyway.
+  {
+    slug: "wanderlearn",
+    name: "Wanderlust",
+    origin: "https://wanderlust.witus.online",
+    callbackPath: BETTER_AUTH_CB,
+    extraRedirectUris: [`https://wanderlearn.witus.online${BETTER_AUTH_CB}`],
+  },
   { slug: "fly", name: "Fly.WitUS", origin: "https://fly.witus.online", callbackPath: BETTER_AUTH_CB },
   { slug: "tour", name: "Tour Manager OS", origin: "https://tour.witus.online", callbackPath: BETTER_AUTH_CB },
   // Supabase app: uses a custom OIDC code flow (app/api/auth/witus/*), so its

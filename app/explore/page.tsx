@@ -71,7 +71,7 @@ export default function ExplorePage() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-12">
         <a
-          href="https://centenarianos.com/academy"
+          href="https://learn.witus.online"
           target="_blank"
           rel="noopener noreferrer"
           className="flex flex-col min-h-11 p-6 rounded-xl border border-teal-500/30 hover:border-teal-500/60 bg-slate-900/50 transition-colors group focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-300"

@@ -59,10 +59,10 @@ const SIBLING_PRODUCTS: SiblingProduct[] = [
   { name: "CentenarianOS", href: "https://centenarianos.com" },
   { name: "Work.WitUS", href: "https://work.witus.online" },
   { name: "Tour Manager OS", href: "https://tour.witus.online" },
-  { name: "Wanderlearn", href: "https://wanderlearn.witus.online" },
+  { name: "Wanderlust", href: "https://wanderlust.witus.online" },
   { name: "Fly.WitUS", href: "https://fly.witus.online" },
   { name: "FlashLearnAI", href: "https://flashlearnai.witus.online" },
-  { name: "Learn.WitUS", href: "https://centenarianos.com/academy" },
+  { name: "Learn.WitUS", href: "https://learn.witus.online" },
   { name: "AwesomeWebStore", href: "https://awesomewebstore.com" },
 ];
 
@@ -389,3 +389,16 @@ Update **all** of:
 3. Each sibling app's footer on its next touch (deferred — don't sweep all 8 repos at once unless it's a critical change).
 
 Re-test focus order and tab traversal after sibling-product list changes — accessibility regressions in the footer are quiet bugs.
+
+
+## Corrections — 2026-08
+
+Two entries above changed. Sibling repos each keep their own copy of this list, so absorb both on
+your next touch of that repo rather than in a dedicated sweep.
+
+- **Wanderlearn is now Wanderlust**, at `https://wanderlust.witus.online`. The old host stays
+  attached and 308-redirects, so nothing breaks in the meantime.
+- **Learn.WitUS was pointing at the wrong product.** It said `centenarianos.com/academy`.
+  Learn.WitUS is a standalone multi-tenant LMS at `https://learn.witus.online` — its own README is
+  titled "Learn.WitUS.Online". That wrong URL had been mirrored into roughly eighteen repos from
+  here, which is what this file exists to prevent, so it is worth checking yours.

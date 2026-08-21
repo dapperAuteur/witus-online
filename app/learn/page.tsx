@@ -108,7 +108,7 @@ export default function LearnIndexPage() {
             the Centenarian Academy LMS.
           </p>
           <a
-            href="https://centenarianos.com/academy"
+            href="https://learn.witus.online"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center min-h-11 px-5 py-2.5 rounded-lg bg-teal-500 hover:bg-teal-400 text-slate-950 text-sm font-semibold transition-colors focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-300"
