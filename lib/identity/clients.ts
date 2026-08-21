@@ -90,7 +90,33 @@ export const ECOSYSTEM_APPS: readonly EcosystemApp[] = [
     extraRedirectUris: ["https://witus.online/api/auth/callback/witus"],
   },
   { slug: "flashlearn", name: "FlashLearnAI", origin: "https://flashlearnai.witus.online", callbackPath: NEXTAUTH_CB },
-  { slug: "wanderlearn", name: "Wanderlearn", origin: "https://wanderlearn.witus.online", callbackPath: BETTER_AUTH_CB },
+  // Wanderlust (renamed from Wanderlearn, 2026-08). BOTH entries exist on
+  // purpose, and the old one must not be deleted yet.
+  //
+  // clientIdFor() derives `witus-<slug>`, so renaming the slug renames the
+  // client_id — and the deployed app still sends `witus-wanderlearn` until its
+  // env is updated. buildTrustedClients() also SKIPS any app whose
+  // WITUS_OIDC_SECRET__<SLUG> is unset, so a straight rename would drop the
+  // client on the IdP's next deploy and every sign-in would fail
+  // `invalid_client`. That is the exact failure that took ecosystem sign-in
+  // down twice in July 2026.
+  //
+  // Expand now, contract later. See the retirement steps in the Wanderlust
+  // repo: plans/user-tasks/103-oidc-client-wanderlust.md
+  {
+    slug: "wanderlust",
+    name: "Wanderlust",
+    origin: "https://wanderlust.witus.online",
+    callbackPath: BETTER_AUTH_CB,
+    // The app is still served from the old host until BETTER_AUTH_URL flips,
+    // and redirect URIs are matched with strict ===. Without this, SSO breaks
+    // the moment this lands rather than when the domain moves.
+    extraRedirectUris: [`https://wanderlearn.witus.online${BETTER_AUTH_CB}`],
+  },
+  // RETIRE ONCE the Wanderlust app's WITUS_OIDC_CLIENT_ID says witus-wanderlust
+  // and one round-trip sign-in has been seen working. Until then this is what
+  // keeps the currently-deployed app able to sign in at all.
+  { slug: "wanderlearn", name: "Wanderlearn (retiring)", origin: "https://wanderlearn.witus.online", callbackPath: BETTER_AUTH_CB },
   { slug: "fly", name: "Fly.WitUS", origin: "https://fly.witus.online", callbackPath: BETTER_AUTH_CB },
   { slug: "tour", name: "Tour Manager OS", origin: "https://tour.witus.online", callbackPath: BETTER_AUTH_CB },
   // Supabase app: uses a custom OIDC code flow (app/api/auth/witus/*), so its
