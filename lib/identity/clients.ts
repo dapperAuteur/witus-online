@@ -90,33 +90,30 @@ export const ECOSYSTEM_APPS: readonly EcosystemApp[] = [
     extraRedirectUris: ["https://witus.online/api/auth/callback/witus"],
   },
   { slug: "flashlearn", name: "FlashLearnAI", origin: "https://flashlearnai.witus.online", callbackPath: NEXTAUTH_CB },
-  // Wanderlust (renamed from Wanderlearn, 2026-08). BOTH entries exist on
-  // purpose, and the old one must not be deleted yet.
+  // Wanderlust (the product formerly called Wanderlearn).
   //
-  // clientIdFor() derives `witus-<slug>`, so renaming the slug renames the
-  // client_id — and the deployed app still sends `witus-wanderlearn` until its
-  // env is updated. buildTrustedClients() also SKIPS any app whose
-  // WITUS_OIDC_SECRET__<SLUG> is unset, so a straight rename would drop the
-  // client on the IdP's next deploy and every sign-in would fail
-  // `invalid_client`. That is the exact failure that took ecosystem sign-in
-  // down twice in July 2026.
+  // The SLUG STAYS `wanderlearn` on purpose. It is the OIDC client identity,
+  // not the product name — clientIdFor() derives `witus-wanderlearn` and the
+  // IdP reads WITUS_OIDC_SECRET__WANDERLEARN — so renaming it would mean
+  // minting a new client, issuing a new secret, and re-pointing the app's env,
+  // to change a string no user ever sees. BAM's call, 2026-08-21.
   //
-  // Expand now, contract later. See the retirement steps in the Wanderlust
-  // repo: plans/user-tasks/103-oidc-client-wanderlust.md
+  // What DOES have to change is the redirect URI. The app is moving to
+  // wanderlust.witus.online, and redirect URIs are matched with strict `===`,
+  // so once BETTER_AUTH_URL flips the app will send a URI this registry does
+  // not know and sign-in fails with a 400. Both hosts are registered here so
+  // the cutover needs no coordination: the old one keeps working until the
+  // move, the new one works from the moment it happens.
+  //
+  // The old entry can be dropped once nothing reaches the old host directly —
+  // optional tidying, since it 308-redirects anyway.
   {
-    slug: "wanderlust",
+    slug: "wanderlearn",
     name: "Wanderlust",
     origin: "https://wanderlust.witus.online",
     callbackPath: BETTER_AUTH_CB,
-    // The app is still served from the old host until BETTER_AUTH_URL flips,
-    // and redirect URIs are matched with strict ===. Without this, SSO breaks
-    // the moment this lands rather than when the domain moves.
     extraRedirectUris: [`https://wanderlearn.witus.online${BETTER_AUTH_CB}`],
   },
-  // RETIRE ONCE the Wanderlust app's WITUS_OIDC_CLIENT_ID says witus-wanderlust
-  // and one round-trip sign-in has been seen working. Until then this is what
-  // keeps the currently-deployed app able to sign in at all.
-  { slug: "wanderlearn", name: "Wanderlearn (retiring)", origin: "https://wanderlearn.witus.online", callbackPath: BETTER_AUTH_CB },
   { slug: "fly", name: "Fly.WitUS", origin: "https://fly.witus.online", callbackPath: BETTER_AUTH_CB },
   { slug: "tour", name: "Tour Manager OS", origin: "https://tour.witus.online", callbackPath: BETTER_AUTH_CB },
   // Supabase app: uses a custom OIDC code flow (app/api/auth/witus/*), so its

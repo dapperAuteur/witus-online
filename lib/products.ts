@@ -165,9 +165,16 @@ export const products: Product[] = [
     status: "beta",
     external: true,
     signInHref: "https://wanderlust.witus.online/login",
-    // MUST match the client registered at accounts.witus.online. Changing this
-    // string without re-provisioning there breaks "Sign in with WitUS".
-    oidcSlug: "wanderlust",
+    // DELIBERATELY still "wanderlearn" after the product rename. The slug here
+    // is the OIDC client identity, not the product name: clientIdFor() derives
+    // `witus-<slug>` and the IdP secret is WITUS_OIDC_SECRET__<SLUG>, so
+    // renaming it means minting a new client, re-issuing a secret, and
+    // re-pointing the app's env — for no user-visible gain. BAM's call
+    // (2026-08-21): keep the existing credentials, rename the product only.
+    //
+    // The new host is handled in lib/identity/clients.ts via extraRedirectUris
+    // rather than by changing this.
+    oidcSlug: "wanderlearn",
     surfaces: ["public-directory", "oidc-client"],
   },
   {
