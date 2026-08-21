@@ -30,6 +30,11 @@ export const metadata: Metadata = {
 };
 
 const tileStyles: Record<Accent, { border: string; dot: string; focus: string }> = {
+  orange: {
+    border: "border-orange-500/30 hover:border-orange-500/60",
+    dot: "bg-orange-400",
+    focus: "focus-visible:outline-orange-300",
+  },
   amber: {
     border: "border-amber-500/30 hover:border-amber-500/60",
     dot: "bg-amber-400",

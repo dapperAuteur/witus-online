@@ -7,7 +7,10 @@ const ACCENT_COLORS = [
   "#e879f9", // fuchsia-400, CentenarianOS
   "#fbbf24", // amber-400, Work.WitUS
   "#a78bfa", // violet-400, Tour Manager OS
-  "#38bdf8", // sky-400, Wanderlearn
+  // sky-400. Was Wanderlearn's accent; the product is Wanderlust now and its accent is
+  // orange (lib/products.ts). Swatch deliberately unchanged — this orbit is decorative, and
+  // recolouring it is a design call for this site, not a side effect of renaming another app.
+  "#38bdf8",
   "#34d399", // emerald-400, Fly.WitUS
   "#fb7185", // rose-400, FlashLearnAI
   "#2dd4bf", // teal-400, Learn.WitUS

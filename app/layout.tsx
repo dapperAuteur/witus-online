@@ -31,7 +31,7 @@ export const metadata: Metadata = {
     template: "%s · WitUS",
   },
   description:
-    "WitUS is the ecosystem connecting longevity and independent work. Home of CentenarianOS, Work.WitUS, Tour Manager OS, Wanderlearn, Fly.WitUS, FlashLearnAI, Learn.WitUS, and AwesomeWebStore.",
+    "WitUS is the ecosystem connecting longevity and independent work. Home of CentenarianOS, Work.WitUS, Tour Manager OS, Wanderlust, Fly.WitUS, FlashLearnAI, Learn.WitUS, and AwesomeWebStore.",
   icons: {
     icon: [
       { url: "/brand/04-orbit-type/favicon.svg", type: "image/svg+xml" },

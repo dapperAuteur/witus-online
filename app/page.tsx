@@ -221,7 +221,7 @@ export default function HomePage() {
             </h2>
             <p className="text-slate-400 text-sm leading-relaxed max-w-lg">
               We&apos;re rolling out <span className="text-white font-medium">Sign in with WitUS</span> —
-              one login for CentenarianOS, Wanderlearn, FlashLearnAI, Learn.WitUS, and
+              one login for CentenarianOS, Wanderlust, FlashLearnAI, Learn.WitUS, and
               the rest. Look for the &ldquo;Sign in with WitUS&rdquo; button as each app
               comes online; your existing account links in by email.
             </p>

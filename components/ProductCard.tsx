@@ -22,6 +22,13 @@ type AccentStyle = {
 };
 
 const accentStyles: Record<Accent, AccentStyle> = {
+  orange: {
+    border: "border-orange-500/30 hover:border-orange-500/60",
+    badge: "bg-orange-500/10 text-orange-300 border border-orange-500/20",
+    button: "bg-orange-500 hover:bg-orange-400 text-slate-950",
+    dot: "bg-orange-400",
+    focus: "focus-visible:outline-orange-300",
+  },
   amber: {
     border: "border-amber-500/30 hover:border-amber-500/60",
     badge: "bg-amber-500/10 text-amber-300 border border-amber-500/20",
