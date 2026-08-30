@@ -47,6 +47,24 @@ export type EcosystemApp = {
    * second domain (e.g. *.witus.online aliases). Each entry is a full absolute URL.
    */
   extraRedirectUris?: readonly string[];
+  /**
+   * Where the IdP sends the browser back after a GLOBAL SIGN-OUT, relative to `origin`
+   * (e.g. "/"). Omit for an app that does not offer sign-out-of-everything yet.
+   *
+   * READ THIS BEFORE SETTING IT. better-auth's end_session endpoint validates
+   * `post_logout_redirect_uri` against **`client.redirectUrls`**, the same array it
+   * validates OAuth callbacks against — there is no separate post-logout list
+   * (node_modules/better-auth/dist/plugins/oidc-provider/index.mjs, the endSession
+   * endpoint: `client.redirectUrls.some((registeredUri) => post_logout_redirect_uri
+   * === registeredUri)`). So `redirectUrisFor()` folds this in, and the consequence is
+   * that whatever you put here ALSO becomes a valid OAuth redirect target for this
+   * client. Keep it to a boring first-party landing path on the app's own origin, never
+   * a path that reflects user input or forwards elsewhere.
+   *
+   * Matching is EXACT, including the trailing slash, so "/" registers
+   * `https://app.example/` and the app must send precisely that.
+   */
+  postLogoutPath?: string;
 };
 
 const BETTER_AUTH_CB = "/api/auth/oauth2/callback/witus";
@@ -130,7 +148,19 @@ export const ECOSYSTEM_APPS: readonly EcosystemApp[] = [
   },
   { slug: "work", name: "Work.WitUS", origin: "https://work.witus.online", callbackPath: BETTER_AUTH_CB },
   // learnwitus — WitUS-branded base tenant ONLY (white-label tenants excluded above).
-  { slug: "learn", name: "Learn.WitUS", origin: "https://learn.witus.online", callbackPath: BETTER_AUTH_CB },
+  // GLOBAL SIGN-OUT, 2026-08-30. learnwitus ships "Sign out of WitUS": it ends the local
+  // session and then hands the browser to this IdP's /oauth2/endsession, which ends the
+  // shared session for every WitUS app. `postLogoutPath` registers where the IdP is
+  // allowed to send the visitor afterwards. WHITE-LABEL TENANTS ARE UNAFFECTED: learnwitus
+  // gates that redirect on the same per-tenant flag as sign-in, so a tenant learner never
+  // reaches the IdP at all, and no tenant host is registered here (see the exclusion note).
+  {
+    slug: "learn",
+    name: "Learn.WitUS",
+    origin: "https://learn.witus.online",
+    callbackPath: BETTER_AUTH_CB,
+    postLogoutPath: "/",
+  },
   // Stay.WitUS — WitUS-branded operator surface ONLY. Hotel tenant domains keep
   // product-local magic-link auth (see the exclusion note above).
   //
@@ -207,7 +237,31 @@ export function redirectUriFor(app: EcosystemApp): string {
  * de-duplicated. The IdP exact-matches the incoming `redirect_uri` against this set.
  */
 export function redirectUrisFor(app: EcosystemApp): string[] {
-  return [...new Set([redirectUriFor(app), ...(app.extraRedirectUris ?? [])])];
+  const postLogout = postLogoutRedirectUriFor(app);
+  return [
+    ...new Set([
+      redirectUriFor(app),
+      ...(app.extraRedirectUris ?? []),
+      // Folded in because better-auth validates post_logout_redirect_uri against THIS array.
+      // See the note on EcosystemApp.postLogoutPath for why that is not our choice.
+      ...(postLogout ? [postLogout] : []),
+    ]),
+  ];
+}
+
+/**
+ * The absolute URI the IdP may redirect to after a global sign-out, or null if this app
+ * has not opted in.
+ *
+ * THE CALLING APP MUST ALSO SEND `client_id`. better-auth rejects a
+ * `post_logout_redirect_uri` with `invalid_request` ("client_id is required when using
+ * post_logout_redirect_uri without a valid id_token_hint") unless the request carries
+ * either a verifiable `id_token_hint` or an explicit `client_id`. Sending the URI alone
+ * is a 400, not a silent fallback.
+ */
+export function postLogoutRedirectUriFor(app: EcosystemApp): string | null {
+  if (!app.postLogoutPath) return null;
+  return new URL(app.postLogoutPath, app.origin).toString();
 }
 
 /**
