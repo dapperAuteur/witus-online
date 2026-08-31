@@ -351,6 +351,25 @@ export const products: Product[] = [
     surfaces: ["public-directory", "oidc-client"],
   },
   {
+    // VoGoat — the daily shared voiceover game. Repo: ai-builds/claude/vogoat, a build brief
+    // with no app code yet, so this lands ahead of the deploy the same way create-witus did.
+    slug: "vogoat",
+    name: "VoGoat",
+    tagline: "The daily voiceover game",
+    description:
+      "One shared voice recipe a day: everyone gets the same absurd recipe, the same mundane micro-script, and the same cartoon creature. Record your best take, submit one, collect the creature in your Menagerie, and share a spoiler-free card.",
+    href: "https://vogoat.witus.online",
+    // Shared with AwesomeWebStore and RideWitUS on purpose — no new Accent value (see the
+    // note on the Accent type for why adding one is deliberately breaking).
+    accent: "lime",
+    status: "coming-soon",
+    external: true,
+    signInHref: "https://vogoat.witus.online/sign-in",
+    // "Sign in with WitUS" client — matching entry in lib/identity/clients.ts (slug `vogoat`).
+    oidcSlug: "vogoat",
+    surfaces: ["public-directory", "oidc-client"],
+  },
+  {
     slug: "ride-witus",
     name: "RideWitUS",
     tagline: "Community transport, built on the Monon",

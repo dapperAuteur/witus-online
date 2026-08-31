@@ -186,6 +186,13 @@ export const ECOSYSTEM_APPS: readonly EcosystemApp[] = [
   // until its secret is provisioned on the IdP: buildTrustedClients() skips any app whose
   // clientSecretEnvVar() is unset. Better Auth genericOAuth by design → BETTER_AUTH_CB.
   { slug: "create", name: "Create.WitUS", origin: "https://create.witus.online", callbackPath: BETTER_AUTH_CB },
+  // VoGoat — the daily shared voiceover game. Repo ai-builds/claude/vogoat, still a build
+  // brief (no app code yet), so this entry lands ahead of the deploy the same way `create`
+  // did and stays inert until WITUS_OIDC_SECRET__VOGOAT is set here. Better Auth
+  // genericOAuth by design → BETTER_AUTH_CB. No localhost redirect URI, deliberately: no
+  // client in this registry registers one (redirect URIs are exact-match), so a dev
+  // callback would be a new precedent — BAM's call, via extraRedirectUris if ever wanted.
+  { slug: "vogoat", name: "VoGoat", origin: "https://vogoat.witus.online", callbackPath: BETTER_AUTH_CB },
   // Apps BAM administers — each has a human login, so each is an OIDC client (NOT
   // API-key-only). Domains/libs marked TODO are best-guesses: a wrong redirect URI
   // fails closed (sign-in won't work until corrected), so confirm before that app
