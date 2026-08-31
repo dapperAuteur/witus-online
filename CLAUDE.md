@@ -24,7 +24,7 @@ When a new product joins the WitUS ecosystem (a new app, sub-site, or shared inf
 6. **Add the citation-rule pointer** (APA 7 for curriculum/professional/business writing).
 7. **Update this list** (the witus repo's CLAUDE.md) so the new product is named in the ecosystem identity section if it has a name that's confusable with anything else.
 8. **Add the new product to `plans/ecosystem/README.md`** product index in this repo (local-only — `plans/` is gitignored).
-9. **Update [the consolidated playbook ebook](plans/playbook/2026-04-27-witus-commercial-playbook.md)** §0 Master Source Index and §9 Pre-Launch Features so the new product's launch-prep doc is linked.
+9. **Update [the consolidated playbook ebook](plans/playbook/2026-08-07-witus-commercial-playbook.md)** §0 Master Source Index and §9 Pre-Launch Features so the new product's launch-prep doc is linked. (The filename prefix means "current as of" and moves when the ebook is revised — if the link is dead, `ls plans/playbook/*commercial-playbook.md`.)
 10. **Update the witus auto-memory** at `~/.claude/projects/-Users-bam-Code-NOiCloud-ai-builds-gemini-witus/memory/` so the rule list reflects the new product's existence.
 
 The principle: identity confusion is a *first-day* problem. Catching it on day one in CLAUDE.md is cheap; catching it after multiple sessions of misnamed work is expensive and BAM has paid that cost more than once.
