@@ -354,7 +354,7 @@ export const products: Product[] = [
     // VoGoat — the daily shared voiceover game. Repo: ai-builds/claude/vogoat, a build brief
     // with no app code yet, so this lands ahead of the deploy the same way create-witus did.
     slug: "vogoat",
-    name: "VoGoat",
+    name: "VO GOAT",
     tagline: "The daily voiceover game",
     description:
       "One shared voice recipe a day: everyone gets the same absurd recipe, the same mundane micro-script, and the same cartoon creature. Record your best take, submit one, collect the creature in your Menagerie, and share a spoiler-free card.",

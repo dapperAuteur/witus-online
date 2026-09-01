@@ -192,7 +192,7 @@ export const ECOSYSTEM_APPS: readonly EcosystemApp[] = [
   // genericOAuth by design → BETTER_AUTH_CB. No localhost redirect URI, deliberately: no
   // client in this registry registers one (redirect URIs are exact-match), so a dev
   // callback would be a new precedent — BAM's call, via extraRedirectUris if ever wanted.
-  { slug: "vogoat", name: "VoGoat", origin: "https://vogoat.witus.online", callbackPath: BETTER_AUTH_CB },
+  { slug: "vogoat", name: "VO GOAT", origin: "https://vogoat.witus.online", callbackPath: BETTER_AUTH_CB },
   // Apps BAM administers — each has a human login, so each is an OIDC client (NOT
   // API-key-only). Domains/libs marked TODO are best-guesses: a wrong redirect URI
   // fails closed (sign-in won't work until corrected), so confirm before that app
