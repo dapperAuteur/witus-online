@@ -7,7 +7,7 @@ import { jwt, oidcProvider } from "better-auth/plugins";
 import { getIdentityDb, identitySchema } from "./db";
 import { betterAuthSecret, betterAuthUrl } from "./env";
 import { sendIdentityMagicLink } from "./mailer";
-import { buildTrustedClients } from "./clients";
+import { buildTrustedClients, ecosystemOrigins } from "./clients";
 
 /**
  * WitUS Accounts — the ecosystem identity provider.
@@ -26,6 +26,26 @@ export const auth = betterAuth({
   baseURL: betterAuthUrl(),
   basePath: "/api/idp",
   secret: betterAuthSecret(),
+  /**
+   * First-party ecosystem origins, derived from the same registry that mints the OIDC clients.
+   *
+   * THIS IS WHAT MAKES GLOBAL SIGN-OUT WORK FROM A NON-witus.online DOMAIN. better-auth's
+   * end_session endpoint refuses a logout that is neither same-site nor carrying a matching
+   * `id_token_hint` (verified in the endSession handler,
+   * node_modules/better-auth/dist/plugins/oidc-provider/index.mjs): it accepts
+   * `Sec-Fetch-Site: same-origin | same-site | none`, OR an `origin`/`referer` that passes
+   * `isTrustedOrigin`. An app under *.witus.online is same-site and always passed. CentenarianOS
+   * is on centenarianos.com — a different registrable domain — so its "sign out of WitUS" arrives
+   * as `Sec-Fetch-Site: cross-site` and was rejected with FORBIDDEN. It carries a `referer` of its
+   * own origin (the browser default referrer policy sends the origin cross-site), so listing that
+   * origin here is what lets it through, and it avoids having to plumb an id_token_hint through
+   * every client.
+   *
+   * Same set as the session probe's CORS allowlist, and for the same reason: these are the hosts
+   * the ecosystem's own apps are served from. White-label learnwitus and Stay.WitUS tenant hosts
+   * are absent by construction — they are not in ECOSYSTEM_APPS.
+   */
+  trustedOrigins: [...ecosystemOrigins()],
   database: drizzleAdapter(getIdentityDb(), {
     provider: "pg",
     schema: identitySchema,
