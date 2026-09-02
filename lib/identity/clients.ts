@@ -164,7 +164,17 @@ export const ECOSYSTEM_APPS: readonly EcosystemApp[] = [
     callbackPath: "/api/auth/witus/callback",
     extraRedirectUris: ["https://centenarianos.com/api/auth/witus/callback"],
   },
-  { slug: "work", name: "Work.WitUS", origin: "https://work.witus.online", callbackPath: BETTER_AUTH_CB },
+  // Work.WitUS (contractor-os). SUPABASE, like centenarianos above, NOT Better Auth — so it runs
+  // the same bespoke OIDC code flow and sends /api/auth/witus/callback. This entry said
+  // BETTER_AUTH_CB until 2026-09-02, which would have 400'd every sign-in on an exact-match
+  // redirect_uri check. Identical mistake to the one centenarianos hit and fixed in 8303045; the
+  // Supabase apps do not use the Better Auth path and never did.
+  //
+  // ONE DEPLOYMENT, TWO HOSTS. This app also serves https://www.badcba.com. That host is
+  // deliberately NOT registered: the app gates its whole WitUS surface on NEXT_PUBLIC_SITE_URL, so
+  // badcba.com renders no button, runs no probe, and makes zero requests to accounts.witus.online.
+  // Registering it would be the decision to make badcba.com an ecosystem surface, which it is not.
+  { slug: "work", name: "Work.WitUS", origin: "https://work.witus.online", callbackPath: "/api/auth/witus/callback" },
   // learnwitus — WitUS-branded base tenant ONLY (white-label tenants excluded above).
   // GLOBAL SIGN-OUT, 2026-08-30. learnwitus ships "Sign out of WitUS": it ends the local
   // session and then hands the browser to this IdP's /oauth2/endsession, which ends the
@@ -214,8 +224,18 @@ export const ECOSYSTEM_APPS: readonly EcosystemApp[] = [
   // Commerce surfaces. shop.witus.online is the better-auth shop-witus app (distinct
   // from awesomewebstore.com, still on Shopify — see exclusion note above).
   { slug: "shop", name: "Shop.WitUS", origin: "https://shop.witus.online", callbackPath: BETTER_AUTH_CB },
-  // TODO: confirm RideWitUS's auth lib; switch to NEXTAUTH_CB if it's NextAuth.
-  { slug: "ride", name: "RideWitUS", origin: "https://ride.witus.online", callbackPath: BETTER_AUTH_CB },
+  // RideWitUS. NOT Better Auth and NOT NextAuth: as of 2026-09-02 it runs a BESPOKE OIDC code
+  // flow (PKCE + state, claims read server-to-server from /userinfo) with a signed session
+  // cookie and NO user table, because the app had no authentication and no database at all
+  // before then — it was a pure content site. WitUS SSO is its ONLY way in. Same shape as
+  // field-reporter, and BAM's call: it is a first-party surface, so a WitUS account is the only
+  // sign-in it should ever need, and it introduces no infrastructure ahead of the CentenarianOS
+  // travel module that is scheduled to move into this app.
+  //
+  // The callback path below therefore resolves the old "TODO: confirm RideWitUS's auth lib"
+  // with a THIRD answer that neither branch of that TODO anticipated. It previously read
+  // BETTER_AUTH_CB, which would have exact-match failed every sign-in with a 400.
+  { slug: "ride", name: "RideWitUS", origin: "https://ride.witus.online", callbackPath: "/api/auth/witus/callback" },
   // Create.WitUS — collaboration call board. Repo ai-builds/claude/create-witus, still a
   // build brief (no app code yet), so this entry lands ahead of the deploy. It stays inert
   // until its secret is provisioned on the IdP: buildTrustedClients() skips any app whose
