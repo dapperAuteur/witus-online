@@ -108,6 +108,10 @@ for (const [slug, owners] of claimed) {
 // A client with no product entry is not necessarily wrong (it may land ahead of the
 // directory listing, as `create` did), so this is a warning, not an error.
 for (const app of ECOSYSTEM_APPS) {
+  // `notADirectoryProduct` marks a client that is a first-party sign-in target but deliberately
+  // not a WitUS product (BAM's personal portfolio). Warning on those forever would be noise, and
+  // the remedy this warning suggests would be the wrong one.
+  if (app.notADirectoryProduct) continue;
   if (!claimed.has(app.slug)) {
     warnings.push(
       `ECOSYSTEM_APPS has "${app.slug}" (${clientIdFor(app.slug)}) but no product in\n` +

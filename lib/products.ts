@@ -332,8 +332,12 @@ export const products: Product[] = [
     accent: "slate",
     status: "coming-soon",
     external: true,
-    // Product-local Better Auth like Stay.WitUS — not an OIDC client.
-    surfaces: ["public-directory"],
+    // Joined ecosystem SSO 2026-09-02 (BAM's decision, witus task 82). This previously read
+    // "product-local Better Auth like Stay.WitUS — not an OIDC client", which had gone stale:
+    // Stay was itself promoted to a client, so the analogy the exclusion rested on had flipped.
+    // WitUS-branded platform host only — agency custom domains stay isolated, same rule as Stay.
+    surfaces: ["public-directory", "oidc-client"],
+    oidcSlug: "realestate",
   },
   {
     slug: "create-witus",
