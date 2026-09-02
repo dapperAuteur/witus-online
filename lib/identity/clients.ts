@@ -72,6 +72,17 @@ export type EcosystemApp = {
    * `https://app.example/` and the app must send precisely that.
    */
   postLogoutPath?: string;
+  /**
+   * True for a client that intentionally has NO entry in `lib/products.ts`.
+   *
+   * `check-registries.mjs` warns when ECOSYSTEM_APPS holds a slug no product points at, because
+   * that usually means the public directory is missing a listing. For a surface that is a
+   * first-party sign-in target but genuinely not a WitUS *product* — BAM's personal portfolio —
+   * that warning would be permanent noise AND its suggested remedy ("the directory is missing a
+   * product") would be wrong. This flag says "deliberately absent", so the check stays green and
+   * the intent is recorded next to the entry instead of in someone's memory.
+   */
+  notADirectoryProduct?: boolean;
 };
 
 const BETTER_AUTH_CB = "/api/auth/oauth2/callback/witus";
@@ -183,6 +194,23 @@ export const ECOSYSTEM_APPS: readonly EcosystemApp[] = [
   // tenant hosts — otherwise a hotel's guests get redirected to accounts.witus.online.
   { slug: "stay", name: "Stay.WitUS", origin: "https://stay.witus.online", callbackPath: BETTER_AUTH_CB },
   { slug: "stream", name: "Stream.WitUS", origin: "https://stream.witus.online", callbackPath: BETTER_AUTH_CB },
+  // RealEstate.WitUS — WitUS-branded platform surface ONLY. BAM approved joining ecosystem SSO
+  // 2026-09-02 (witus task 82): it had been in lib/products.ts since launch but was never a client,
+  // so "Sign in with WitUS" could not have worked on it. Its product entry previously read
+  // "product-local Better Auth like Stay.WitUS — not an OIDC client", which had gone stale, because
+  // Stay was itself promoted to a client; that stale analogy is what the decision resolved.
+  //
+  // Better Auth confirmed (src/app/api/auth/[...all], genericOAuth to be wired), so BETTER_AUTH_CB.
+  // Lands AHEAD of the client the way `create`, `stay` and `vogoat` did, and stays inert until
+  // WITUS_OIDC_SECRET__REALESTATE is set here — buildTrustedClients() skips any app without one.
+  //
+  // SAME WHITE-LABEL RULE AS STAY AND LEARN, and not optional: this app is multi-tenant with
+  // per-agency custom domains (src/lib/tenant.ts, getTenantByHost). Only the WitUS-branded platform
+  // host is registered. Deliberately NOT registering agency domains is what makes that
+  // self-enforcing — a tenant site attempting the flow sends an unregistered redirect_uri and gets
+  // a 400. The app is localized and "/" 307s to "/en"; the registered post-logout target stays "/",
+  // which the app then redirects, so no locale is baked into the registry.
+  { slug: "realestate", name: "RealEstate.WitUS", origin: "https://realestate.witus.online", callbackPath: BETTER_AUTH_CB },
   // Commerce surfaces. shop.witus.online is the better-auth shop-witus app (distinct
   // from awesomewebstore.com, still on Shopify — see exclusion note above).
   { slug: "shop", name: "Shop.WitUS", origin: "https://shop.witus.online", callbackPath: BETTER_AUTH_CB },
@@ -204,6 +232,31 @@ export const ECOSYSTEM_APPS: readonly EcosystemApp[] = [
   // API-key-only). Domains/libs marked TODO are best-guesses: a wrong redirect URI
   // fails closed (sign-in won't work until corrected), so confirm before that app
   // integrates. inbox + triage domains are confirmed.
+  // brandanthonymcdonald.com — BAM's personal portfolio, repo ai-builds/claude/bam-landing-page
+  // (NOT projects/bam-portfolio, which is the retired legacy site). Added 2026-09-02 at BAM's
+  // request during the ecosystem-SSO rollout.
+  //
+  // NextAuth v4 (app/api/auth/[...nextauth]) → NEXTAUTH_CB. `www` is PRIMARY and that is verified,
+  // not assumed: https://brandanthonymcdonald.com 30x's to https://www.brandanthonymcdonald.com
+  // (checked 2026-09-02), and NextAuth v4 on Vercel builds redirect_uri from x-forwarded-host, so
+  // the app sends whatever host served it and no env var can override that. Apex kept as a
+  // fallback in case the canonical host ever flips — same failure mode, same fix, as `online` and
+  // `centenarianos`.
+  //
+  // SSO SITS ALONGSIDE ITS EXISTING PASSWORD LOGIN, it does not replace it (BAM's call, 2026-09-02).
+  // /login is a NextAuth credentials form guarding /admin/*; this is BAM's own site, and it is the
+  // one place where an IdP outage must not be able to lock him out of his own admin.
+  //
+  // notADirectoryProduct: it is a sign-in target, not a WitUS product, so it is deliberately absent
+  // from lib/products.ts. See the field's doc comment.
+  {
+    slug: "bam",
+    name: "Brand Anthony McDonald",
+    origin: "https://www.brandanthonymcdonald.com",
+    callbackPath: NEXTAUTH_CB,
+    extraRedirectUris: ["https://brandanthonymcdonald.com/api/auth/callback/witus"],
+    notADirectoryProduct: true,
+  },
   { slug: "inbox", name: "WitUS Inbox", origin: "https://inbox.witus.online", callbackPath: NEXTAUTH_CB },
   { slug: "triage", name: "WitUS Triage Agent", origin: "https://triage.agent.witus.online", callbackPath: NEXTAUTH_CB }, // NextAuth v4 (confirmed 2026-07 — witus provider added)
   { slug: "outbox", name: "WitUS Outbox", origin: "https://outbox.witus.online", callbackPath: NEXTAUTH_CB }, // NextAuth v4 (confirmed 2026-07 — witus provider added)
