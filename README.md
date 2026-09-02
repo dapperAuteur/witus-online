@@ -27,6 +27,7 @@ B4C LLC / AwesomeWebStore.com  ← legal entity
 | Hosting | Vercel |
 | Auth (this site) | NextAuth v4 — magic-link email sign-in, plus "Sign in with WitUS" |
 | Auth (as IdP) | Better Auth `oidcProvider`, mounted at `/api/idp` |
+| Ecosystem SSO | `/api/ecosystem/session` probe ("Continue as ⟨name⟩") + `/api/idp/oauth2/endsession` global sign-out |
 | Database | Neon Postgres via Drizzle — two databases: site content, and identity |
 
 ## Pages
@@ -109,6 +110,68 @@ Two rules worth knowing before touching the registry:
 Note that on Vercel, `NEXTAUTH_URL` is **ignored** — NextAuth derives the origin from the
 `x-forwarded-host` header, so the `redirect_uri` an app sends is whatever host the user browsed
 to. That host is what must be registered; no env var can override it.
+
+### `GET /api/ecosystem/session` — the ecosystem session probe
+
+The endpoint behind **"Continue as ⟨name⟩"**. An ecosystem app's sign-in page calls this
+cross-origin, with credentials, before it makes anyone type an email: *does this browser already
+have a WitUS session, and what do we call them?* A positive answer becomes a button whose click
+runs the real OIDC code flow.
+
+```
+GET https://accounts.witus.online/api/ecosystem/session
+  Origin: https://<a registered ecosystem origin>
+  credentials: include
+
+200 {"signedIn": true, "user": {"name": "Brand Anthony McDonald"}}
+200 {"signedIn": false}
+403 {"error": "origin_not_allowed"}       // no CORS headers at all
+```
+
+**It returns a display label and nothing else** — no session token, session id, expiry, user id, or
+full email address. `name` is the user's name when set, otherwise the **local part** of their email.
+This is deliberate and load-bearing: better Auth's own `/api/idp/get-session` returns the full
+`{ session, user }` with the **session token** inside it, so opening *that* route to credentialed
+CORS would hand every ecosystem origin — and anything with an XSS foothold on any one of them — a
+live IdP session token. This endpoint exists precisely so that never has to happen.
+
+The response crosses an origin boundary, so to the receiving app it is client-supplied data by
+definition. **It must never authenticate anyone.** It is copy for a button label.
+
+CORS is credentialed and echoes the caller's origin (the `*` wildcard is illegal with credentials),
+with `Vary: Origin` and `Cache-Control: no-store, private`. The allowlist is
+`ecosystemOrigins()` — derived from `ECOSYSTEM_APPS`, so it cannot drift from the client registry.
+**White-label hosts are excluded by construction**, not by a second rule: learnwitus tenant domains
+and Stay.WitUS hotel domains are deliberately absent from `ECOSYSTEM_APPS`, so a probe from one of
+them gets a 403 and the ecosystem stays invisible to it. Local `http://localhost` origins are
+allowed outside production only.
+
+A blocked or failed probe is **invisible by design** — the calling app renders its ordinary sign-in
+form. Safari (ITP) and Firefox (Total Cookie Protection) block the IdP's third-party cookie and so
+answer nothing; that is a supported degraded state, not a bug.
+
+### Global sign-out
+
+Signing out of any WitUS app ends the shared session for all of them, via better Auth's
+`end_session_endpoint` (`/api/idp/oauth2/endsession`). Two things about the registry make it work:
+
+- **`postLogoutPath` defaults to the app's own root** for every registered app. It used to be
+  opt-in with only `learn` set, which meant an app could ship a "Sign out of WitUS" button and have
+  its return trip refused with `invalid_request` until a *second, separate* deploy of this repo
+  registered it — a cross-repo ordering trap invisible from the app's side. Note that better Auth
+  validates `post_logout_redirect_uri` against `client.redirectUrls`, the same array as OAuth
+  callbacks, so `redirectUrisFor()` folds it in; matching is exact, trailing slash included.
+- **`trustedOrigins` covers the ecosystem.** The endSession handler refuses a logout that is
+  neither same-site nor carrying a matching `id_token_hint`, accepting `Sec-Fetch-Site` of
+  `same-origin | same-site | none` **or** an `origin`/`referer` that passes `isTrustedOrigin`.
+  Every `*.witus.online` app is same-site and always passed; **centenarianos.com is a different
+  registrable domain** and was rejected outright. Listing the ecosystem origins is what lets its
+  `referer` through, and avoids plumbing an `id_token_hint` through every client.
+
+Calling apps must send `client_id` alongside `post_logout_redirect_uri` — better Auth returns
+`invalid_request` without it (or a verifiable `id_token_hint`), and clients have no id_token
+browser-side. Apps destroy their **local** session first and only then hand off, so an unreachable
+or refusing IdP still leaves the person signed out locally.
 
 ## Scripts
 
