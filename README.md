@@ -155,12 +155,18 @@ answer nothing; that is a supported degraded state, not a bug.
 Signing out of any WitUS app ends the shared session for all of them, via better Auth's
 `end_session_endpoint` (`/api/idp/oauth2/endsession`). Two things about the registry make it work:
 
-- **`postLogoutPath` defaults to the app's own root** for every registered app. It used to be
+- **`postLogoutPath` defaults to the app's own root, on every host the app is registered at.** It used to be
   opt-in with only `learn` set, which meant an app could ship a "Sign out of WitUS" button and have
   its return trip refused with `invalid_request` until a *second, separate* deploy of this repo
   registered it — a cross-repo ordering trap invisible from the app's side. Note that better Auth
   validates `post_logout_redirect_uri` against `client.redirectUrls`, the same array as OAuth
   callbacks, so `redirectUrisFor()` folds it in; matching is exact, trailing slash included.
+  "Every host" matters for the four apps that serve from more than one (`witus.online` and
+  `centenarianos.com` from apex + `www`, Centenarian Coach from two hosts, Wanderlust across its
+  domain move): an app builds the URI from `window.location.origin`, the only host it knows at
+  click time, and `ecosystemOrigins()` already lets the probe answer on all of them — so
+  registering only the primary made "Continue as" work on a secondary host while sign-out from
+  that same host stranded the visitor on the IdP page.
 - **`trustedOrigins` covers the ecosystem.** The endSession handler refuses a logout that is
   neither same-site nor carrying a matching `id_token_hint`, accepting `Sec-Fetch-Site` of
   `same-origin | same-site | none` **or** an `origin`/`referer` that passes `isTrustedOrigin`.

@@ -251,14 +251,14 @@ export function redirectUriFor(app: EcosystemApp): string {
  * de-duplicated. The IdP exact-matches the incoming `redirect_uri` against this set.
  */
 export function redirectUrisFor(app: EcosystemApp): string[] {
-  const postLogout = postLogoutRedirectUriFor(app);
   return [
     ...new Set([
       redirectUriFor(app),
       ...(app.extraRedirectUris ?? []),
       // Folded in because better-auth validates post_logout_redirect_uri against THIS array.
-      // See the note on EcosystemApp.postLogoutPath for why that is not our choice.
-      ...(postLogout ? [postLogout] : []),
+      // See the note on EcosystemApp.postLogoutPath for why that is not our choice. ALL registered
+      // hosts, not just the primary — see postLogoutRedirectUrisFor for the asymmetry that caused.
+      ...postLogoutRedirectUrisFor(app),
     ]),
   ];
 }
@@ -277,6 +277,40 @@ export function postLogoutRedirectUriFor(app: EcosystemApp): string | null {
   // "/" by default: every first-party surface participates in global sign-out. See the note on
   // EcosystemApp.postLogoutPath for why this is not opt-in any more.
   return new URL(app.postLogoutPath ?? "/", app.origin).toString();
+}
+
+/**
+ * The post-logout landing URI on EVERY host this app is registered at — the primary origin plus
+ * each `extraRedirectUris` origin — de-duplicated.
+ *
+ * WHY NOT JUST THE PRIMARY ORIGIN. An app sends `post_logout_redirect_uri` built from the host the
+ * visitor is actually on (`window.location.origin`), because that is the only host it can know at
+ * click time. Several apps genuinely serve from more than one: witus.online and centenarianos.com
+ * from both apex and `www`, Centenarian Coach from both its hyphenated and dotted hosts (both
+ * verified serving 200 on 2026-09-02), Wanderlust from its old and new hosts during the cutover.
+ *
+ * Registering only the primary origin produced a silent asymmetry: `ecosystemOrigins()` folds
+ * `extraRedirectUris` hosts into the session-probe CORS allowlist, so "Continue as ⟨name⟩" WORKED
+ * on the secondary host — and then signing out from that same host was refused, stranding the
+ * visitor on the IdP's own page. Signed out correctly in both places, but with no way back. The
+ * two lists are now derived from the same hosts, so they cannot disagree.
+ *
+ * Each entry is a boring first-party root on a host already registered for this client, which is
+ * what makes it safe given that better-auth validates post-logout URIs against `redirectUrls` (see
+ * the note on `EcosystemApp.postLogoutPath`) — this adds no host that was not already a valid
+ * OAuth redirect target.
+ */
+export function postLogoutRedirectUrisFor(app: EcosystemApp): string[] {
+  const path = app.postLogoutPath ?? "/";
+  const origins = [app.origin];
+  for (const uri of app.extraRedirectUris ?? []) {
+    try {
+      origins.push(new URL(uri).origin);
+    } catch {
+      // A malformed extra URI is a registry bug; it must not cost the other hosts their return trip.
+    }
+  }
+  return [...new Set(origins.map((origin) => new URL(path, origin).toString()))];
 }
 
 /**
