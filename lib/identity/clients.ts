@@ -48,8 +48,15 @@ export type EcosystemApp = {
    */
   extraRedirectUris?: readonly string[];
   /**
-   * Where the IdP sends the browser back after a GLOBAL SIGN-OUT, relative to `origin`
-   * (e.g. "/"). Omit for an app that does not offer sign-out-of-everything yet.
+   * Where the IdP sends the browser back after a GLOBAL SIGN-OUT, relative to `origin`.
+   *
+   * DEFAULTS TO "/" FOR EVERY REGISTERED APP (see `postLogoutRedirectUriFor`). It used to be
+   * opt-in, which meant an app could ship a "Sign out of WitUS" button and have the IdP refuse
+   * the return trip with `invalid_request` until a SECOND deploy of this repo registered it —
+   * a cross-repo ordering trap that is invisible from the app's side. Since every entry in this
+   * registry is a first-party surface that should sign out of everything, and the value is the
+   * app's own root, the safe default is the useful one. Set it explicitly only to use a path
+   * other than "/"; there is no reason to unset it.
    *
    * READ THIS BEFORE SETTING IT. better-auth's end_session endpoint validates
    * `post_logout_redirect_uri` against **`client.redirectUrls`**, the same array it
@@ -267,8 +274,9 @@ export function redirectUrisFor(app: EcosystemApp): string[] {
  * is a 400, not a silent fallback.
  */
 export function postLogoutRedirectUriFor(app: EcosystemApp): string | null {
-  if (!app.postLogoutPath) return null;
-  return new URL(app.postLogoutPath, app.origin).toString();
+  // "/" by default: every first-party surface participates in global sign-out. See the note on
+  // EcosystemApp.postLogoutPath for why this is not opt-in any more.
+  return new URL(app.postLogoutPath ?? "/", app.origin).toString();
 }
 
 /**
@@ -299,4 +307,51 @@ export function buildTrustedClients(
     });
   }
   return clients;
+}
+
+/**
+ * Every origin an ecosystem app is served from — the app's own `origin` plus the origin of
+ * each `extraRedirectUris` entry (apex/`www` pairs, domain moves).
+ *
+ * This is the CORS allowlist for the ecosystem session probe
+ * (`/api/ecosystem/session`, the endpoint behind "Continue as <name>"). Derived from the
+ * registry rather than maintained by hand so a new app cannot be registered as a client and
+ * then silently fail its probe.
+ *
+ * IT IS DELIBERATELY THE FULL REGISTRY, NOT THE PROVISIONED SUBSET. `buildTrustedClients()`
+ * filters on the secret being set because an unprovisioned client must not be able to complete
+ * a token exchange. The probe grants nothing — it answers "is someone signed in here, and what
+ * do we call them" — so gating it on provisioning would only mean a newly-deployed app's probe
+ * stays broken until an unrelated env var lands, which is exactly the kind of silent partial
+ * failure this endpoint is meant to avoid.
+ *
+ * WHITE-LABEL HOSTS ARE ABSENT BY CONSTRUCTION. learnwitus's tenant domains and Stay.WitUS's
+ * hotel domains are deliberately not in ECOSYSTEM_APPS (see the exclusion note above), so they
+ * are not in this set either, and a probe from one of them is refused by CORS. That is the
+ * required behaviour: a white-label surface must never learn that the ecosystem exists.
+ */
+export function ecosystemOrigins(
+  apps: readonly EcosystemApp[] = ECOSYSTEM_APPS,
+): ReadonlySet<string> {
+  const origins = new Set<string>();
+  for (const app of apps) {
+    origins.add(new URL(app.origin).origin);
+    for (const uri of app.extraRedirectUris ?? []) {
+      try {
+        origins.add(new URL(uri).origin);
+      } catch {
+        // A malformed extra URI is a registry bug, not a reason to refuse every other origin.
+      }
+    }
+  }
+  return origins;
+}
+
+/** Is this `Origin` header value allowed to make a credentialed probe request? */
+export function isEcosystemOrigin(
+  origin: string | null | undefined,
+  apps: readonly EcosystemApp[] = ECOSYSTEM_APPS,
+): boolean {
+  if (!origin) return false;
+  return ecosystemOrigins(apps).has(origin);
 }
