@@ -201,3 +201,9 @@ A hardcoded "apex domain → A record `76.76.21.21`" check in witus-learn declar
 ### Onboarding action when adding a new ecosystem repo
 
 Add a short pointer to this rule in the new repo's `CLAUDE.md` (name it, point back here for the full text), alongside the identity / operator-task / branch-hygiene / citation pointers.
+
+## Rendering library PDFs — use the repo script, never a hand-rolled Chrome call
+
+Every `plans/playbook/*.md` ebook ships with a WitUS-branded `.pdf` beside it. Render with `npm run library:pdf -- <file.md>` (or `-- --all` for every stale pair) and gate with `npm run check:pdf-freshness`; both are `scripts/render-library-pdf.mjs`. The script drives headless Chromium through Playwright with native header/footer templates and resolves the browser itself: `LIBRARY_PDF_BROWSER` → newest cached Playwright headless shell in `~/Library/Caches/ms-playwright/` → Playwright's default.
+
+Why this exists: on 2026-09-15 an afternoon was lost because the installed Google Chrome crashes on every headless launch on BAM's Intel Mac (macOS 13, no longer supported by upstream Chromium), `npx playwright install chromium` refuses the OS, and CSS `position: fixed` headers printed at the bottom of the page over the text with the build that does run. The cached headless shell build is the working browser on this machine; do not delete that cache. If a render fails, run the check first (no browser needed), then set `LIBRARY_PDF_BROWSER`, then read the script's header comment. Full instructions live in `plans/playbook/00-library-index.md` under "How to render PDFs".

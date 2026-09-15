@@ -14,7 +14,9 @@
     "db:identity:migrate": "drizzle-kit migrate --config drizzle.identity.config.ts",
     "tutorial:record": "playwright test --config playwright.tutorial.config.ts",
     "tutorial:docs": "node scripts/tutorial-video/gen-docs.mjs",
-    "tutorial:video": "node scripts/tutorial-video/compose.mjs"
+    "tutorial:video": "node scripts/tutorial-video/compose.mjs",
+    "library:pdf": "node scripts/render-library-pdf.mjs",
+    "check:pdf-freshness": "node scripts/render-library-pdf.mjs --check"
   },
   "dependencies": {
     "@auth/drizzle-adapter": "^1.11.2",
