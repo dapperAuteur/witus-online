@@ -1,4 +1,4 @@
-<!-- witus-shared-rules v1 -->
+<!-- witus-shared-rules v2 -->
 # WitUS shared CLAUDE.md rules (canonical source)
 
 **This file is the single source of truth for the process rules every WitUS ecosystem repo carries.**
@@ -19,14 +19,14 @@ marker to propagate — the sync replaces the block whenever its content differs
 Full rationale for each rule lives in this repo's [`CLAUDE.md`](../CLAUDE.md). The consolidated
 UI/UX/DX conventions are a separate managed file: [`shared-ui-ux-dx.md`](./shared-ui-ux-dx.md).
 
-Bump the `v1` in the marker comment above whenever the block content changes materially — the sync
+Bump the version (`vN`) in the marker comment above whenever the block content changes materially — the sync
 script uses it to report which repos are stale.
 
 ---
 
 <!-- The content below is what the sync script injects. Keep it self-contained and repo-agnostic. -->
 
-<!-- BEGIN:witus-shared-rules v1 -->
+<!-- BEGIN:witus-shared-rules v2 -->
 <!-- MANAGED BLOCK — do not edit by hand. Source: gemini/witus/docs/shared-rules.md.
      Update the source, then run `node scripts/sync-claude-rules.mjs` in the witus repo. -->
 
@@ -97,6 +97,16 @@ All implementation plans live in `./plans/` as `NN-description-of-plan.md` (two-
 kebab-case, next available number, don't skip). Sub-queues: `./plans/user-tasks/NN-slug.md`
 (operator tasks), `./plans/bugs/`, `./plans/future/`. (`plans/` is typically gitignored.)
 
+**Finding what BAM mentions: search gitignored files.** Most ideas, plans, decisions, and drafts BAM
+refers to live in a `plans/` dir of this repo or another ecosystem repo, and are not tracked by git.
+Default `rg`, `git grep`, `git log -S`, and editor search skip gitignored paths, so they miss every
+`plans/` dir and report a false "nothing found". Search with `rg -uu` (or `rg --no-ignore`, `grep -r`,
+`find`), excluding `node_modules`, `.next`, `.git`, worktrees, and virtualenvs: this repo first, then
+the repos in `gemini/witus/docs/ecosystem-repos.json`. A miss from a git-aware search proves nothing;
+if the gitignore-aware search also misses, say what you searched and ask BAM where it lives.
+Untracked also means unrecoverable: git can't restore an overwritten plan, so read before replacing.
+Full rule: `gemini/witus/CLAUDE.md` §"Plans convention".
+
 ## Citation rule
 
 Anything publishable, teachable, or partner-facing (curriculum, teaching-oriented help articles,
@@ -120,4 +130,4 @@ default Neon+Drizzle+pnpm+Vitest stack) are consolidated in `gemini/witus/docs/s
 Read it before writing UI or API code. Two repos are grandfathered on Supabase+Jest and documented
 there as exceptions.
 
-<!-- END:witus-shared-rules v1 -->
+<!-- END:witus-shared-rules v2 -->

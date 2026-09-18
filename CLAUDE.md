@@ -93,6 +93,18 @@ In force across **every** ecosystem repo. All implementation plans live in `./pl
 
 Note: in most ecosystem repos `plans/` is **gitignored** (local working notes, not committed). That's intentional — the convention is about where files live on disk for the next session to find, not about committing them. Anything that must be tracked (e.g. the canonical CLAUDE.md blocks) lives outside `plans/`, in `docs/`.
 
+### Finding what BAM mentions — search gitignored files
+
+Most things BAM refers to (an idea, a plan, a decision, a task, a draft) are written down in a `plans/` directory, in this repo or another ecosystem repo, and are **not tracked by git**. Default `rg`, `git grep`, `git log -S`, and editor search all respect `.gitignore`, so they skip every `plans/` dir and return a false "nothing found".
+
+- Search with `rg -uu` (or `rg --no-ignore`, `grep -r`, `find`). Across the whole ecosystem:
+  `rg -uu -il '<term>' /Users/bam/Code_NOiCloud/ai-builds /Users/bam/Code_NOiCloud/cent/bam --glob '!**/node_modules/**' --glob '!**/.git/**' --glob '!**/.next/**' --glob '!**/worktrees/**' --glob '!**/*venv*/**'`
+- Order: this repo's `plans/` first, then the repos listed in [`docs/ecosystem-repos.json`](docs/ecosystem-repos.json).
+- A miss from a git-aware search is not evidence. If the gitignore-aware search also misses, report what was searched and ask BAM where it lives; don't conclude it was never written.
+- Untracked means unrecoverable: git cannot restore an overwritten or deleted plan. Read it before replacing it.
+
+**Why:** On 2026-09-18 BAM pointed to a lacrosse-app idea "in the ecosystem." The first search used default `rg`, which skipped every gitignored `plans/` dir across 24 repos; the result looked complete and wasn't. BAM's words: "most things I mention will be in plans dir of this or another app and not tracked in git."
+
 ---
 
 ## Branch-hygiene rule — BAM merges, and BAM merges between sessions
