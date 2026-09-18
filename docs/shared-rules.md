@@ -1,4 +1,4 @@
-<!-- witus-shared-rules v2 -->
+<!-- witus-shared-rules v3 -->
 # WitUS shared CLAUDE.md rules (canonical source)
 
 **This file is the single source of truth for the process rules every WitUS ecosystem repo carries.**
@@ -26,7 +26,7 @@ script uses it to report which repos are stale.
 
 <!-- The content below is what the sync script injects. Keep it self-contained and repo-agnostic. -->
 
-<!-- BEGIN:witus-shared-rules v2 -->
+<!-- BEGIN:witus-shared-rules v3 -->
 <!-- MANAGED BLOCK — do not edit by hand. Source: gemini/witus/docs/shared-rules.md.
      Update the source, then run `node scripts/sync-claude-rules.mjs` in the witus repo. -->
 
@@ -107,6 +107,16 @@ if the gitignore-aware search also misses, say what you searched and ask BAM whe
 Untracked also means unrecoverable: git can't restore an overwritten plan, so read before replacing.
 Full rule: `gemini/witus/CLAUDE.md` §"Plans convention".
 
+## New app ideas — vet before building
+
+Before writing code, creating a repo, or onboarding any new product idea, score it with the WitUS
+app-idea rubric (`gemini/witus/docs/app-idea-vetting-rubric.md`): search gitignored `plans/` for prior
+work, declare the goal with BAM (business / portfolio / community), write the sourced analysis at
+`gemini/witus/plans/NN-<slug>-analysis.md`, apply the gates and weighted scores, and file a user task
+for any validation BAM does outside the editor. Append lessons and outcomes to the rubric's logs;
+gate, weight, and threshold changes need BAM's approval. Full rule: `gemini/witus/CLAUDE.md`
+§"New-product vetting rule".
+
 ## Citation rule
 
 Anything publishable, teachable, or partner-facing (curriculum, teaching-oriented help articles,
@@ -130,4 +140,4 @@ default Neon+Drizzle+pnpm+Vitest stack) are consolidated in `gemini/witus/docs/s
 Read it before writing UI or API code. Two repos are grandfathered on Supabase+Jest and documented
 there as exceptions.
 
-<!-- END:witus-shared-rules v2 -->
+<!-- END:witus-shared-rules v3 -->

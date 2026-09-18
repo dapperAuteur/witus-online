@@ -10,12 +10,30 @@ This mistake has been made more than once. If you're about to write a file under
 
 ---
 
+## New-product vetting rule — score every app idea with the rubric before building
+
+When BAM raises a new app or product idea (an ecosystem product, a sub-site, a paid tool, or a client's idea BAM might build), Claude vets it **before** any code, repo, domain, or onboarding step, using the canonical rubric at [`docs/app-idea-vetting-rubric.md`](docs/app-idea-vetting-rubric.md). The readable guide with a worked example is the library ebook `plans/playbook/2026-09-18-app-idea-vetting-playbook.md` (a dated snapshot; the rubric file wins on conflict).
+
+1. **Find prior work** in every ecosystem repo's gitignored `plans/` (see "Finding what BAM mentions" under the Plans convention).
+2. **Declare the goal with BAM** — business, portfolio/demo, or community. The goal picks the weight profile; if it's undecided, score business and portfolio both.
+3. **Research in slices with source discipline** (competitors and do-it-yourself substitutes, the first customer's actual vendor stack, market and money, law and governing bodies), and write the analysis at `plans/NN-<slug>-analysis.md` in this repo using the rubric's template, with APA 7 citations.
+4. **Score it**: gates first, then the eleven weighted dimensions with V/I/A evidence tags; state the verdict (Kill / Park / Test cheaply / Build).
+5. **File a user task** for any validation step BAM does outside the editor (operator-task rule), with kill criteria written before the test runs.
+6. **Rubric retro**: append lessons to the rubric's lessons log and the idea to its outcome log (3- and 12-month checks); propose gate/weight/threshold changes in the analysis. BAM approves those before they land; each approved change bumps the rubric version and refreshes the ebook.
+
+A **Build** verdict is the entry ticket to the Ecosystem onboarding rule below (its step 0).
+
+**Why:** On 2026-09-18 the school sports stats app (`plans/32`) showed that one day of sourced research can surface an idea's fatal facts — about twenty products hiding in one requirement, a buyer who doesn't feel the pain, a free incumbent that had already shipped the core feature, and a schedule collision with BAM's weekend crew work. BAM asked for a repeatable rubric that evolves as ideas get vetted and outcomes come in.
+
+---
+
 ## Ecosystem onboarding rule — when adding a NEW product to the WitUS ecosystem
 
 When a new product joins the WitUS ecosystem (a new app, sub-site, or shared infrastructure repo), do these things in order:
 
 **Rules now propagate by a loader, not by hand-paste.** The canonical shared rules live in [`docs/shared-rules.md`](docs/shared-rules.md) as a machine-injected managed block (`<!-- BEGIN/END:witus-shared-rules vN -->`); the consolidated UI/UX/DX standard is [`docs/shared-ui-ux-dx.md`](docs/shared-ui-ux-dx.md). Edit the canonical file, then run `node scripts/propagate-claude-rules.mjs --write` (target repos listed in [`docs/ecosystem-repos.json`](docs/ecosystem-repos.json)) — this writes the block into every repo AND branches/commits/pushes each changed one, leaving only the merges to BAM. (Preview first with no `--write`; the lower-level `scripts/sync-claude-rules.mjs` writes files only, no git.) Each repo's `CLAUDE.md` keeps its hand-owned identity + stack above the block. To onboard a new repo: add it to `docs/ecosystem-repos.json` `targets`, run propagate, then write its identity line above the block. (The older [`docs/ecosystem-claude-md-blocks.md`](docs/ecosystem-claude-md-blocks.md) paste file is retained for reference but superseded by the loader.) See [`plans/24-shared-rules-loader-and-registry.md`](plans/24-shared-rules-loader-and-registry.md).
 
+0. **Vetting comes first.** The product has a written analysis scored with [`docs/app-idea-vetting-rubric.md`](docs/app-idea-vetting-rubric.md) and a **Build** verdict (or BAM's explicit override, recorded in the analysis). See the New-product vetting rule above.
 1. **Add a CLAUDE.md to the new repo** that opens with the same "Ecosystem repo identity" warning as above (the bam-landing-page / bam-portfolio note). This is a one-paragraph paste; the same text lives in every other ecosystem repo. The note pre-empts a recurring identity mistake — every new repo gets it on day one.
 2. **Add the operator-task rule** to the new repo's CLAUDE.md — same paragraph as in every other ecosystem repo.
 3. **Add the branch-hygiene rule** to the new repo's CLAUDE.md — the pointer version that names all three halves (Half 1: Claude branches/commits/pushes, never touches main; Half 2: BAM merges between sessions; Half 3: keep branches small and bundle multiple branches into one `bundle/<slug>-YYYY-MM-DD` before handoff) and points back here for the full text.
