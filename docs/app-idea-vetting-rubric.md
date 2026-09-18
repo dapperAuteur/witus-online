@@ -1,6 +1,6 @@
 # WitUS App-Idea Vetting Rubric
 
-**Version 1.0 · 2026-09-18 · Owner: Anthony McDonald (BAM)**
+**Version 1.1 · 2026-09-18 · Owner: Anthony McDonald (BAM)**
 **Status:** in force. Weights and thresholds are provisional until three ideas have been scored and at least one outcome is known (see §9).
 
 This file is the canonical source for the "New-product vetting rule" in `gemini/witus/CLAUDE.md`. The readable guide, with a worked example, is the library ebook `plans/playbook/2026-09-18-app-idea-vetting-playbook.md`. The ebook is a dated snapshot of this file; when the two disagree, this file wins.
@@ -138,6 +138,7 @@ Then **References** in APA 7.
 
 **Before you research**
 - Search first: `rg -uu` across the ecosystem, and link any prior work.
+- Name the people who asked for the idea, and where they are, on day one. A named asker at the first site changes both the research and the test.
 - Map the first customer's vendor stack from its own website before assuming anything about it.
 
 **Competitors**
@@ -183,6 +184,7 @@ Append a row for every lesson. Lessons become checklist items, gates, or weights
 | L8 | 2026-09-18 | Same | The first customer's website exposed its whole vendor stack in minutes | Checklist: map the stack from the customer's own site |
 | L9 | 2026-09-18 | Same | The verdict depends on the goal. The same slice is a Park as a business and a Test cheaply as a portfolio demo | Weight profiles by goal (§5) |
 | L10 | 2026-09-18 | Same | A dead competitor (DigitalScout, discontinued) says something about the market | Checklist: include dead competitors |
+| L11 | 2026-09-18 | Same | The first pass only asked at the end who wanted the app. Two lacrosse coaches had asked, and one was at the test school; the club is outside both the district and the state association, so it is the faster test | Checklist: name the people who asked, on day one (v1.1) |
 
 ## 9. Outcome log (calibration)
 
@@ -192,7 +194,7 @@ Record every scored idea. At the 3-month and 12-month checks, compare what happe
 |---|---|---|---|---|---|---|---|---|
 | School sports platform, all sports (as first described) | `plans/32` | 2026-09-18 | v1.0 | Business | 1.50 | Kill | Due 2026-12-18 | Due 2027-09-18 |
 | Broadcast stats desk, one sport, for student crews | `plans/32` | 2026-09-18 | v1.0 | Business / portfolio | 2.70 / 3.30 | Park / Test cheaply | Due 2026-12-18 | Due 2027-09-18 |
-| Lacrosse-first stats for a coach | `plans/32` | 2026-09-18 | v1.0 | Business / portfolio | 2.65 / 3.15 | Park / Test cheaply | Due 2026-12-18 | Due 2027-09-18 |
+| Lacrosse-first stats for two named coaches (Fishers HS, and an independent club) | `plans/32` | 2026-09-18 | v1.1 | Business / portfolio | 2.65 / 3.15 | Park / Test cheaply | Due 2026-12-18 | Due 2027-09-18 |
 
 **Decisions made before the rubric existed** (unscored; score them later if they help calibration):
 
@@ -218,3 +220,4 @@ Record every scored idea. At the 3-month and 12-month checks, compare what happe
 | Version | Date | Change |
 |---|---|---|
 | 1.0 | 2026-09-18 | Created at BAM's request from the school sports stats app analysis (`plans/32`): six gates, eleven dimensions, three weight profiles, four verdicts, and the lessons and outcome logs seeded with that analysis |
+| 1.1 | 2026-09-18 | Checklist line added: name the people who asked, on day one. Lesson L11. The lacrosse outcome row now names two coaches. No gate, weight, or threshold changes |
