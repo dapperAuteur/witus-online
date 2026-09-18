@@ -1,6 +1,6 @@
 # WitUS App-Idea Vetting Rubric
 
-**Version 1.1 · 2026-09-18 · Owner: Anthony McDonald (BAM)**
+**Version 1.2 · 2026-09-18 · Owner: Anthony McDonald (BAM)**
 **Status:** in force. Weights and thresholds are provisional until three ideas have been scored and at least one outcome is known (see §9).
 
 This file is the canonical source for the "New-product vetting rule" in `gemini/witus/CLAUDE.md`. The readable guide, with a worked example, is the library ebook `plans/playbook/2026-09-18-app-idea-vetting-playbook.md`. The ebook is a dated snapshot of this file; when the two disagree, this file wins.
@@ -16,6 +16,7 @@ This file is the canonical source for the "New-product vetting rule" in `gemini/
 **Not for:**
 - Features inside an existing product. Those use that product's own `plans/`.
 - Build-vs-buy decisions on internal tools. Those use a build-vs-buy analysis like `plans/29`, though gates G3 and G4 still apply.
+- Course or lesson ideas for Learn.WitUS. Those use the sibling course-creation rubric at `claude/witus-learn/docs/course-method/course-creation-rubric.md` (library document 18). If an idea is both a course and a product (for example, a course that needs its own app), run both.
 
 ## 2. The process
 
@@ -221,3 +222,4 @@ Record every scored idea. At the 3-month and 12-month checks, compare what happe
 |---|---|---|
 | 1.0 | 2026-09-18 | Created at BAM's request from the school sports stats app analysis (`plans/32`): six gates, eleven dimensions, three weight profiles, four verdicts, and the lessons and outcome logs seeded with that analysis |
 | 1.1 | 2026-09-18 | Checklist line added: name the people who asked, on day one. Lesson L11. The lacrosse outcome row now names two coaches. No gate, weight, or threshold changes |
+| 1.2 | 2026-09-18 | Scope: course and lesson ideas go to the sibling course-creation rubric in witus-learn (library document 18), and ideas that are both run both. No gate, weight, or threshold changes |
