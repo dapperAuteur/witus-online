@@ -29,6 +29,9 @@ export default defineConfig({
     // locator.pressSequentially(text, { delay }) for typing that should be readable.
     // TUTORIAL_SLOWMO exists for debugging a spec by eye, never for a take you will publish.
     launchOptions: { slowMo: Number(process.env.TUTORIAL_SLOWMO ?? 0) },
+    // Signed-in tutorials: a storage state saved by `playwright codegen --save-storage`.
+    // .auth/ is gitignored — never commit a session.
+    ...(process.env.TUTORIAL_STORAGE_STATE ? { storageState: process.env.TUTORIAL_STORAGE_STATE } : {}),
     // Local recording drives installed Chrome (bundled chromium unsupported on macOS 13).
     ...(process.env.CI ? {} : { channel: "chrome" as const }),
   },

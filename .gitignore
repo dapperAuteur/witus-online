@@ -19,3 +19,6 @@ playwright-report/
 tutorial-output/
 docs/tutorials/video/
 audio/
+
+# signed-in tutorial sessions (never commit)
+.auth/

@@ -30,6 +30,9 @@ export interface TutorialOptions {
   title: string;
   /** Path to open before step 1 (default "/"). */
   startPath?: string;
+  /** Skip (don't fail) unless TUTORIAL_STORAGE_STATE points at a signed-in storage state.
+   *  Create one with: npx playwright codegen --channel chrome <prod-url> --save-storage=.auth/tutorial-user.json */
+  requiresAuth?: boolean;
 }
 
 interface Mark {
@@ -83,6 +86,10 @@ async function syncFlash(page: Page): Promise<void> {
 
 export function defineTutorial(opts: TutorialOptions, steps: TutorialStep[]): void {
   test(`tutorial: ${opts.title}`, async ({ page }) => {
+    test.skip(
+      Boolean(opts.requiresAuth) && !process.env.TUTORIAL_STORAGE_STATE,
+      "requires TUTORIAL_STORAGE_STATE (signed-in storage state) — see the requiresAuth option above",
+    );
     const outDir = path.join(OUTPUT_ROOT, opts.slug);
     fs.mkdirSync(outDir, { recursive: true });
 
