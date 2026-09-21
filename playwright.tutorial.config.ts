@@ -21,8 +21,14 @@ export default defineConfig({
     // Recording sessions are synthetic traffic too — same tag as the CI suite, so Honeycomb and
     // analytics can separate tutorial takes from real users (tag, not a drop: traces still flow).
     extraHTTPHeaders: { "x-witus-origin-test": "playwright-synthetic" },
-    // slowMo makes cursor movement and typing legible at watching speed instead of robot speed.
-    launchOptions: { slowMo: 350 },
+    // slowMo is OFF by default, deliberately. It delays every browser protocol message, and the
+    // screencast frames the recorder is built from are protocol messages: at slowMo 350 the webm
+    // dropped to a few frames a second, lost whole stretches of wall time, and missed two of the
+    // four 240 ms boundary flashes (measured 2026-09-21), so steps were cut in the wrong places.
+    // Pace a tutorial inside its steps instead — page.waitForTimeout(), or
+    // locator.pressSequentially(text, { delay }) for typing that should be readable.
+    // TUTORIAL_SLOWMO exists for debugging a spec by eye, never for a take you will publish.
+    launchOptions: { slowMo: Number(process.env.TUTORIAL_SLOWMO ?? 0) },
     // Local recording drives installed Chrome (bundled chromium unsupported on macOS 13).
     ...(process.env.CI ? {} : { channel: "chrome" as const }),
   },
