@@ -266,7 +266,7 @@ export const products: Product[] = [
     accent: "rose",
     status: "beta",
     external: true,
-    signInHref: "https://stream.witus.online/login",
+    signInHref: "https://stream.witus.online/signin",
     oidcSlug: "stream",
     surfaces: ["public-directory", "oidc-client"],
   },
