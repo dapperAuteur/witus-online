@@ -42,12 +42,21 @@ const centenarianOSItems = [
   { title: "Equipment & asset tracking", status: "shipped" as const },
   { title: "Cross-module connections", status: "shipped" as const },
   { title: "Workouts & exercise library", status: "shipped" as const },
+  { title: "Bank statement import (CSV and PDF, parsed in the app)", status: "shipped" as const },
+  { title: "Transfer tracking: card and loan payments", status: "shipped" as const },
+  { title: "Budgets from your spending history", status: "shipped" as const },
+  { title: "Google Calendar sync (one-way, read-only)", status: "shipped" as const },
+  { title: "Sign in with WitUS", status: "shipped" as const },
   // In Progress
   { title: "Focus Engine & AI insights: correlation analysis", status: "in_progress" as const },
   { title: "Biometrics & recovery: HRV, sleep deep-dive", status: "in_progress" as const },
   { title: "User experience & personalization", status: "in_progress" as const },
+  { title: "Savings envelopes and debt payoff planning", status: "in_progress" as const },
+  { title: "Media tracker moving to Stream.WitUS", status: "in_progress" as const },
   // Planned
   { title: "Link tracking & marketing analytics", status: "planned" as const },
+  { title: "Academy courses moving to Learn.WitUS", status: "planned" as const },
+  { title: "Travel & vehicles moving to RideWitUS", status: "planned" as const },
 ];
 
 const workWitUSItems = [
@@ -61,6 +70,8 @@ const workWitUSItems = [
   { title: "Mileage & expense tracking", status: "shipped" as const },
   { title: "Financial dashboard", status: "shipped" as const },
   { title: "PWA / offline with background sync", status: "shipped" as const },
+  { title: "Sign in with WitUS (MFA enforced)", status: "shipped" as const },
+  { title: "Training moved to Learn.WitUS", status: "shipped" as const },
   // In Progress
   { title: "Job board: post available jobs publicly", status: "in_progress" as const },
   // Planned
