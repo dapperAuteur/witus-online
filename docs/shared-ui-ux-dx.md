@@ -13,17 +13,24 @@ on next touch.
 **Neon Postgres + Drizzle ORM + pnpm + Vitest (unit) + Playwright (E2E) + axe-playwright (a11y).**
 New repos and existing Drizzle-lineage repos follow this.
 
-**Grandfathered exceptions — Supabase + Postgres/RLS + npm + Jest, do NOT migrate yet:**
+**Grandfathered exceptions — Supabase + Postgres/RLS + npm, do NOT migrate yet:**
 - **CentenarianOS** (`gemini/centenarian-os`)
 - **Work.WitUS / ContractorOS** (`gemini/contractor-os`)
 
-These two share a Supabase database and keep their RLS + Jest tooling until BAM decides otherwise.
+These two share a Supabase database and keep their RLS tooling until BAM decides otherwise.
 Their DB/testing sections below apply to them; everything non-stack-specific (a11y, UX, microcopy,
 git, TypeScript, naming) applies to them too.
 
-**Pending decision — also currently on Supabase+Jest, not yet reconciled:** `tour-manager-os` and
-`fly-witus`. See `plans/user-tasks/` for the migrate-or-grandfather task. Until decided, they stay
-as-is; do not migrate their stack on the side.
+**Checked against `package.json` on `origin/main`, 2026-10-05:** neither of the two actually has
+Jest installed. CentenarianOS runs unit tests with Node's built-in `node --test` plus a Playwright
+accessibility suite; Work.WitUS runs `node --test` suites only. Both use npm. The CentenarianOS and
+Work.WitUS database split is planned (CentenarianOS `plans/55-stage2-db-split.md`) but not done, so
+the shared-Supabase exception still holds.
+
+**Pending decision, not yet reconciled:** `tour-manager-os` (Supabase + Vitest + npm) and
+`fly-witus` (already Neon + Drizzle, npm, no unit runner). An earlier version of this file listed
+both as Supabase + Jest; neither is. See `plans/user-tasks/` for the migrate-or-grandfather task.
+Until decided, they stay as-is; do not migrate their stack on the side.
 
 ---
 
@@ -138,11 +145,15 @@ Canonical winner in **bold**; losing variants noted so you recognize legacy code
   in `tests/e2e/`. CI gate: typecheck + lint + unit + E2E + a11y all green before merge.
 - **Grandfathered (Jest + RTL — CentOS, ContractorOS):** Jest + React Testing Library, 80%+ coverage
   on business logic, tests co-located. Test behavior not implementation (`screen` + `getByRole`).
+  *Reality check 2026-10-05:* neither repo has Jest installed today (CentenarianOS: `node --test` +
+  Playwright a11y; Work.WitUS: `node --test`). Whether to adopt Jest + RTL here or move them to the
+  default Vitest line is an open decision for BAM; this line records the earlier intent.
 
 ## References for the divergence
 
 Two lineage clusters produced most non-conflicting divergence: **Neon+Drizzle+pnpm+Vitest**
 (shop-witus, witus-learn, stream-witus, wanderlearn) vs **Supabase+RLS+npm+Jest** (centenarian-os,
-contractor-os, tour-manager-os, fly-witus). `flashlearn-ai/docs/guides/ui-component-guidelines.md`
+contractor-os, tour-manager-os, fly-witus). That second label was the survey's grouping; as of
+2026-10-05 none of those four runs Jest, and fly-witus is on Neon + Drizzle (see the top section). `flashlearn-ai/docs/guides/ui-component-guidelines.md`
 and `centenarian-academy/docs/ComponentGuide.md` are the two out-of-step legacy docs (React.FC,
 default exports, Atomic Design, CSS Modules) — treat them as superseded by this file.
