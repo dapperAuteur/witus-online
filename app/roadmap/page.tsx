@@ -51,7 +51,8 @@ const centenarianOSItems = [
   { title: "Focus Engine & AI insights: correlation analysis", status: "in_progress" as const },
   { title: "Biometrics & recovery: HRV, sleep deep-dive", status: "in_progress" as const },
   { title: "User experience & personalization", status: "in_progress" as const },
-  { title: "Savings envelopes and debt payoff planning", status: "in_progress" as const },
+  { title: "Savings envelopes, debt payoff and bill due dates", status: "in_progress" as const },
+  { title: "Multi-currency cash accounts with exchange rates", status: "in_progress" as const },
   { title: "Media tracker moving to Stream.WitUS", status: "in_progress" as const },
   // Planned
   { title: "Link tracking & marketing analytics", status: "planned" as const },
