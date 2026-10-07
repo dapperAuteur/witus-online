@@ -17,15 +17,20 @@ New repos and existing Drizzle-lineage repos follow this.
 - **CentenarianOS** (`gemini/centenarian-os`)
 - **Work.WitUS / ContractorOS** (`gemini/contractor-os`)
 
-These two share a Supabase database and keep their RLS tooling until BAM decides otherwise.
-Their DB/testing sections below apply to them; everything non-stack-specific (a11y, UX, microcopy,
-git, TypeScript, naming) applies to them too.
+These two run on Supabase (Postgres + RLS + Supabase Auth with MFA), still share one Supabase
+project, and keep that tooling until BAM decides otherwise. Their DB/testing sections below apply to
+them; everything non-stack-specific (a11y, UX, microcopy, git, TypeScript, naming) applies to them
+too.
 
 **Checked against `package.json` on `origin/main`, 2026-10-05:** neither of the two actually has
 Jest installed. CentenarianOS runs unit tests with Node's built-in `node --test` plus a Playwright
-accessibility suite; Work.WitUS runs `node --test` suites only. Both use npm. The CentenarianOS and
-Work.WitUS database split is planned (CentenarianOS `plans/55-stage2-db-split.md`) but not done, so
-the shared-Supabase exception still holds.
+accessibility suite; Work.WitUS runs `node --test` suites only. Both use npm.
+
+**Database split: planned, not done (checked 2026-10-06).** Both apps' environments still point at
+the same Supabase project. Work.WitUS's move to Neon is a plan (CentenarianOS
+`plans/55-stage2-db-split.md` Phase 3, task 56): a Neon instance exists but no code reads it, and
+Work.WitUS still uses Supabase for its data, login and two-factor. So the Supabase exception and the
+shared-DB safety rules below hold for both apps until BAM confirms the split.
 
 **Pending decision, not yet reconciled:** `tour-manager-os` (Supabase + Vitest + npm) and
 `fly-witus` (already Neon + Drizzle, npm, no unit runner). An earlier version of this file listed
