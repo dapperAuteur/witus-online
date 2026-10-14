@@ -1,6 +1,6 @@
 # WitUS.online
 
-The parent brand platform for the WitUS ecosystem. It's a philosophy-first site connecting [CentenarianOS](https://centenarianos.com) and [Work.WitUS](https://work.witus.online).
+The parent brand platform for the WitUS ecosystem. It's a philosophy-first site that started by connecting [CentenarianOS](https://centenarianos.com) and [Work.WitUS](https://work.witus.online), and now carries the directory of every WitUS product (22 in [`lib/products.ts`](lib/products.ts) as of 2026-10-05) and the ecosystem's identity provider, "Sign in with WitUS" at accounts.witus.online.
 
 ## About
 
@@ -14,7 +14,8 @@ Operated by B4C LLC / AwesomeWebStore.com. Built by [Brand Anthony McDonald](htt
 B4C LLC / AwesomeWebStore.com  ← legal entity
 └── WitUS.online               ← parent brand (this repo)
     ├── CentenarianOS.com      ← multi-decade personal OS
-    └── Work.WitUS.Online      ← contractor management platform
+    ├── Work.WitUS.Online      ← contractor management platform
+    └── …the rest of the registry in lib/products.ts (22 products)
 ```
 
 ## Tech Stack
@@ -36,7 +37,12 @@ B4C LLC / AwesomeWebStore.com  ← legal entity
 |---|---|
 | `/` | Philosophy-first hero + product cards |
 | `/about` | Manifesto + BAM background |
-| `/roadmap` | Public roadmap for both platforms |
+| `/explore` | Product directory |
+| `/learn`, `/learn/curriculum`, `/learn/partnerships`, `/learn/research`, `/learn/bio` | Practitioner profile: BVC curriculum, partnerships, research |
+| `/educators` | Educator-facing page |
+| `/roadmap` | Public roadmap for CentenarianOS and Work.WitUS |
+| `/accounts/sign-in` | Sign in with WitUS (the IdP's sign-in page) |
+| `/admin` | Admin: episodes, invitations, the private library (`/admin/library`) |
 | `/account` | Shared account explainer + FAQ |
 | `/terms` | Umbrella terms of service |
 | `/privacy` | Privacy policy covering both apps |
