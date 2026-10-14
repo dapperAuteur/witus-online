@@ -214,6 +214,50 @@ The BVC curriculum was built with academic-grade citation discipline because a f
 
 Per the "Ecosystem onboarding rule" above, every new repo's `CLAUDE.md` includes the identity warning, the operator-task rule, and the branch-hygiene rule. **Add a short pointer to this citation rule** as well — one paragraph in the new repo's CLAUDE.md that names the rule and points back here for the full text.
 
+## Blog ledger rule — every blog post goes in the ledger the session it is written
+
+**The ledger.** `plans/playbook/*-blog-ledger.md` (created 2026-10-14; gitignored like the rest of
+the library, synced to `/admin/library` with `scripts/sync-library.mjs`) lists every post for BAM's
+blog at brandanthonymcdonald.com/blog, from every app:
+- **Part 1:** posts live on the site, in publish order with their dates.
+- **Part 2:** every waiting draft, numbered in the recommended publishing order. Each row has the
+  app, the branch it's on, its publish task, its gate, and whether it passes the blog's checks.
+- **Part 3:** how to add a post.
+
+The ledger is where "what's next on the blog" is answered. Calendar v2 says *when* the slots are;
+the ledger says *which post* fills them.
+
+**Rules for every session, in every repo:**
+1. **Read the ledger before writing a post.** Don't write a topic twice, and link to live posts
+   instead of repeating them.
+2. **Add every new draft in the same session it's written:** the next number in Part 2, placed
+   after any post it links to and inside its series. If a draft sits in a series that must ship
+   together, keep the series together.
+3. **Drafts live in `claude/bam-landing-page/docs/Blog Files/<slug>.md`** on a `content/...` branch,
+   made in a git worktree so BAM's checkout is untouched. They must pass the blog's checks:
+   - the header parses and the MDX compiles;
+   - zero em or en dashes;
+   - none of the phrases in `scripts/audit-ai-writing-tells.mjs`;
+   - APA 7 with a `## References` section when the post cites anything, and only sources fetched
+     in that session.
+
+   File the publish task in bam-landing-page's `plans/user-tasks/`, with its gates and any posts
+   it must follow.
+4. **After any edit, keep the library's conventions:** rename the file to today's date prefix
+   ("current as of"), update its row in `00-library-index.md`, and re-render the PDF
+   (`npm run library:pdf -- plans/playbook/<file>.md`). If two `*-blog-ledger.md` files exist
+   because two sessions edited at once, merge them into the newer one and delete the older.
+5. **"Published" means live, not merged.** A post moves to Part 1 only when BAM says it's live
+   or it appears in `https://www.brandanthonymcdonald.com/feed.json`, which lists every public
+   post with its date. Merged drafts sit in `/admin/blog` as unpublished drafts until BAM
+   publishes them.
+6. **Order is BAM's call.** Sessions may propose a position. BAM moves rows freely, and the
+   ledger records his order, not the session's.
+
+**Why:** on 2026-10-14 the blog had 27 live posts and 100 finished drafts. 38 of those drafts had
+no publish task at all, and 34 no longer passed the blog's own rules. Nothing listed them in one
+place, so nobody could say what was live, what was next, or what had already been written.
+
 ## Authoritative-values rule — never assert guessed external values
 
 When a value is owned by an external system — DNS / a registrar, a host like Vercel, a third-party API, or **another app in this ecosystem** (its URLs, routes, IDs, env names, DB schema) — do NOT hardcode a generic/assumed default and present it to the user as correct.
