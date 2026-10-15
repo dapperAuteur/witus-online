@@ -24,6 +24,9 @@ const RawEnvShape = z.object({
       'Must be "addr@host" or "Name <addr@host>"'
     ),
   ADMIN_EMAIL: z.string().email(),
+  // Optional: owner cost-cleanup page (/admin/cost-cleanup). Absent = that tool shows "not configured".
+  VERCEL_TOKEN: z.string().min(1).optional(),
+  NEON_API_KEY: z.string().min(1).optional(),
 });
 
 const EnvSchema = RawEnvShape.transform((raw, ctx) => {
@@ -44,6 +47,8 @@ const EnvSchema = RawEnvShape.transform((raw, ctx) => {
     EMAIL_SERVER: raw.EMAIL_SERVER,
     EMAIL_FROM: raw.EMAIL_FROM,
     ADMIN_EMAIL: raw.ADMIN_EMAIL,
+    VERCEL_TOKEN: raw.VERCEL_TOKEN,
+    NEON_API_KEY: raw.NEON_API_KEY,
   };
 });
 
