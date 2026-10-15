@@ -24,6 +24,13 @@ const RawEnvShape = z.object({
       'Must be "addr@host" or "Name <addr@host>"'
     ),
   ADMIN_EMAIL: z.string().email(),
+  // Optional: owner cost-cleanup page (/admin/cost-cleanup). Absent = that tool shows "not configured".
+  VERCEL_TOKEN: z.string().min(1).optional(),
+  NEON_PROJECT_KEYS: z.string().min(2).optional(), // JSON {"<neon project id>":"<project-scoped key>"}
+  VERCEL_TEAM_SLUG: z.string().min(1).optional(),
+  CRON_SECRET: z.string().min(16).optional(),
+  CENTOS_EVENTS_URL: z.string().url().optional(),
+  CENTOS_EVENTS_SECRET: z.string().min(16).optional(),
 });
 
 const EnvSchema = RawEnvShape.transform((raw, ctx) => {
@@ -44,6 +51,12 @@ const EnvSchema = RawEnvShape.transform((raw, ctx) => {
     EMAIL_SERVER: raw.EMAIL_SERVER,
     EMAIL_FROM: raw.EMAIL_FROM,
     ADMIN_EMAIL: raw.ADMIN_EMAIL,
+    VERCEL_TOKEN: raw.VERCEL_TOKEN,
+    NEON_PROJECT_KEYS: raw.NEON_PROJECT_KEYS,
+    VERCEL_TEAM_SLUG: raw.VERCEL_TEAM_SLUG,
+    CRON_SECRET: raw.CRON_SECRET,
+    CENTOS_EVENTS_URL: raw.CENTOS_EVENTS_URL,
+    CENTOS_EVENTS_SECRET: raw.CENTOS_EVENTS_SECRET,
   };
 });
 
