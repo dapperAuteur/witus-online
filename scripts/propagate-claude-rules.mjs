@@ -77,15 +77,19 @@ for (const repo of manifest.targets) {
   }
   // Only proceed from main/master or an existing update branch — never entangle feature work.
   const cur = git(repo, ["rev-parse", "--abbrev-ref", "HEAD"]);
-  const onSafeBase = cur === "main" || cur === "master" || cur === BRANCH;
+  // An earlier, still-unmerged update branch (chore/update-shared-rules-<older date>) is also a safe
+  // base: committing there keeps BAM at one merge per repo instead of stacking a second branch.
+  const onOlderUpdateBranch = cur.startsWith("chore/update-shared-rules-") && cur !== BRANCH;
+  const onSafeBase = cur === "main" || cur === "master" || cur === BRANCH || onOlderUpdateBranch;
   if (!onSafeBase) {
     skipped.push([name, `on branch '${cur}' (not main/${BRANCH}); commit that work first`]);
     continue;
   }
+  const target = onOlderUpdateBranch ? cur : BRANCH;
   // Create or switch to the update branch.
-  if (cur !== BRANCH) {
-    const exists = gitQuiet(repo, ["rev-parse", "--verify", "--quiet", BRANCH]).ok;
-    const co = gitQuiet(repo, exists ? ["checkout", BRANCH] : ["checkout", "-b", BRANCH]);
+  if (cur !== target) {
+    const exists = gitQuiet(repo, ["rev-parse", "--verify", "--quiet", target]).ok;
+    const co = gitQuiet(repo, exists ? ["checkout", target] : ["checkout", "-b", target]);
     if (!co.ok) {
       skipped.push([name, `checkout failed: ${co.out}`]);
       continue;
@@ -103,12 +107,12 @@ for (const repo of manifest.targets) {
     skipped.push([name, `commit failed: ${commit.out}`]);
     continue;
   }
-  const push = gitQuiet(repo, ["push", "-u", "origin", BRANCH]);
+  const push = gitQuiet(repo, ["push", "-u", "origin", target]);
   if (!push.ok) {
     skipped.push([name, `push failed: ${push.out}`]);
     continue;
   }
-  pushed.push(name);
+  pushed.push(target === BRANCH ? name : `${name} (on ${target})`);
 }
 
 console.log(`\n=== Summary ===`);

@@ -75,14 +75,16 @@ if (!WRITE) {
 const pushed = [];
 for (const [repo, name] of changed) {
   const cur = git(repo, ["rev-parse", "--abbrev-ref", "HEAD"]);
-  const onSafeBase = cur === "main" || cur === "master" || cur === BRANCH;
+  const onOlderUpdateBranch = cur.startsWith("chore/update-shared-rules-") && cur !== BRANCH;
+  const onSafeBase = cur === "main" || cur === "master" || cur === BRANCH || onOlderUpdateBranch;
   if (!onSafeBase) {
     skipped.push([name, `on branch '${cur}' (not main/${BRANCH}); commit that work first`]);
     continue;
   }
-  if (cur !== BRANCH) {
-    const exists = gitQuiet(repo, ["rev-parse", "--verify", "--quiet", BRANCH]).ok;
-    const co = gitQuiet(repo, exists ? ["checkout", BRANCH] : ["checkout", "-b", BRANCH]);
+  const target = onOlderUpdateBranch ? cur : BRANCH;
+  if (cur !== target) {
+    const exists = gitQuiet(repo, ["rev-parse", "--verify", "--quiet", target]).ok;
+    const co = gitQuiet(repo, exists ? ["checkout", target] : ["checkout", "-b", target]);
     if (!co.ok) {
       skipped.push([name, `checkout failed: ${co.out}`]);
       continue;
@@ -102,12 +104,12 @@ for (const [repo, name] of changed) {
     skipped.push([name, `commit failed: ${commit.out}`]);
     continue;
   }
-  const push = gitQuiet(repo, ["push", "-u", "origin", BRANCH]);
+  const push = gitQuiet(repo, ["push", "-u", "origin", target]);
   if (!push.ok) {
     skipped.push([name, `push failed: ${push.out}`]);
     continue;
   }
-  pushed.push(name);
+  pushed.push(target === BRANCH ? name : `${name} (on ${target})`);
 }
 console.log(`\n=== Summary ===`);
 console.log(`Pushed (${pushed.length}) on '${BRANCH}': ${pushed.join(", ") || "none"}`);
