@@ -186,6 +186,8 @@ Append a row for every lesson. Lessons become checklist items, gates, or weights
 | L9 | 2026-09-18 | Same | The verdict depends on the goal. The same slice is a Park as a business and a Test cheaply as a portfolio demo | Weight profiles by goal (§5) |
 | L10 | 2026-09-18 | Same | A dead competitor (DigitalScout, discontinued) says something about the market | Checklist: include dead competitors |
 | L11 | 2026-09-18 | Same | The first pass only asked at the end who wanted the app. Two lacrosse coaches had asked, and one was at the test school; the club is outside both the district and the state association, so it is the faster test | Checklist: name the people who asked, on day one (v1.1) |
+| L12 | 2026-10-15 | Create.WitUS, IFN directory edition (`plans/34`) | The idea arrived as "make the app the digital version of this book," but the book is a partner's compilation and the listed people consented to print. The partnership is the product; the vetting has to ask "whose data is this" before "what would the app do" | Proposed checklist item (awaiting BAM): name the owner of any asset the idea would digitize and the consent its subjects gave |
+| L13 | 2026-10-15 | Same | A state agency already ran the free incumbent for "be found" (IEDC's Indiana Creates links a Reel-Scout production directory; Reel-Scout runs several states). The old brand's domain redirected there, so the incumbent was easy to miss | Checklist: check the state or city agency's directory first; follow redirects of old brands |
 
 ## 9. Outcome log (calibration)
 
@@ -196,6 +198,7 @@ Record every scored idea. At the 3-month and 12-month checks, compare what happe
 | School sports platform, all sports (as first described) | `plans/32` | 2026-09-18 | v1.0 | Business | 1.50 | Kill | Due 2026-12-18 | Due 2027-09-18 |
 | Broadcast stats desk, one sport, for student crews | `plans/32` | 2026-09-18 | v1.0 | Business / portfolio | 2.70 / 3.30 | Park / Test cheaply | Due 2026-12-18 | Due 2027-09-18 |
 | Lacrosse-first stats for two named coaches (Fishers HS, and an independent club) | `plans/32` | 2026-09-18 | v1.1 | Business / portfolio | 2.65 / 3.15 | Park / Test cheaply | Due 2026-12-18 | Due 2027-09-18 |
+| Create.WitUS, IFN directory edition (living companion to the printed Creative Source Directory, partner-run city chapters) | `plans/34` | 2026-10-15 | v1.2 | Community | 3.30 | Test cheaply | Due 2027-01-15 | Due 2027-10-15 |
 
 **Decisions made before the rubric existed** (unscored; score them later if they help calibration):
 
