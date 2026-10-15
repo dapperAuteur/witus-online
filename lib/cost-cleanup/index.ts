@@ -6,7 +6,22 @@ import * as neon from "./neon";
 
 export interface Credentials {
   vercelToken?: string;
-  neonApiKey?: string;
+  /** Neon project id → that project's own project-scoped API key. One key per project, by rule. */
+  neonProjectKeys?: Record<string, string>;
+}
+
+/** Parses the NEON_PROJECT_KEYS env value: a JSON object {"<project_id>":"<project-scoped key>", …}.
+ *  Returns undefined when unset or empty; throws on malformed JSON so a typo is loud, not silent. */
+export function parseNeonProjectKeys(raw: string | undefined): Record<string, string> | undefined {
+  if (!raw || !raw.trim()) return undefined;
+  const parsed: unknown = JSON.parse(raw);
+  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) throw new Error("NEON_PROJECT_KEYS must be a JSON object of project id → key");
+  const out: Record<string, string> = {};
+  for (const [id, key] of Object.entries(parsed as Record<string, unknown>)) {
+    if (typeof key !== "string" || !key) throw new Error(`NEON_PROJECT_KEYS: key for project ${id} must be a non-empty string`);
+    out[id] = key;
+  }
+  return Object.keys(out).length ? out : undefined;
 }
 
 export interface Inventory {
@@ -18,7 +33,7 @@ export interface Inventory {
 export async function inventory(creds: Credentials): Promise<Inventory> {
   const inv: Inventory = {
     vercel: { configured: Boolean(creds.vercelToken), teams: [], deployments: [], teamOf: {} },
-    neon: { configured: Boolean(creds.neonApiKey), branches: [], skipped: [] },
+    neon: { configured: Boolean(creds.neonProjectKeys), branches: [], skipped: [] },
     errors: [],
   };
   if (creds.vercelToken) {
@@ -37,18 +52,18 @@ export async function inventory(creds: Credentials): Promise<Inventory> {
       inv.errors.push(e instanceof Error ? e.message : String(e));
     }
   }
-  if (creds.neonApiKey) {
-    try {
-      const projects = await neon.listProjects(creds.neonApiKey);
-      for (const p of projects) {
-        const all = await neon.listBranches(creds.neonApiKey, p);
+  if (creds.neonProjectKeys) {
+    for (const [projectId, key] of Object.entries(creds.neonProjectKeys)) {
+      try {
+        const p = await neon.getProject(key, projectId);
+        const all = await neon.listBranches(key, p);
         for (const b of all) {
           if (neon.isDeletablePreviewBranch(b, all)) inv.neon.branches.push(b);
           else if (b.name.startsWith(neon.PREVIEW_PREFIX)) inv.neon.skipped.push(b);
         }
+      } catch (e) {
+        inv.errors.push(`neon project ${projectId}: ${e instanceof Error ? e.message : String(e)}`);
       }
-    } catch (e) {
-      inv.errors.push(e instanceof Error ? e.message : String(e));
     }
   }
   return inv;
@@ -64,10 +79,15 @@ export interface CleanupResult {
  *  Neon's own cleanup for branches the integration still tracks). */
 export async function cleanup(creds: Credentials, inv: Inventory, log: (line: string) => void = () => {}): Promise<CleanupResult> {
   const result: CleanupResult = { vercelDeleted: 0, neonDeleted: 0, failures: [] };
-  if (creds.neonApiKey) {
+  if (creds.neonProjectKeys) {
     for (const b of inv.neon.branches) {
+      const key = creds.neonProjectKeys[b.projectId];
+      if (!key) {
+        result.failures.push(`neon ${b.projectName}/${b.name}: no key for project ${b.projectId}`);
+        continue;
+      }
       try {
-        await neon.deleteBranch(creds.neonApiKey, b.projectId, b.id);
+        await neon.deleteBranch(key, b.projectId, b.id);
         result.neonDeleted++;
         log(`neon   deleted ${b.projectName} / ${b.name}`);
       } catch (e) {

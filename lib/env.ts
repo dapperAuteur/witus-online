@@ -26,7 +26,7 @@ const RawEnvShape = z.object({
   ADMIN_EMAIL: z.string().email(),
   // Optional: owner cost-cleanup page (/admin/cost-cleanup). Absent = that tool shows "not configured".
   VERCEL_TOKEN: z.string().min(1).optional(),
-  NEON_API_KEY: z.string().min(1).optional(),
+  NEON_PROJECT_KEYS: z.string().min(2).optional(), // JSON {"<neon project id>":"<project-scoped key>"}
 });
 
 const EnvSchema = RawEnvShape.transform((raw, ctx) => {
@@ -48,7 +48,7 @@ const EnvSchema = RawEnvShape.transform((raw, ctx) => {
     EMAIL_FROM: raw.EMAIL_FROM,
     ADMIN_EMAIL: raw.ADMIN_EMAIL,
     VERCEL_TOKEN: raw.VERCEL_TOKEN,
-    NEON_API_KEY: raw.NEON_API_KEY,
+    NEON_PROJECT_KEYS: raw.NEON_PROJECT_KEYS,
   };
 });
 

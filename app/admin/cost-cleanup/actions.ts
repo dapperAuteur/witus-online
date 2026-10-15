@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { isAdminEmail } from "@/lib/admin-auth";
-import { cleanup, inventory } from "@/lib/cost-cleanup";
+import { cleanup, inventory, parseNeonProjectKeys } from "@/lib/cost-cleanup";
 import { getEnv } from "@/lib/env";
 
 export const CONFIRM_PHRASE = "delete previews";
@@ -27,7 +27,7 @@ export async function runCleanupAction(_prev: CleanupActionState, formData: Form
     return { ok: false, message: `Type "${CONFIRM_PHRASE}" to confirm.`, lines: [] };
   }
   const env = getEnv();
-  const creds = { vercelToken: env.VERCEL_TOKEN, neonApiKey: env.NEON_API_KEY };
+  const creds = { vercelToken: env.VERCEL_TOKEN, neonProjectKeys: parseNeonProjectKeys(env.NEON_PROJECT_KEYS) };
   const inv = await inventory(creds);
   const lines: string[] = [];
   const res = await cleanup(creds, inv, (l) => lines.push(l));

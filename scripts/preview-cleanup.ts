@@ -4,13 +4,15 @@
 //   npx tsx scripts/preview-cleanup.ts            # dry run: inventory only
 //   npx tsx scripts/preview-cleanup.ts --delete   # delete everything the inventory lists
 //
-// Credentials: VERCEL_TOKEN (else the Vercel CLI's auth file on this Mac), NEON_API_KEY (else the
-// Neon half reports "not configured" and is skipped). .env.local is loaded if present. Tokens are
-// never printed. Production deployments and non-preview Neon branches are never touched.
+// Credentials: VERCEL_TOKEN (else the Vercel CLI's auth file on this Mac); NEON_PROJECT_KEYS, a JSON
+// object {"<project_id>":"<project-scoped key>", …}, one key per project by rule (or, for a single
+// project, NEON_PROJECT_ID + NEON_API_KEY, the same pair the per-repo workflow uses). Without Neon
+// credentials the Neon half reports "not configured" and is skipped. .env.local is loaded if present.
+// Tokens are never printed. Production deployments and non-preview Neon branches are never touched.
 import { existsSync, readFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
-import { cleanup, inventory } from "../lib/cost-cleanup";
+import { cleanup, inventory, parseNeonProjectKeys } from "../lib/cost-cleanup";
 
 try {
   process.loadEnvFile(".env.local");
@@ -30,9 +32,11 @@ function vercelTokenFromCli(): string | undefined {
 
 async function main(): Promise<void> {
   const DELETE = process.argv.includes("--delete");
+  const single =
+    process.env.NEON_PROJECT_ID && process.env.NEON_API_KEY ? { [process.env.NEON_PROJECT_ID]: process.env.NEON_API_KEY } : undefined;
   const creds = {
     vercelToken: process.env.VERCEL_TOKEN || vercelTokenFromCli(),
-    neonApiKey: process.env.NEON_API_KEY,
+    neonProjectKeys: parseNeonProjectKeys(process.env.NEON_PROJECT_KEYS) ?? single,
   };
 
   const inv = await inventory(creds);
@@ -40,7 +44,7 @@ async function main(): Promise<void> {
   for (const d of inv.vercel.deployments) byProject.set(d.projectName, (byProject.get(d.projectName) ?? 0) + 1);
   console.log(`Vercel: ${inv.vercel.configured ? `${inv.vercel.deployments.length} preview deployment(s) in ${byProject.size} project(s)` : "not configured (no VERCEL_TOKEN and no CLI login)"}`);
   for (const [name, n] of [...byProject].sort((a, b) => b[1] - a[1])) console.log(`  ${name.padEnd(44)} ${n}`);
-  console.log(`Neon:   ${inv.neon.configured ? `${inv.neon.branches.length} preview branch(es) deletable, ${inv.neon.skipped.length} preview-named branch(es) skipped (default/protected/parent)` : "not configured (set NEON_API_KEY)"}`);
+  console.log(`Neon:   ${inv.neon.configured ? `${inv.neon.branches.length} preview branch(es) deletable, ${inv.neon.skipped.length} preview-named branch(es) skipped (default/protected/parent)` : "not configured (set NEON_PROJECT_KEYS, or NEON_PROJECT_ID + NEON_API_KEY for one project)"}`);
   for (const b of inv.neon.branches) console.log(`  ${b.projectName.padEnd(30)} ${b.name}  (${b.createdAt.slice(0, 10)})`);
   for (const e of inv.errors) console.error(`ERROR ${e}`);
   if (!DELETE) {

@@ -1,6 +1,11 @@
 // Neon branches created by the Vercel integration are named `preview/<git-branch>`. Only those are
 // ever deleted here; default, protected and parent branches are skipped by name and by flag.
-// API: https://api-docs.neon.tech/reference (GET /projects, GET /projects/{id}/branches, DELETE branch).
+//
+// KEYS ARE PROJECT-SCOPED, ONE PER PROJECT (BAM, 2026-10-15, on Neon's advice): a key created with
+// `neon api-keys create --name preview-bot-<repo> --project-id <id>` can read and change only that
+// project, so a leak reaches one database. That is why this module never lists the account's
+// projects: it is handed {projectId → key} and asks each project about itself.
+// API: https://api-docs.neon.tech/reference (GET /projects/{id}, GET /projects/{id}/branches, DELETE branch).
 
 export interface NeonProject {
   id: string;
@@ -32,17 +37,9 @@ async function neonFetch(key: string, path: string, init?: RequestInit): Promise
   return res;
 }
 
-export async function listProjects(key: string): Promise<NeonProject[]> {
-  const out: NeonProject[] = [];
-  let cursor: string | undefined;
-  do {
-    const data = (await (
-      await neonFetch(key, `/projects?limit=100${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ""}`)
-    ).json()) as { projects: { id: string; name: string }[]; pagination?: { cursor?: string } };
-    out.push(...data.projects.map((p) => ({ id: p.id, name: p.name })));
-    cursor = data.projects.length === 100 ? data.pagination?.cursor : undefined;
-  } while (cursor);
-  return out;
+export async function getProject(key: string, projectId: string): Promise<NeonProject> {
+  const data = (await (await neonFetch(key, `/projects/${projectId}`)).json()) as { project: { id: string; name: string } };
+  return { id: data.project.id, name: data.project.name };
 }
 
 export async function listBranches(key: string, project: NeonProject): Promise<NeonBranch[]> {

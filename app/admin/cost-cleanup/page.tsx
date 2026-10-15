@@ -1,4 +1,4 @@
-import { inventory } from "@/lib/cost-cleanup";
+import { inventory, parseNeonProjectKeys } from "@/lib/cost-cleanup";
 import { getEnv } from "@/lib/env";
 import { CleanupForm } from "./CleanupForm";
 
@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
 // stale branches cost over $100 each (2026-10). Rule: docs/shared-rules.md "Preview-branch cleanup".
 export default async function CostCleanupPage() {
   const env = getEnv();
-  const creds = { vercelToken: env.VERCEL_TOKEN, neonApiKey: env.NEON_API_KEY };
+  const creds = { vercelToken: env.VERCEL_TOKEN, neonProjectKeys: parseNeonProjectKeys(env.NEON_PROJECT_KEYS) };
   const inv = await inventory(creds);
   const byProject = new Map<string, number>();
   for (const d of inv.vercel.deployments) byProject.set(d.projectName, (byProject.get(d.projectName) ?? 0) + 1);
@@ -68,7 +68,9 @@ export default async function CostCleanupPage() {
         <h2 className="text-lg font-medium">Neon preview branches</h2>
         {!inv.neon.configured ? (
           <p className="text-sm text-neutral-600">
-            Not configured: set <code>NEON_API_KEY</code> (Neon Console → Account settings → API keys).
+            Not configured: set <code>NEON_PROJECT_KEYS</code>, a JSON object of Neon project id to that
+            project&apos;s own project-scoped API key (<code>neon api-keys create --name preview-bot-&lt;repo&gt;
+            --project-id &lt;id&gt;</code>). One key per project, so a leak reaches one database.
           </p>
         ) : inv.neon.branches.length === 0 ? (
           <p className="text-sm text-neutral-600">
