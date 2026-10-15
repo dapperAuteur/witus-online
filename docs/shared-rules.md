@@ -1,4 +1,4 @@
-<!-- witus-shared-rules v6 -->
+<!-- witus-shared-rules v7 -->
 # WitUS shared CLAUDE.md rules (canonical source)
 
 **This file is the single source of truth for the process rules every WitUS ecosystem repo carries.**
@@ -26,7 +26,7 @@ script uses it to report which repos are stale.
 
 <!-- The content below is what the sync script injects. Keep it self-contained and repo-agnostic. -->
 
-<!-- BEGIN:witus-shared-rules v6 -->
+<!-- BEGIN:witus-shared-rules v7 -->
 <!-- MANAGED BLOCK — do not edit by hand. Source: gemini/witus/docs/shared-rules.md.
      Update the source, then run `node scripts/sync-claude-rules.mjs` in the witus repo. -->
 
@@ -160,7 +160,7 @@ Every repo deployed on Vercel with a Neon database through the Vercel-managed in
 
 **Required in every Neon repo:**
 1. The workflow `.github/workflows/neon-preview-cleanup.yml` (canonical copy in `gemini/witus/.github/templates/`, synced by `node scripts/sync-preview-cleanup-workflow.mjs --write`): on `pull_request` `closed`, run `neondatabase/delete-branch-action@v3` against `preview/${{ github.head_ref }}` with `vars.NEON_PROJECT_ID` and `secrets.NEON_API_KEY`. Do not edit the synced copy; edit the template and re-sync.
-2. The GitHub repository variable `NEON_PROJECT_ID` and secret `NEON_API_KEY` set (operator task; the workflow fails loudly without them).
+2. The GitHub repository variable `NEON_PROJECT_ID` and secret `NEON_API_KEY` set (operator task; the workflow fails loudly without them). **The key is project-scoped and unique to that project** (Neon Console → Organization settings → API keys → Create new → Project-scoped; or `neon api-keys create --name <name> --project-id <id>`), so a leak reaches one database. A project-scoped key still has Editor access to every branch in its project: the `preview/` name filter in code is the real guard, and the key never reaches client-side code. The hub (witus.online) holds the map of all project keys as `NEON_PROJECT_KEYS` for its `/admin/cost-cleanup` page; `scripts/neon-key-plan.ts` prints or mints them.
 3. The Vercel project's **Deployment Retention Policy → Pre-Production Deployments** set to the shortest duration (dashboard, per project).
 4. A branch created by hand for a preview or an experiment carries `expires_at` (Neon branch expiration, 30 days maximum); never create one without it.
 
