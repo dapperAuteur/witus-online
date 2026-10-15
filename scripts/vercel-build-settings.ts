@@ -4,6 +4,12 @@
 //   npx tsx scripts/vercel-build-settings.ts            # dry run: current settings per project
 //   npx tsx scripts/vercel-build-settings.ts --apply    # set Standard machine + on-demand concurrency OFF, all projects
 //   npx tsx scripts/vercel-build-settings.ts --apply --only witus-learn,centenarian-os
+//   npx tsx scripts/vercel-build-settings.ts --apply --ignore-step   # also set the Ignored Build Step
+//
+// --ignore-step sets each project's "Ignored Build Step" command (Settings → Git) so that only
+// production and `bundle/*` branches build; every other push is skipped (exit 0 = skip, 1 = build).
+// BAM, 2026-10-15: "bundle branches get previews". Branch-hygiene Half 3 already bundles work before
+// handoff, so previews land exactly where BAM reviews.
 //
 // Why (Vercel docs, read 2026-10-15): "Builds on Standard build machines are only billed when
 // on-demand concurrency is enabled or Elastic build machines are selected" (docs/pricing#builds);
@@ -20,6 +26,9 @@ import { join } from "node:path";
 const APPLY = process.argv.includes("--apply");
 const onlyIdx = process.argv.indexOf("--only");
 const ONLY = onlyIdx !== -1 ? new Set(process.argv[onlyIdx + 1].split(",")) : null;
+const IGNORE_STEP = process.argv.includes("--ignore-step");
+/** exit 1 = build, exit 0 = skip. Production always builds; previews only for bundle/* branches. */
+export const IGNORED_BUILD_STEP = 'if [ "$VERCEL_ENV" = "production" ]; then exit 1; fi; case "$VERCEL_GIT_COMMIT_REF" in bundle/*) exit 1;; *) echo "skip preview for $VERCEL_GIT_COMMIT_REF"; exit 0;; esac';
 const scopeIdx = process.argv.indexOf("--scope");
 const SCOPE = scopeIdx !== -1 ? process.argv[scopeIdx + 1] : "bam-apps";
 
@@ -39,7 +48,7 @@ async function api<T>(path: string, init?: RequestInit): Promise<T> {
   return (await r.json()) as T;
 }
 
-interface Project { id: string; name: string; resourceConfig?: { buildMachineType?: string; elasticConcurrencyEnabled?: boolean; buildQueue?: { configuration?: string } } }
+interface Project { id: string; name: string; commandForIgnoringBuildStep?: string | null; resourceConfig?: { buildMachineType?: string; elasticConcurrencyEnabled?: boolean; buildQueue?: { configuration?: string } } }
 
 async function main() {
   const teams = (await api<{ teams: { id: string; slug: string }[] }>("/v2/teams")).teams;
@@ -60,17 +69,20 @@ async function main() {
     const machine = rc.buildMachineType ?? "(default: elastic)";
     const onDemand = rc.elasticConcurrencyEnabled;
     const billable = machine !== "standard" || onDemand !== false;
-    const line = `${p.name.padEnd(44)} machine=${machine.padEnd(22)} onDemandConcurrency=${String(onDemand ?? "(default: on)").padEnd(14)} ${billable ? "BILLED per CPU minute" : "included"}`;
-    if (!APPLY || !billable || (ONLY && !ONLY.has(p.name))) {
+    const ignoreOk = (full.commandForIgnoringBuildStep ?? "") === IGNORED_BUILD_STEP;
+    const line = `${p.name.padEnd(44)} machine=${machine.padEnd(22)} onDemandConcurrency=${String(onDemand ?? "(default: on)").padEnd(14)} ${billable ? "BILLED per CPU minute" : "included"} ignoredStep=${ignoreOk ? "bundle-only" : full.commandForIgnoringBuildStep ? "custom" : "none"}`;
+    const wantBuild = billable;
+    const wantIgnore = IGNORE_STEP && !ignoreOk;
+    if (!APPLY || (!wantBuild && !wantIgnore) || (ONLY && !ONLY.has(p.name))) {
       console.log(line);
       continue;
     }
-    await api(`/v9/projects/${p.id}?teamId=${team.id}`, {
-      method: "PATCH",
-      body: JSON.stringify({ resourceConfig: { buildMachineType: "standard", elasticConcurrencyEnabled: false } }),
-    });
+    const body: Record<string, unknown> = {};
+    if (wantBuild) body.resourceConfig = { buildMachineType: "standard", elasticConcurrencyEnabled: false };
+    if (wantIgnore) body.commandForIgnoringBuildStep = IGNORED_BUILD_STEP;
+    await api(`/v9/projects/${p.id}?teamId=${team.id}`, { method: "PATCH", body: JSON.stringify(body) });
     changed++;
-    console.log(`${line}\n${"".padEnd(44)} → set machine=standard onDemandConcurrency=false`);
+    console.log(`${line}\n${"".padEnd(44)} → ${wantBuild ? "machine=standard onDemandConcurrency=false " : ""}${wantIgnore ? "ignoredStep=bundle-only" : ""}`);
   }
   console.log(`\n${APPLY ? `Changed ${changed} project(s).` : "Re-run with --apply to set Standard + on-demand concurrency off on every billed project (or --only a,b)."}`);
 }
