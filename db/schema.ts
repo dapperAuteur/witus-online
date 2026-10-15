@@ -1,13 +1,4 @@
-import {
-  pgTable,
-  pgEnum,
-  text,
-  timestamp,
-  primaryKey,
-  integer,
-  uuid,
-  unique,
-} from "drizzle-orm/pg-core";
+import { pgTable, pgEnum, text, timestamp, primaryKey, integer, uuid, unique, boolean, numeric, jsonb } from "drizzle-orm/pg-core";
 import type { AdapterAccount } from "next-auth/adapters";
 
 /** NextAuth tables. Standard @auth/drizzle-adapter shape. Mirrors witus-inbox. */
@@ -145,4 +136,54 @@ export const libraryDocuments = pgTable("library_document", {
   updatedAt: timestamp("updated_at", { withTimezone: true })
     .notNull()
     .defaultNow(),
+});
+
+// ---------------------------------------------------------------------------
+// Ecosystem cost registry (admin/costs). Every third-party service the ecosystem pays for or
+// could pay for: plan, fee, how it bills, where to log in. Rows marked usageSource = "manual" are
+// BAM's own entries; "vercel", "vercel_store" and "neon" rows are refreshed by lib/costs/collect.ts
+// (daily cron + the Refresh button). Never a secret in here: tokens live in env.
+// ---------------------------------------------------------------------------
+export const services = pgTable("service", {
+  slug: text("slug").primaryKey(),
+  name: text("name").notNull(),
+  vendor: text("vendor").notNull(),
+  category: text("category").notNull().default("infrastructure"),
+  /** Plan name as the vendor shows it ("Pro", "Free", "Launch"). Unverified until lastVerifiedAt is set. */
+  plan: text("plan"),
+  /** "vercel" (on the Vercel invoice), "direct", "appsumo", "none" */
+  billedVia: text("billed_via").notNull().default("direct"),
+  baseFeeMonthly: numeric("base_fee_monthly", { precision: 10, scale: 2 }),
+  currency: text("currency").notNull().default("USD"),
+  accountUrl: text("account_url"),
+  /** "vercel" | "vercel_store" | "neon" | "manual" */
+  usageSource: text("usage_source").notNull().default("manual"),
+  /** Vendor-side id the collector keys on (Vercel store id, Neon project id). */
+  externalId: text("external_id"),
+  /** Which ecosystem apps use it, comma-separated product slugs. */
+  usedBy: text("used_by"),
+  notes: text("notes"),
+  active: boolean("active").notNull().default(true),
+  lastVerifiedAt: timestamp("last_verified_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const serviceSnapshots = pgTable("service_snapshot", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  serviceSlug: text("service_slug")
+    .notNull()
+    .references(() => services.slug, { onDelete: "cascade" }),
+  periodStart: timestamp("period_start", { withTimezone: true }).notNull(),
+  periodEnd: timestamp("period_end", { withTimezone: true }).notNull(),
+  /** Usage-based cost in the period, as the vendor reports it (before credits). */
+  usageCost: numeric("usage_cost", { precision: 12, scale: 4 }).notNull().default("0"),
+  /** Flat fee in the period (licenses, seats), if the vendor reports it separately. */
+  baseFee: numeric("base_fee", { precision: 10, scale: 2 }),
+  /** Per-line breakdown: [{ line, quantity, unit, cost }] */
+  lines: jsonb("lines").$type<{ line: string; quantity: number; unit: string; cost: number; project?: string }[]>(),
+  /** Anything else worth keeping (credit remaining, branch counts, plan ids). */
+  detail: jsonb("detail").$type<Record<string, unknown>>(),
+  source: text("source").notNull(),
+  collectedAt: timestamp("collected_at", { withTimezone: true }).notNull().defaultNow(),
 });

@@ -74,6 +74,12 @@ export default async function AdminLayout({
             >
               Cost cleanup
             </Link>
+            <Link
+              href="/admin/costs"
+              className="text-slate-300 hover:text-teal-300"
+            >
+              Costs
+            </Link>
           </div>
           <div className="flex items-center gap-3">
             <span className="text-xs text-slate-500">
