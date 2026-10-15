@@ -1,10 +1,11 @@
 // Neon branches created by the Vercel integration are named `preview/<git-branch>`. Only those are
 // ever deleted here; default, protected and parent branches are skipped by name and by flag.
 //
-// KEYS ARE PROJECT-SCOPED, ONE PER PROJECT (BAM, 2026-10-15, on Neon's advice): a key created with
-// `neon api-keys create --name preview-bot-<repo> --project-id <id>` can read and change only that
-// project, so a leak reaches one database. That is why this module never lists the account's
-// projects: it is handed {projectId → key} and asks each project about itself.
+// KEYS ARE PROJECT-SCOPED, ONE PER PROJECT (BAM, 2026-10-15, on Neon's advice): a project-scoped key
+// (Neon Console → Organization settings → API keys → Create new → Project-scoped) has Editor access
+// to one project only, so a leak reaches one database. It can still change or delete ANY branch in
+// that project; the `preview/` name filter below is the real guard. That is why this module never
+// lists the account's projects: it is handed {projectId → key} and asks each project about itself.
 // API: https://api-docs.neon.tech/reference (GET /projects/{id}, GET /projects/{id}/branches, DELETE branch).
 
 export interface NeonProject {

@@ -56,7 +56,7 @@ export default async function CostCleanupPage() {
 
       <dl className="grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
         <div className="rounded border p-3"><dt className="text-neutral-600">Vercel</dt><dd>{inv.vercel.configured ? `${inv.vercel.deployments.length} preview deployment(s) · teams ${inv.vercel.teams.map((t) => t.slug).join(", ") || "none"}` : "not configured: set VERCEL_TOKEN"}</dd></div>
-        <div className="rounded border p-3"><dt className="text-neutral-600">Neon</dt><dd>{inv.neon.configured ? `${inv.neon.branches.length} deletable preview branch(es) · ${inv.neon.skipped.length} skipped (default, protected or parent)` : "not configured: set NEON_PROJECT_KEYS, one project-scoped key per project"}</dd></div>
+        <div className="rounded border p-3"><dt className="text-neutral-600">Neon</dt><dd>{inv.neon.configured ? `${inv.neon.branches.length} deletable preview branch(es) · ${inv.neon.skipped.length} skipped (default, protected or parent)` : "not configured: set NEON_PROJECT_KEYS, one project-scoped key per project (Neon Console → Organization settings → API keys → Create new → Project-scoped)"}</dd></div>
         <div className="rounded border p-3"><dt className="text-neutral-600">Supabase</dt><dd>no branches by rule (nothing to list)</dd></div>
         <div className="rounded border p-3"><dt className="text-neutral-600">MongoDB Atlas</dt><dd>nothing per preview; cost is the cluster tier</dd></div>
       </dl>

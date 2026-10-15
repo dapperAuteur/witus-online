@@ -1,12 +1,15 @@
-// neon-key-plan — print, never run, the commands that give every Neon project its own project-scoped
-// key and wire it into the matching GitHub repo and into this app's NEON_PROJECT_KEYS.
+// neon-key-plan — print, never run, the checklist that gives every Neon project its own project-scoped
+// key and wires it into the matching GitHub repo and into this app's NEON_PROJECT_KEYS.
 //
 //   NEON_PERSONAL_KEY=<personal key> npx tsx scripts/neon-key-plan.ts
 //
-// Why a plan and not an action: creating keys needs a personal (account-wide) key and org-admin
-// rights, and the created key is shown once. BAM runs the printed lines, pastes each key where the
-// line says, and the personal key never leaves his shell. Repo names are guessed from project
-// names; edit them where the guess is wrong. Nothing here is written anywhere.
+// Project-scoped keys are created in the Neon Console only (Organization settings → API keys →
+// Create new → Project-scoped; Neon support, 2026-10-15, correcting an earlier CLI suggestion), and
+// each key is shown once. A project-scoped key has Editor access to its whole project: it can still
+// change or delete any branch there, so the `preview/` name filter in lib/cost-cleanup is the real
+// guard, and the key must never reach client-side code. The personal key here is used for one GET to
+// list projects and never stored. Repo names are guessed from project names; edit them where the
+// guess is wrong. Nothing here is written anywhere.
 import { existsSync, readFileSync } from "node:fs";
 
 const key = process.env.NEON_PERSONAL_KEY;
@@ -31,9 +34,9 @@ async function main() {
   for (const p of projects) {
     const repo = guess(p.name);
     console.log(`## ${p.name}  (project ${p.id})  → repo dapperAuteur/${repo}`);
-    console.log(`npx neonctl api-keys create --name preview-bot-${repo} --project-id ${p.id}${p.org_id ? `   # org ${p.org_id}` : ""}`);
+    console.log(`Console: Organization settings → API keys → Create new → Project-scoped → project "${p.name}" → name preview-bot-${repo} → copy once`);
     console.log(`gh variable set NEON_PROJECT_ID --repo dapperAuteur/${repo} --body "${p.id}"`);
-    console.log(`gh secret set NEON_API_KEY --repo dapperAuteur/${repo} --body "<the key printed above>"\n`);
+    console.log(`gh secret set NEON_API_KEY --repo dapperAuteur/${repo} --body "<the key you just copied>"\n`);
   }
   console.log(`# Hub map for witus-online's NEON_PROJECT_KEYS (Vercel env, server-side only):`);
   console.log(JSON.stringify(Object.fromEntries(projects.map((p) => [p.id, `<key for ${p.name}>`])), null, 0));
