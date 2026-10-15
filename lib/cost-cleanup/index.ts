@@ -108,3 +108,26 @@ export async function cleanup(creds: Credentials, inv: Inventory, log: (line: st
   }
   return result;
 }
+
+// ---- Selection: ids the admin page round-trips through a form ----------------------------------
+// An id names one deletable item. The server never trusts an id on its own: it re-runs the inventory
+// and keeps only ids that are still in it, so a stale or hand-made id deletes nothing.
+
+export function deploymentId(d: vercel.VercelPreviewDeployment): string {
+  return `vercel:${d.uid}`;
+}
+export function branchId(b: neon.NeonBranch): string {
+  return `neon:${b.projectId}:${b.id}`;
+}
+
+/** The subset of `inv` whose ids are in `ids`. Vercel teamOf is carried for the kept rows only. */
+export function selectFromInventory(inv: Inventory, ids: Set<string>): Inventory {
+  const deployments = inv.vercel.deployments.filter((d) => ids.has(deploymentId(d)));
+  const teamOf: Record<string, string> = {};
+  for (const d of deployments) teamOf[d.uid] = inv.vercel.teamOf[d.uid];
+  return {
+    vercel: { ...inv.vercel, deployments, teamOf },
+    neon: { ...inv.neon, branches: inv.neon.branches.filter((b) => ids.has(branchId(b))) },
+    errors: inv.errors,
+  };
+}

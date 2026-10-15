@@ -4,10 +4,8 @@ import { revalidatePath } from "next/cache";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { isAdminEmail } from "@/lib/admin-auth";
-import { cleanup, inventory, parseNeonProjectKeys } from "@/lib/cost-cleanup";
+import { cleanup, inventory, parseNeonProjectKeys, selectFromInventory } from "@/lib/cost-cleanup";
 import { getEnv } from "@/lib/env";
-
-export const CONFIRM_PHRASE = "delete previews";
 
 export interface CleanupActionState {
   ok: boolean;
@@ -15,26 +13,32 @@ export interface CleanupActionState {
   lines: string[];
 }
 
-/** Deletes every Vercel preview deployment and every Neon `preview/*` branch the inventory lists.
- *  Admin-only, and only when the typed phrase matches. Production is never touched by construction
- *  (lib/cost-cleanup lists preview targets and preview-named, non-default, non-protected branches only). */
-export async function runCleanupAction(_prev: CleanupActionState, formData: FormData): Promise<CleanupActionState> {
+/** Deletes exactly the ticked items. Admin-only. The inventory is re-read on the server and only ids
+ *  still present in it are acted on, so the client cannot name anything the library would not list
+ *  (production deployments and default/protected branches are never in the inventory). */
+export async function deleteSelectedAction(_prev: CleanupActionState, formData: FormData): Promise<CleanupActionState> {
   const session = await getServerSession(authOptions);
   if (!session?.user?.email || !isAdminEmail(session.user.email)) {
     return { ok: false, message: "Not authorized.", lines: [] };
   }
-  if (String(formData.get("confirm") ?? "").trim().toLowerCase() !== CONFIRM_PHRASE) {
-    return { ok: false, message: `Type "${CONFIRM_PHRASE}" to confirm.`, lines: [] };
+  if (formData.get("confirm") !== "on") {
+    return { ok: false, message: "Tick the confirmation box first.", lines: [] };
   }
+  const ids = new Set(formData.getAll("ids").map(String));
+  if (ids.size === 0) return { ok: false, message: "Nothing selected.", lines: [] };
+
   const env = getEnv();
   const creds = { vercelToken: env.VERCEL_TOKEN, neonProjectKeys: parseNeonProjectKeys(env.NEON_PROJECT_KEYS) };
-  const inv = await inventory(creds);
+  const full = await inventory(creds);
+  const chosen = selectFromInventory(full, ids);
+  const found = chosen.vercel.deployments.length + chosen.neon.branches.length;
   const lines: string[] = [];
-  const res = await cleanup(creds, inv, (l) => lines.push(l));
+  const res = await cleanup(creds, chosen, (l) => lines.push(l));
   revalidatePath("/admin/cost-cleanup");
+  const stale = ids.size - found;
   return {
     ok: res.failures.length === 0,
-    message: `Deleted ${res.vercelDeleted} Vercel preview deployment(s) and ${res.neonDeleted} Neon preview branch(es). ${res.failures.length} failure(s).${inv.errors.length ? ` Inventory errors: ${inv.errors.join("; ")}` : ""}`,
+    message: `Deleted ${res.vercelDeleted} preview deployment(s) and ${res.neonDeleted} Neon branch(es).${stale ? ` ${stale} selected item(s) were already gone.` : ""} ${res.failures.length} failure(s).${full.errors.length ? ` Inventory errors: ${full.errors.join("; ")}` : ""}`,
     lines: [...lines, ...res.failures.map((f) => `FAILED ${f}`)],
   };
 }
