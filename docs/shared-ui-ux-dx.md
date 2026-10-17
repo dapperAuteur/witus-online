@@ -99,6 +99,13 @@ Canonical winner in **bold**; losing variants noted so you recognize legacy code
 - **Forms:** validate client-side for UX, server-side for security. Every input has an associated
   `<label>` (htmlFor+id); wire errors via `aria-describedby` + `role="alert"`. `aria-label` is a
   fallback, not the default.
+- **Sign-in control (added 2026-10-16):** every public header shows a link whose accessible name is
+  exactly "Sign in", pointing at the app's sign-in route, whenever the visitor is not authenticated
+  (including while the session is still loading), and a "Sign out" control when authenticated. Never
+  replace it with a neutral label ("Apps", "Account", "Hub"): add a second link instead. Each app
+  keeps an e2e test tagged `@smoke` that asserts the link on the home page, so a rename fails the
+  preview and production checks. Why: witus.online shipped from 2026-05-13 to 2026-10-16 with the
+  control renamed to "Apps" and BAM reported it twice as "no login button".
 - **Zero-alert policy:** never `alert()`/`confirm()` — use the app's Toast/Modal system.
 - **Focus management:** on modal open focus first interactive element; on close return focus to the
   trigger; after route change focus the main heading. Prefer Radix Dialog (focus trap + restore).
