@@ -16,7 +16,8 @@
     "tutorial:docs": "node scripts/tutorial-video/gen-docs.mjs",
     "tutorial:video": "node scripts/tutorial-video/compose.mjs",
     "library:pdf": "node scripts/render-library-pdf.mjs",
-    "check:pdf-freshness": "node scripts/render-library-pdf.mjs --check"
+    "check:pdf-freshness": "node scripts/render-library-pdf.mjs --check",
+    "check:idp-alg": "node scripts/check-idp-id-token-alg.mjs"
   },
   "dependencies": {
     "@auth/drizzle-adapter": "^1.11.2",
