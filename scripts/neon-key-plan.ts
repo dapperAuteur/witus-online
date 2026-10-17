@@ -44,11 +44,13 @@ const PROJECT_REPO_OVERRIDES: Record<string, string> = { "contractor-os-db": "co
  */
 const PRIMARY_PROJECT: Record<string, string> = {
   "witus-online": "witus-db",
-  "ride-wit-us": "neon-aureolin-school", // BAM, 2026-10-16: "ride-wit-us uses neon-aureolin-school"
+  // BAM, 2026-10-16: reset neon-ride-wit-us to the app schema and move RideWitUS onto it, so the
+  // database name matches the repo; neon-aureolin-school (schema only, no rows) is then deleted.
+  "ride-wit-us": "neon-ride-wit-us",
 };
 /** Projects that get no key, with the reason. */
 const SKIP_PROJECTS: Record<string, string> = {
-  "neon-ride-wit-us": "unused; ride-wit-us uses neon-aureolin-school (BAM, 2026-10-16)",
+  "neon-aureolin-school": "being deleted; RideWitUS moves to neon-ride-wit-us (BAM, 2026-10-16)",
 };
 
 /** Run the Neon CLI and parse its JSON output. Exits with the CLI's message on failure. */
