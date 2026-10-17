@@ -42,7 +42,14 @@ const PROJECT_REPO_OVERRIDES: Record<string, string> = { "contractor-os-db": "co
  * Repos with more than one Neon project: the cleanup workflow takes one, so name it. witus-online uses
  * witus-db (9 preview branches) and witus-identity-db (2); the second is cleaned from /admin/cost-cleanup.
  */
-const PRIMARY_PROJECT: Record<string, string> = { "witus-online": "witus-db" };
+const PRIMARY_PROJECT: Record<string, string> = {
+  "witus-online": "witus-db",
+  "ride-wit-us": "neon-aureolin-school", // BAM, 2026-10-16: "ride-wit-us uses neon-aureolin-school"
+};
+/** Projects that get no key, with the reason. */
+const SKIP_PROJECTS: Record<string, string> = {
+  "neon-ride-wit-us": "unused; ride-wit-us uses neon-aureolin-school (BAM, 2026-10-16)",
+};
 
 /** Run the Neon CLI and parse its JSON output. Exits with the CLI's message on failure. */
 function neon<T>(args: string[]): T {
@@ -108,6 +115,10 @@ function main() {
   const repoTaken = new Map<string, string>();
   const unmatched: string[] = [];
   for (const p of projects) {
+    if (SKIP_PROJECTS[p.name]) {
+      unmatched.push(`${p.name} (project ${p.id}): ${SKIP_PROJECTS[p.name]}`);
+      continue;
+    }
     const eps = asList<{ id: string }>(neon(["api", `/projects/${p.id}/endpoints`]), "endpoints");
     const byEndpoint = [...new Set(eps.flatMap((e) => [...(endpoints.get(e.id) ?? [])]))];
     const byName = nameCandidates(p.name, repoNames);
@@ -157,7 +168,7 @@ function main() {
   }
 
   if (unmatched.length) {
-    console.log(`# ${unmatched.length} project(s) not placed by endpoint or name, so no key was made. Check Vercel → Storage for each:`);
+    console.log(`# ${unmatched.length} project(s) get no key (skipped, or not placed by endpoint or name). Check Vercel → Storage for any you do not recognize:`);
     for (const u of unmatched) console.log(`#   ${u}`);
     console.log("");
   }
