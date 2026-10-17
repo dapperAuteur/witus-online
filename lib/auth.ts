@@ -13,6 +13,7 @@ import {
   verificationTokens,
 } from "@/db/schema";
 import { getEnv } from "@/lib/env";
+import { WITUS_ID_TOKEN_ALG } from "@/lib/identity/id-token-alg";
 
 const env = getEnv();
 const adminEmail = env.ADMIN_EMAIL.toLowerCase();
@@ -42,6 +43,9 @@ function witusProvider(): OAuthConfig<WitusProfile> {
     clientSecret: process.env.WITUS_OIDC_CLIENT_SECRET,
     authorization: { params: { scope: "openid email profile" } },
     idToken: true,
+    // The IdP signs ID tokens with EdDSA; openid-client defaults to RS256 and rejects them,
+    // which surfaced as ?error=OAuthCallback. See lib/identity/id-token-alg.ts.
+    client: { id_token_signed_response_alg: WITUS_ID_TOKEN_ALG },
     checks: ["pkce", "state"],
     profile(profile) {
       return {
