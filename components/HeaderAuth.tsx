@@ -7,16 +7,21 @@ const linkClass =
   "inline-flex items-center min-h-11 px-3 hover:text-white transition-colors focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white rounded";
 
 /**
- * Header auth control. Three states:
+ * Header auth control. Two states, and the sign-in control is always present for a visitor who
+ * is not signed in:
  *
- *   loading       → render the Apps link only (no flicker for unauthenticated
- *                   visitors, who are the majority).
- *   unauthenticated → "Apps" → /account (the ecosystem sign-in hub).
- *   authenticated → "Apps" → /account AND a "Sign out" button.
+ *   not authenticated (also while the session is still loading)
+ *       → "Apps" → /account (the ecosystem hub) AND "Sign in" → /auth/sign-in
+ *   authenticated
+ *       → "Apps" → /account AND a "Sign out" button
  *
- * "Apps" intentionally replaces the older "Sign in" label so signed-in users
- * don't see a misleading prompt to authenticate again. The link still goes
- * to /account because that's the canonical ecosystem hub for both audiences.
+ * Rule (docs/shared-ui-ux-dx.md, "Sign-in control"): a public header always shows "Sign in" to a
+ * visitor who is not signed in. On 2026-05-13 this control was renamed to "Apps" only, and BAM
+ * reported witus.online as having no login button (2026-10-16, "this has happened before"). The
+ * accessible name "Sign in" is asserted by e2e/header-auth.spec.ts on every preview and production
+ * deployment, so renaming or removing it fails CI. Showing "Sign in" during the loading state means
+ * a signed-in visitor may see it for a moment before "Sign out" replaces it; that beats hiding the
+ * control from the majority, who are not signed in.
  */
 export function HeaderAuth() {
   const { status } = useSession();
@@ -35,7 +40,11 @@ export function HeaderAuth() {
         >
           Sign out
         </button>
-      ) : null}
+      ) : (
+        <Link href="/auth/sign-in" className={linkClass}>
+          Sign in
+        </Link>
+      )}
     </>
   );
 }
