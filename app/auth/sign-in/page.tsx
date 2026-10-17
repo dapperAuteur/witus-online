@@ -1,7 +1,30 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { signIn } from "next-auth/react";
+
+/**
+ * NextAuth sends OAuth failures back here as `?error=<code>` and this page used to ignore it, so a
+ * rejected "Sign in with WitUS" looked like nothing happened (BAM, 2026-10-16: "I see
+ * /auth/sign-in"). Codes: https://next-auth.js.org/configuration/pages#error-codes. The messages
+ * name the real gate: this app's sign-in callback admits the admin email or an invited email only.
+ */
+function describeAuthError(code: string): string {
+  switch (code) {
+    case "AccessDenied":
+      return "Signed in with WitUS, but this email is not the witus.online admin email and has no active invitation here. Use the admin email at accounts.witus.online, or ask for an invitation.";
+    case "OAuthCallback":
+    case "Callback":
+    case "OAuthSignin":
+      return "Sign in with WitUS did not complete: the hand-off from accounts.witus.online failed. Try again; if it repeats, the WitUS client secret on this site may not match the identity provider.";
+    case "OAuthAccountNotLinked":
+      return "This email already has a witus.online account signed in another way. Use the email link below, then Sign in with WitUS will link to it.";
+    case "Verification":
+      return "That sign-in link has expired or was already used. Request a new one.";
+    default:
+      return `Sign-in failed (${code}). Try again or use the email link.`;
+  }
+}
 
 const inputClass =
   "w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-teal-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-300";
@@ -10,6 +33,12 @@ export default function SignInPage() {
   const [email, setEmail] = useState("");
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Surface the error NextAuth appended to the URL after a failed OAuth round trip.
+  useEffect(() => {
+    const code = new URLSearchParams(window.location.search).get("error");
+    if (code) setError(describeAuthError(code));
+  }, []);
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
