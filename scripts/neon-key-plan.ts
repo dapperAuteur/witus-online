@@ -1,79 +1,173 @@
 // neon-key-plan — give every Neon project its own project-scoped API key and wire it into the matching
 // GitHub repo and into this app's NEON_PROJECT_KEYS.
 //
-//   NEON_PERSONAL_KEY=<personal key> npx tsx scripts/neon-key-plan.ts            # print the checklist
-//   NEON_PERSONAL_KEY=<personal key> npx tsx scripts/neon-key-plan.ts --create   # mint the keys, print once
+// Uses the Neon CLI (`npm i -g neon`) signed in as you; no API key to paste. From the witus repo:
 //
-// Project-scoped keys (Neon docs, manage/api-keys, read 2026-10-15): created by an organization admin
-// in the Console (Organization settings → API keys → Create new → Project-scoped), with the CLI
-// (`neon api-keys create --name <name> --project-id <id>`), or with the API
-// (`POST /organizations/{org_id}/api_keys` {key_name, project_id}) using a personal key. A key has
-// Editor access to its whole project: it cannot delete the project or manage access, but it CAN change
-// or delete any branch there, so the `preview/` name filter in lib/cost-cleanup is the real guard and the
-// key must never reach client-side code. Revocation is immediate (401 afterwards).
+//   neon orgs list                              # if this fails: neon login
+//   npx tsx scripts/neon-key-plan.ts            # dry run: maps projects to repos, changes nothing
+//   npx tsx scripts/neon-key-plan.ts --create   # one key per mapped project, each printed ONCE
 //
-// --create prints each new key exactly once, next to the gh commands that store it, and ends with the
-// assembled NEON_PROJECT_KEYS JSON for the witus-online Vercel env. The personal key is used for the
-// list and the creates and is never stored. Repo names are guessed from project names; edit the gh
-// lines where the guess is wrong.
-import { existsSync, readFileSync } from "node:fs";
+// Why the CLI (2026-10-16): Neon creates project-scoped keys only for a person, not for an
+// organization key ("This endpoint requires a personal API key"), a project-scoped key cannot list
+// projects, and BAM's Neon account (Vercel-managed organization) offers only organization and project
+// keys. The CLI's own sign-in acts as the person, so `neon api-keys create --project-id` works.
+//
+// Repo mapping, two signals:
+//   1. Endpoint (preferred): each ecosystem repo's local `.env*` files are read for Neon hostnames only
+//      (never credentials); Neon says which project owns each `ep-...` endpoint.
+//   2. Name (fallback): most projects are named after their repo. A name that fits several repos is not
+//      used alone.
+// A project neither signal places gets no key and is listed at the end (check Vercel → Storage).
+// When two projects map to one repo, both get keys for NEON_PROJECT_KEYS, but only the first gets the
+// repo's gh lines: the cleanup workflow takes one project per repo.
+//
+// Project-scoped keys (Neon docs, manage/api-keys, read 2026-10-15): Editor access to the whole project;
+// they cannot delete the project or manage access, but they CAN change or delete any branch, so the
+// `preview/` name filter in lib/cost-cleanup and the GitHub workflow is the real guard and the key must
+// never reach client-side code. Revocation is immediate (`neon api-keys revoke <id>`).
 
-const key = process.env.NEON_PERSONAL_KEY;
+import { spawnSync } from "node:child_process";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { basename, join, resolve } from "node:path";
+
 const CREATE = process.argv.includes("--create");
-if (!key) {
-  console.error("Set NEON_PERSONAL_KEY (Neon Console → Account settings → API keys).");
-  process.exit(1);
-}
-const H = { Authorization: `Bearer ${key}`, Accept: "application/json", "Content-Type": "application/json" };
-const manifestPath = "docs/ecosystem-repos.json";
-const repoNames = existsSync(manifestPath)
-  ? (JSON.parse(readFileSync(manifestPath, "utf8")) as { targets: string[] }).targets.map((p) => p.split("/").pop() as string)
-  : [];
-const guess = (name: string) => {
-  const n = name.toLowerCase();
-  return repoNames.find((r) => n.includes(r.toLowerCase())) ?? repoNames.find((r) => r.toLowerCase().includes(n)) ?? "<repo>";
-};
 
-async function main() {
-  const res = await fetch("https://console.neon.tech/api/v2/projects?limit=400", { headers: H });
-  if (!res.ok) throw new Error(`GET /projects → ${res.status}: ${(await res.text()).slice(0, 200)}`);
-  const { projects } = (await res.json()) as { projects: { id: string; name: string; org_id?: string }[] };
-  console.log(`# ${projects.length} Neon project(s). One project-scoped key each.${CREATE ? " Creating them now; each key prints ONCE." : " Dry run: add --create to mint them."}\n`);
-  const map: Record<string, string> = {};
+/**
+ * Mappings settled by evidence, checked 2026-10-16 with `neon branches list`:
+ * - contractor-os-db: its preview branches carry contractor-os branch names (preview/bundle/contractor-os-...);
+ *   centenarian-os's env only points at it (the CentOS / Work.WitUS split), so the endpoint signal misleads.
+ */
+const PROJECT_REPO_OVERRIDES: Record<string, string> = { "contractor-os-db": "contractor-os" };
+/**
+ * Repos with more than one Neon project: the cleanup workflow takes one, so name it. witus-online uses
+ * witus-db (9 preview branches) and witus-identity-db (2); the second is cleaned from /admin/cost-cleanup.
+ */
+const PRIMARY_PROJECT: Record<string, string> = { "witus-online": "witus-db" };
+
+/** Run the Neon CLI and parse its JSON output. Exits with the CLI's message on failure. */
+function neon<T>(args: string[]): T {
+  const r = spawnSync("neon", [...args, "-o", "json"], { encoding: "utf8" });
+  if (r.error) {
+    console.error("The Neon CLI is not on PATH. Install it with `npm i -g neon`, then `neon login`.");
+    process.exit(1);
+  }
+  if (r.status !== 0) throw new Error(`neon ${args.join(" ")} failed: ${(r.stderr || r.stdout).trim().slice(0, 300)}`);
+  return JSON.parse(r.stdout) as T;
+}
+
+/** endpoint id (ep-...) → repo names whose local env files point at it. Hostnames only. */
+function localEndpointMap(targets: string[]): Map<string, Set<string>> {
+  const roots = ["/Users/bam/Code_NOiCloud/ai-builds", "/Users/bam/Code_NOiCloud", process.cwd()];
+  const repoDirs = new Set<string>([process.cwd()]);
+  for (const t of targets) {
+    const dir = [t, ...roots.map((r) => join(r, t))].map((p) => resolve(p)).find((p) => existsSync(p));
+    if (dir) repoDirs.add(dir);
+  }
+  const map = new Map<string, Set<string>>();
+  const re = /(ep-[a-z0-9]+(?:-[a-z0-9]+)*?)(?:-pooler)?\.[a-z0-9.-]*neon\.tech/g;
+  for (const dir of repoDirs) {
+    const repo = dir === process.cwd() ? "witus-online" : basename(dir);
+    for (const f of readdirSync(dir)) {
+      if (!f.startsWith(".env") || /\.(example|sample)$/.test(f)) continue;
+      for (const m of readFileSync(join(dir, f), "utf8").matchAll(re)) {
+        if (!map.has(m[1])) map.set(m[1], new Set());
+        map.get(m[1])!.add(repo);
+      }
+    }
+  }
+  return map;
+}
+
+/** Repos whose name fits the project's name. Several candidates = ambiguous. */
+function nameCandidates(projectName: string, repoNames: string[]): string[] {
+  const n = projectName.toLowerCase().replace(/-db$/, "");
+  const exact = repoNames.filter((r) => r.toLowerCase() === n);
+  if (exact.length) return exact;
+  return repoNames.filter((r) => n.includes(r.toLowerCase()) || r.toLowerCase().includes(n));
+}
+
+type Project = { id: string; name: string };
+const asList = <T>(d: unknown, key: string): T[] => (Array.isArray(d) ? d : ((d as Record<string, T[]>)[key] ?? [])) as T[];
+
+function main() {
+  const manifest = JSON.parse(readFileSync("docs/ecosystem-repos.json", "utf8")) as { targets: string[] };
+  const repoNames = ["witus-online", ...manifest.targets.map((t) => basename(t))];
+  const endpoints = localEndpointMap(manifest.targets);
+
+  const orgs = asList<{ id: string; name: string }>(neon(["orgs", "list"]), "organizations");
+  const projects: (Project & { org: string })[] = [];
+  for (const o of orgs) {
+    for (const p of asList<Project>(neon(["projects", "list", "--org-id", o.id]), "projects")) projects.push({ ...p, org: o.name });
+  }
+  const primaries = new Set(Object.values(PRIMARY_PROJECT));
+  projects.sort((a, b) => Number(primaries.has(b.name)) - Number(primaries.has(a.name)));
+  console.log(`# ${projects.length} Neon project(s) in ${orgs.length} organization(s); ${endpoints.size} endpoint(s) found in local env files.`);
+  console.log(CREATE ? "# Creating one key per mapped project now; each key prints ONCE.\n" : "# Dry run: add --create to make the keys.\n");
+
+  const keysMap: Record<string, string> = {};
+  const repoTaken = new Map<string, string>();
+  const unmatched: string[] = [];
   for (const p of projects) {
-    const repo = guess(p.name);
-    const name = `preview-bot-${repo === "<repo>" ? p.name : repo}`;
-    console.log(`## ${p.name}  (project ${p.id})  → repo dapperAuteur/${repo}`);
+    const eps = asList<{ id: string }>(neon(["api", `/projects/${p.id}/endpoints`]), "endpoints");
+    const byEndpoint = [...new Set(eps.flatMap((e) => [...(endpoints.get(e.id) ?? [])]))];
+    const byName = nameCandidates(p.name, repoNames);
+    let repo: string;
+    let how: string;
+    if (PROJECT_REPO_OVERRIDES[p.name]) {
+      repo = PROJECT_REPO_OVERRIDES[p.name];
+      how = "override in this script (see PROJECT_REPO_OVERRIDES)";
+    } else if (byEndpoint.length > 1) {
+      console.log(`## ${p.name}  (project ${p.id})  → SEVERAL repos' env files point here: ${byEndpoint.join(", ")}. Skipped; decide by hand.\n`);
+      continue;
+    } else if (byEndpoint.length === 1) {
+      repo = byEndpoint[0];
+      how = byName.length === 1 && byName[0] !== repo ? `endpoint; the name suggested ${byName[0]}` : "endpoint";
+    } else if (byName.length === 1) {
+      repo = byName[0];
+      how = "name";
+    } else {
+      unmatched.push(`${p.name} (project ${p.id})${byName.length > 1 ? `: name fits ${byName.join(", ")}` : ""}`);
+      continue;
+    }
+    const second = repoTaken.get(repo);
+    const cleanupNote = second ? " Clean its preview branches from /admin/cost-cleanup." : "";
+    console.log(`## ${p.name}  (project ${p.id})  → repo dapperAuteur/${repo}  [matched by ${how}]`);
     let secret = "<the key>";
     if (CREATE) {
-      if (!p.org_id) {
-        console.log(`   skipped: project has no org_id (personal-account project); create its key in the Console → Account settings → API keys`);
+      try {
+        const made = neon<{ key?: string; id?: number }>(["api-keys", "create", "--name", `preview-bot-${p.name}`, "--project-id", p.id]);
+        if (!made.key) throw new Error("the CLI returned no key field");
+        secret = made.key;
+        keysMap[p.id] = secret;
+        console.log(`   created key "preview-bot-${p.name}" (id ${made.id ?? "?"})`);
+      } catch (e) {
+        console.log(`   FAILED to create key: ${e instanceof Error ? e.message : e}\n`);
         continue;
       }
-      const r = await fetch(`https://console.neon.tech/api/v2/organizations/${p.org_id}/api_keys`, {
-        method: "POST",
-        headers: H,
-        body: JSON.stringify({ key_name: name, project_id: p.id }),
-      });
-      if (!r.ok) {
-        console.log(`   FAILED to create key: ${r.status} ${(await r.text()).slice(0, 160)}`);
-        continue;
-      }
-      const made = (await r.json()) as { key: string; id: number };
-      secret = made.key;
-      map[p.id] = secret;
-      console.log(`   created key "${name}" (id ${made.id})`);
     } else {
-      console.log(`Console: Organization settings → API keys → Create new → Project-scoped → "${p.name}" → name ${name}`);
-      console.log(`   or: npx neonctl api-keys create --name ${name} --project-id ${p.id}`);
+      keysMap[p.id] = "<key>";
     }
+    if (second) {
+      console.log(`   note: ${repo} already uses ${second} for its cleanup workflow (one project per repo). This key goes only into NEON_PROJECT_KEYS.${cleanupNote}\n`);
+      continue;
+    }
+    repoTaken.set(repo, p.name);
     console.log(`gh variable set NEON_PROJECT_ID --repo dapperAuteur/${repo} --body "${p.id}"`);
     console.log(`gh secret set NEON_API_KEY --repo dapperAuteur/${repo} --body "${secret}"\n`);
   }
+
+  if (unmatched.length) {
+    console.log(`# ${unmatched.length} project(s) not placed by endpoint or name, so no key was made. Check Vercel → Storage for each:`);
+    for (const u of unmatched) console.log(`#   ${u}`);
+    console.log("");
+  }
   console.log(`# NEON_PROJECT_KEYS for the witus-online Vercel project (server env only):`);
-  console.log(JSON.stringify(CREATE ? map : Object.fromEntries(projects.map((p) => [p.id, `<key for ${p.name}>`]))));
+  console.log(JSON.stringify(keysMap));
 }
-main().catch((e) => {
+
+try {
+  main();
+} catch (e) {
   console.error(e instanceof Error ? e.message : e);
   process.exit(1);
-});
+}
