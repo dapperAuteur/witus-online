@@ -67,7 +67,10 @@ async function main() {
     const full = await api<Project>(`/v9/projects/${p.id}?teamId=${team.id}`);
     const rc = full.resourceConfig ?? {};
     const machine = rc.buildMachineType ?? "(default: elastic)";
-    const onDemand = rc.elasticConcurrencyEnabled;
+    // Two fields express "On-Demand Concurrent Builds" (seen 2026-10-20): most projects carry
+    // elasticConcurrencyEnabled=false; centenarian-os and fly-witus carry no such field but
+    // buildQueue.configuration="WAIT_FOR_NAMESPACE_QUEUE" (builds wait in the team queue). Both mean off.
+    const onDemand = rc.buildQueue?.configuration === "WAIT_FOR_NAMESPACE_QUEUE" ? false : rc.elasticConcurrencyEnabled;
     const billable = machine !== "standard" || onDemand !== false;
     const ignoreOk = (full.commandForIgnoringBuildStep ?? "") === IGNORED_BUILD_STEP;
     const line = `${p.name.padEnd(44)} machine=${machine.padEnd(22)} onDemandConcurrency=${String(onDemand ?? "(default: on)").padEnd(14)} ${billable ? "BILLED per CPU minute" : "included"} ignoredStep=${ignoreOk ? "bundle-only" : full.commandForIgnoringBuildStep ? "custom" : "none"}`;
@@ -78,7 +81,8 @@ async function main() {
       continue;
     }
     const body: Record<string, unknown> = {};
-    if (wantBuild) body.resourceConfig = { buildMachineType: "standard", elasticConcurrencyEnabled: false };
+    // Send both on-demand fields: some projects ignore elasticConcurrencyEnabled alone (2026-10-15).
+    if (wantBuild) body.resourceConfig = { buildMachineType: "standard", elasticConcurrencyEnabled: false, buildQueue: { configuration: "WAIT_FOR_NAMESPACE_QUEUE" } };
     if (wantIgnore) body.commandForIgnoringBuildStep = IGNORED_BUILD_STEP;
     await api(`/v9/projects/${p.id}?teamId=${team.id}`, { method: "PATCH", body: JSON.stringify(body) });
     changed++;
