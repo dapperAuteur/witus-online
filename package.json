@@ -17,7 +17,9 @@
     "tutorial:video": "node scripts/tutorial-video/compose.mjs",
     "library:pdf": "node scripts/render-library-pdf.mjs",
     "check:pdf-freshness": "node scripts/render-library-pdf.mjs --check",
-    "check:idp-alg": "node scripts/check-idp-id-token-alg.mjs"
+    "check:idp-alg": "node scripts/check-idp-id-token-alg.mjs",
+    "neon:usage": "npx tsx scripts/neon-usage.ts",
+    "neon:limits": "npx tsx scripts/neon-limits.ts"
   },
   "dependencies": {
     "@auth/drizzle-adapter": "^1.11.2",
