@@ -15,6 +15,21 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
+    # Stub env vars so lib/env.ts Zod validation passes during `next build`.
+    # These satisfy the schema shape only; nothing in CI sends real mail or
+    # connects to a real database. Production / Preview deploys get the real
+    # values from Vercel's env.
+    env:
+      STORAGE_DATABASE_URL: postgresql://stub:stub@stub.invalid:5432/stub # CI stub
+      NEXTAUTH_SECRET: ci-stub-secret-placeholder-1234567890 # CI stub
+      EMAIL_SERVER: smtp://nobody:none@localhost:25 # CI stub
+      EMAIL_FROM: WitUS <ci@example.com> # CI stub
+      ADMIN_EMAIL: ci@example.com # CI stub
+      # lib/identity/env.ts (not Zod) throws while `next build` collects page
+      # data for the WitUS Accounts routes, so it needs these two as well.
+      BETTER_AUTH_SECRET: ci-stub-better-auth-secret-1234567890 # CI stub
+      IDENTITY_STORAGE_DATABASE_URL: postgresql://stub:stub@stub.invalid:5432/stub # CI stub
+
     steps:
       - uses: actions/checkout@v4
 
