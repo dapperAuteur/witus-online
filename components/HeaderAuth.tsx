@@ -13,7 +13,8 @@ const linkClass =
  *   not authenticated (also while the session is still loading)
  *       → "Apps" → /account (the ecosystem hub) AND "Sign in" → /auth/sign-in
  *   authenticated
- *       → "Apps" → /account AND a "Sign out" button
+ *       → "Apps" → /account, "Admin" → /admin AND a "Sign out" button (Admin added 2026-10-21:
+ *         BAM had no way to reach the dashboard from the site)
  *
  * Rule (docs/shared-ui-ux-dx.md, "Sign-in control"): a public header always shows "Sign in" to a
  * visitor who is not signed in. On 2026-05-13 this control was renamed to "Apps" only, and BAM
@@ -33,13 +34,18 @@ export function HeaderAuth() {
         Apps
       </Link>
       {authenticated ? (
-        <button
-          type="button"
-          onClick={() => signOut({ callbackUrl: "/" })}
-          className={linkClass}
-        >
-          Sign out
-        </button>
+        <>
+          <Link href="/admin" className={linkClass}>
+            Admin
+          </Link>
+          <button
+            type="button"
+            onClick={() => signOut({ callbackUrl: "/" })}
+            className={linkClass}
+          >
+            Sign out
+          </button>
+        </>
       ) : (
         <Link href="/auth/sign-in" className={linkClass}>
           Sign in
