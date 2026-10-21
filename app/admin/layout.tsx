@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { betterAuthUrl } from "@/lib/identity/env";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { isAdminEmail } from "@/lib/admin-auth";
@@ -27,9 +28,8 @@ export default async function AdminLayout({
             403 — not authorized
           </h1>
           <p className="text-sm text-slate-400">
-            Signed in as{" "}
-            <span className="font-mono">{session.user.email}</span>, which is
-            not the admin account.
+            Signed in as <span className="font-mono">{session.user.email}</span>
+            , which is not the admin account.
           </p>
           <div className="pt-2">
             <SignOutButton />
@@ -80,11 +80,17 @@ export default async function AdminLayout({
             >
               Costs
             </Link>
+            <a
+              href={`${betterAuthUrl()}/account`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-slate-300 hover:text-teal-300"
+            >
+              WitUS Accounts ↗
+            </a>
           </div>
           <div className="flex items-center gap-3">
-            <span className="text-xs text-slate-500">
-              {session.user.email}
-            </span>
+            <span className="text-xs text-slate-500">{session.user.email}</span>
             <SignOutButton />
           </div>
         </div>
