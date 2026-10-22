@@ -110,6 +110,11 @@ Copy byte-for-byte into `lib/analytics/` (or `src/lib/analytics/` if the repo us
 
 Change `ANALYTICS_APP` to this app's slug — **the same slug as `lib/identity/clients.ts`** in the witus repo (`flashlearn`, `learn`, `stream`, …). Keep the `SHARED_EVENTS` block exactly as-is.
 
+> **One recorded exception (BAM, 2026-10-21):** wanderlearn-app emits `ANALYTICS_APP = "wanderlust"`, its public
+> name and host, while its OIDC client and repo keep the identity slug `wanderlearn`. Join its PostHog events to
+> identity `wanderlearn` through `ANALYTICS_SLUG_ALIASES` in `scripts/check-posthog-conformance.mjs`, which also
+> lets the checker accept it. Add any future exception there, with who decided and when; never silently.
+
 ```ts
 export const ANALYTICS_APP = "flashlearn";
 
