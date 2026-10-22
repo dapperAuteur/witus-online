@@ -110,6 +110,20 @@ const RULES = [
  * Apps with no OIDC client (landing pages) have no identity slug, so their value is fixed here —
  * this map is the authoritative source for those.
  */
+/**
+ * Recorded exceptions to "analytics slug = identity slug". Each maps a repo to the analytics slug
+ * it is ALLOWED to emit instead, with the identity slug it stands for, so a funnel query has one
+ * documented translation instead of a silent split.
+ *
+ * wanderlearn-app: BAM, 2026-10-21: "use wanderlust and keep wanderlearn-app as an alias and record."
+ * The product's public name and host are Wanderlust (wanderlust.witus.online); its OIDC client and
+ * repo keep the older name (identity slug "wanderlearn", client id witus-wanderlearn). PostHog
+ * events carry app "wanderlust"; join them to identity "wanderlearn" through this entry.
+ */
+const ANALYTICS_SLUG_ALIASES = {
+  "wanderlearn-app": { analytics: "wanderlust", identity: "wanderlearn", decided: "BAM, 2026-10-21" },
+};
+
 const EXPECTED_APP_SLUG = {
   // OIDC clients — must equal the slug in lib/identity/clients.ts
   witus: "online",
@@ -200,7 +214,10 @@ function auditRepo(repoPath) {
       /analytics/.test(f),
     );
     const actualSlug = readAppSlug([initFile, ...analyticsSources]);
-    if (actualSlug && actualSlug !== expectedSlug) {
+    const alias = ANALYTICS_SLUG_ALIASES[name];
+    if (alias && actualSlug === alias.analytics) {
+      // Recorded exception (see ANALYTICS_SLUG_ALIASES): allowed, not drift.
+    } else if (actualSlug && actualSlug !== expectedSlug) {
       result.errors.push(
         `app slug: "${actualSlug}" should be "${expectedSlug}" — the analytics slug is the identity slug (INTEGRATE.md step 4); a mismatch splits one app into two series in the shared project`,
       );
