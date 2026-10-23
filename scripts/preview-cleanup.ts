@@ -21,6 +21,7 @@ import { homedir } from "node:os";
 import { join } from "node:path";
 import { cleanup, inventory, parseNeonProjectKeys, type Inventory } from "../lib/cost-cleanup";
 import { isDeletablePreviewBranch, PREVIEW_PREFIX, type NeonBranch } from "../lib/cost-cleanup/neon";
+import { allowRateLimitWait } from "../lib/cost-cleanup/vercel";
 import { allProjects, asList, neon as neonCli } from "./neon-cli";
 
 try {
@@ -72,6 +73,7 @@ function neonInventoryFromCli(inv: Inventory): void {
 }
 
 async function main(): Promise<void> {
+  allowRateLimitWait(20 * 60_000); // a terminal can wait out Vercel's delete window; the admin page cannot
   const DELETE = process.argv.includes("--delete");
   const single =
     process.env.NEON_PROJECT_ID && process.env.NEON_API_KEY ? { [process.env.NEON_PROJECT_ID]: process.env.NEON_API_KEY } : undefined;
