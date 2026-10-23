@@ -153,16 +153,18 @@ function main() {
       projects.push({ ...p, org: o.name, orgId: o.id });
     }
   }
-  // Keys an earlier run made, by "orgId/name": revoked once the new key with the same name exists.
-  const oldKeys = new Map<string, number[]>();
+  // Neon refuses a key name that already exists in the organization ("choose another unique name"), so
+  // each run stamps its names (preview-bot-<project>-YYYYMMDDHHMM) and retires the project's older keys:
+  // the plain preview-bot-<project> that --create made, and any earlier stamped one.
+  const stamp = new Date().toISOString().replace(/\D/g, "").slice(0, 12);
+  const orgKeys = new Map<string, { id: number; name: string }[]>();
   if (STORE) {
-    for (const o of orgs) {
-      for (const k of asList<{ id: number; name: string }>(neon(["api-keys", "list", "--org-id", o.id]), "api_keys")) {
-        const at = `${o.id}/${k.name}`;
-        oldKeys.set(at, [...(oldKeys.get(at) ?? []), k.id]);
-      }
-    }
+    for (const o of orgs) orgKeys.set(o.id, asList(neon(["api-keys", "list", "--org-id", o.id]), "api_keys"));
   }
+  const olderKeys = (orgId: string, base: string, keepId?: number) =>
+    (orgKeys.get(orgId) ?? []).filter(
+      (k) => k.id !== keepId && (k.name === base || (k.name.startsWith(`${base}-`) && /^\d{12}$/.test(k.name.slice(base.length + 1)))),
+    );
   const primaries = new Set(Object.values(PRIMARY_PROJECT));
   projects.sort((a, b) => Number(primaries.has(b.name)) - Number(primaries.has(a.name)));
   console.log(`# ${projects.length} Neon project(s) in ${orgs.length} organization(s); ${endpoints.size} endpoint(s) found in local env files.`);
@@ -172,6 +174,20 @@ function main() {
   const repoTaken = new Map<string, string>();
   const unmatched: string[] = [];
   let failures = 0;
+  let mapped = 0;
+  /** Revoke a project's older keys. Called only once the new key is where it belongs. */
+  const retire = (p: { orgId: string }, base: string, keepId?: number) => {
+    const stale = olderKeys(p.orgId, base, keepId);
+    for (const k of stale) {
+      try {
+        neon(["api-keys", "revoke", String(k.id), "--org-id", p.orgId]);
+      } catch (e) {
+        failures++;
+        console.log(`   FAILED to revoke older key "${k.name}" (${k.id}): ${e instanceof Error ? e.message : e}`);
+      }
+    }
+    if (stale.length) console.log(`   revoked ${stale.length} older key(s): ${stale.map((k) => k.name).join(", ")}`);
+  };
   for (const p of projects) {
     if (SKIP_PROJECTS[p.name]) {
       unmatched.push(`${p.name} (project ${p.id}): ${SKIP_PROJECTS[p.name]}`);
@@ -201,25 +217,19 @@ function main() {
     const second = repoTaken.get(repo);
     const cleanupNote = second ? " Clean its preview branches from /admin/cost-cleanup." : "";
     console.log(`## ${p.name}  (project ${p.id})  → repo dapperAuteur/${repo}  [matched by ${how}]`);
-    const keyName = `preview-bot-${p.name}`;
+    const base = `preview-bot-${p.name}`;
+    const keyName = `${base}-${stamp}`;
     let secret = "";
+    let madeId: number | undefined;
+    mapped++;
     if (STORE) {
       try {
         const made = neon<{ key?: string; id?: number }>(["api-keys", "create", "--name", keyName, "--project-id", p.id]);
         if (!made.key) throw new Error("the CLI returned no key field");
         secret = made.key;
+        madeId = made.id;
         keysMap[p.id] = secret;
         console.log(`   created key "${keyName}" (id ${made.id ?? "?"})`);
-        const stale = (oldKeys.get(`${p.orgId}/${keyName}`) ?? []).filter((id) => id !== made.id);
-        for (const id of stale) {
-          try {
-            neon(["api-keys", "revoke", String(id), "--org-id", p.orgId]);
-          } catch (e) {
-            failures++;
-            console.log(`   FAILED to revoke older key ${id}: ${e instanceof Error ? e.message : e}`);
-          }
-        }
-        if (stale.length) console.log(`   revoked ${stale.length} older key(s) named "${keyName}"`);
       } catch (e) {
         failures++;
         console.log(`   FAILED to create key: ${e instanceof Error ? e.message : e}\n`);
@@ -230,6 +240,7 @@ function main() {
     }
     if (second) {
       console.log(`   note: ${repo} already uses ${second} for its cleanup workflow (one project per repo). This key goes only into NEON_PROJECT_KEYS.${cleanupNote}\n`);
+      if (STORE) retire(p, base, madeId);
       continue;
     }
     repoTaken.set(repo, p.name);
@@ -240,10 +251,13 @@ function main() {
     try {
       run("gh", ["variable", "set", "NEON_PROJECT_ID", "--repo", `dapperAuteur/${repo}`, "--body", p.id]);
       run("gh", ["secret", "set", "NEON_API_KEY", "--repo", `dapperAuteur/${repo}`], secret);
-      console.log(`   stored NEON_PROJECT_ID and NEON_API_KEY on dapperAuteur/${repo}\n`);
+      console.log(`   stored NEON_PROJECT_ID and NEON_API_KEY on dapperAuteur/${repo}`);
+      retire(p, base, madeId);
+      console.log("");
     } catch (e) {
+      // The older key may be the one GitHub still holds, so it stays live until a run stores a new one.
       failures++;
-      console.log(`   FAILED to store on GitHub: ${e instanceof Error ? e.message : e}\n`);
+      console.log(`   FAILED to store on GitHub (older keys left alone): ${e instanceof Error ? e.message : e}\n`);
     }
   }
 
@@ -257,7 +271,11 @@ function main() {
     console.log(`# --store would also set NEON_PROJECT_KEYS (${count} project(s)) on the witus-online Vercel project, Production.`);
     return;
   }
-  try {
+  if (count < mapped) {
+    // A partial map would drop projects the hub can clean today, so the Vercel value is left as it is.
+    failures++;
+    console.log(`# NEON_PROJECT_KEYS left unchanged on Vercel: only ${count} of ${mapped} keys were made.`);
+  } else try {
     // Replace, not append: Vercel refuses to add a name that already exists. Absent is fine.
     spawnSync("vercel", ["env", "rm", "NEON_PROJECT_KEYS", "production", "--yes"], { encoding: "utf8" });
     run("vercel", ["env", "add", "NEON_PROJECT_KEYS", "production", "--sensitive"], JSON.stringify(keysMap));
