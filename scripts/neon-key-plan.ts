@@ -5,7 +5,15 @@
 //
 //   neon orgs list                              # if this fails: neon login
 //   npx tsx scripts/neon-key-plan.ts            # dry run: maps projects to repos, changes nothing
-//   npx tsx scripts/neon-key-plan.ts --create   # one key per mapped project, each printed ONCE
+//   npx tsx scripts/neon-key-plan.ts --store    # a new key per mapped project, stored straight into
+//                                               # GitHub and the witus-online Vercel env; never printed
+//
+// --store needs `gh` signed in (`brew install gh && gh auth login`) and this repo linked to the
+// witus-online Vercel project (`vercel link`); both are checked before any key is made. Each run makes a
+// fresh key per project, stores it, then revokes every older key with the same name, so a re-run is safe
+// and no key that was ever shown stays live. A key travels on stdin, never in argv where `ps` can read
+// it. The old --create printed every key to the terminal and is gone (BAM, 2026-10-22: "each key goes
+// straight into GitHub without being shown").
 //
 // Why the CLI (2026-10-16): Neon creates project-scoped keys only for a person, not for an
 // organization key ("This endpoint requires a personal API key"), a project-scoped key cannot list
@@ -30,7 +38,11 @@ import { spawnSync } from "node:child_process";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { basename, join, resolve } from "node:path";
 
-const CREATE = process.argv.includes("--create");
+const STORE = process.argv.includes("--store");
+if (process.argv.includes("--create")) {
+  console.error("--create printed keys to the terminal and is gone. Use --store: each key goes straight into GitHub and Vercel.");
+  process.exit(1);
+}
 
 /**
  * Mappings settled by evidence, checked 2026-10-16 with `neon branches list`:
@@ -95,6 +107,36 @@ function nameCandidates(projectName: string, repoNames: string[]): string[] {
   return repoNames.filter((r) => n.includes(r.toLowerCase()) || r.toLowerCase().includes(n));
 }
 
+/** Run a CLI, with `input` (a key) on stdin. Throws with the CLI's own message, which never holds the key. */
+function run(cmd: string, args: string[], input?: string): string {
+  const r = spawnSync(cmd, args, { encoding: "utf8", input });
+  if (r.error) throw new Error(`${cmd} is not on PATH`);
+  if (r.status !== 0) throw new Error(`${cmd} ${args.slice(0, 3).join(" ")} failed: ${(r.stderr || r.stdout).trim().slice(0, 300)}`);
+  return r.stdout;
+}
+
+/** Before any key is made: gh signed in, Vercel signed in, and this checkout linked to witus-online. */
+function preflightStore(): void {
+  const fail = (why: string): never => {
+    console.error(`${why}\nNothing was created.`);
+    process.exit(1);
+  };
+  try {
+    run("gh", ["auth", "status"]);
+  } catch {
+    fail("gh is not installed or not signed in. Run: brew install gh && gh auth login");
+  }
+  try {
+    run("vercel", ["whoami"]);
+  } catch {
+    fail("The Vercel CLI is not signed in. Run: vercel login");
+  }
+  const linked = existsSync(".vercel/project.json")
+    ? (JSON.parse(readFileSync(".vercel/project.json", "utf8")) as { projectName?: string }).projectName
+    : undefined;
+  if (linked !== "witus-online") fail(`This checkout is linked to ${linked ?? "no Vercel project"}, not witus-online. Run: vercel link`);
+}
+
 type Project = { id: string; name: string };
 const asList = <T>(d: unknown, key: string): T[] => (Array.isArray(d) ? d : ((d as Record<string, T[]>)[key] ?? [])) as T[];
 
@@ -103,19 +145,33 @@ function main() {
   const repoNames = ["witus-online", ...manifest.targets.map((t) => basename(t))];
   const endpoints = localEndpointMap(manifest.targets);
 
+  if (STORE) preflightStore();
   const orgs = asList<{ id: string; name: string }>(neon(["orgs", "list"]), "organizations");
-  const projects: (Project & { org: string })[] = [];
+  const projects: (Project & { org: string; orgId: string })[] = [];
   for (const o of orgs) {
-    for (const p of asList<Project>(neon(["projects", "list", "--org-id", o.id]), "projects")) projects.push({ ...p, org: o.name });
+    for (const p of asList<Project>(neon(["projects", "list", "--org-id", o.id]), "projects")) {
+      projects.push({ ...p, org: o.name, orgId: o.id });
+    }
+  }
+  // Keys an earlier run made, by "orgId/name": revoked once the new key with the same name exists.
+  const oldKeys = new Map<string, number[]>();
+  if (STORE) {
+    for (const o of orgs) {
+      for (const k of asList<{ id: number; name: string }>(neon(["api-keys", "list", "--org-id", o.id]), "api_keys")) {
+        const at = `${o.id}/${k.name}`;
+        oldKeys.set(at, [...(oldKeys.get(at) ?? []), k.id]);
+      }
+    }
   }
   const primaries = new Set(Object.values(PRIMARY_PROJECT));
   projects.sort((a, b) => Number(primaries.has(b.name)) - Number(primaries.has(a.name)));
   console.log(`# ${projects.length} Neon project(s) in ${orgs.length} organization(s); ${endpoints.size} endpoint(s) found in local env files.`);
-  console.log(CREATE ? "# Creating one key per mapped project now; each key prints ONCE.\n" : "# Dry run: add --create to make the keys.\n");
+  console.log(STORE ? "# Making one key per mapped project and storing it; no key is printed.\n" : "# Dry run: add --store to make the keys and store them.\n");
 
   const keysMap: Record<string, string> = {};
   const repoTaken = new Map<string, string>();
   const unmatched: string[] = [];
+  let failures = 0;
   for (const p of projects) {
     if (SKIP_PROJECTS[p.name]) {
       unmatched.push(`${p.name} (project ${p.id}): ${SKIP_PROJECTS[p.name]}`);
@@ -145,15 +201,27 @@ function main() {
     const second = repoTaken.get(repo);
     const cleanupNote = second ? " Clean its preview branches from /admin/cost-cleanup." : "";
     console.log(`## ${p.name}  (project ${p.id})  → repo dapperAuteur/${repo}  [matched by ${how}]`);
-    let secret = "<the key>";
-    if (CREATE) {
+    const keyName = `preview-bot-${p.name}`;
+    let secret = "";
+    if (STORE) {
       try {
-        const made = neon<{ key?: string; id?: number }>(["api-keys", "create", "--name", `preview-bot-${p.name}`, "--project-id", p.id]);
+        const made = neon<{ key?: string; id?: number }>(["api-keys", "create", "--name", keyName, "--project-id", p.id]);
         if (!made.key) throw new Error("the CLI returned no key field");
         secret = made.key;
         keysMap[p.id] = secret;
-        console.log(`   created key "preview-bot-${p.name}" (id ${made.id ?? "?"})`);
+        console.log(`   created key "${keyName}" (id ${made.id ?? "?"})`);
+        const stale = (oldKeys.get(`${p.orgId}/${keyName}`) ?? []).filter((id) => id !== made.id);
+        for (const id of stale) {
+          try {
+            neon(["api-keys", "revoke", String(id), "--org-id", p.orgId]);
+          } catch (e) {
+            failures++;
+            console.log(`   FAILED to revoke older key ${id}: ${e instanceof Error ? e.message : e}`);
+          }
+        }
+        if (stale.length) console.log(`   revoked ${stale.length} older key(s) named "${keyName}"`);
       } catch (e) {
+        failures++;
         console.log(`   FAILED to create key: ${e instanceof Error ? e.message : e}\n`);
         continue;
       }
@@ -165,8 +233,18 @@ function main() {
       continue;
     }
     repoTaken.set(repo, p.name);
-    console.log(`gh variable set NEON_PROJECT_ID --repo dapperAuteur/${repo} --body "${p.id}"`);
-    console.log(`gh secret set NEON_API_KEY --repo dapperAuteur/${repo} --body "${secret}"\n`);
+    if (!STORE) {
+      console.log(`   would set NEON_PROJECT_ID=${p.id} and the secret NEON_API_KEY on dapperAuteur/${repo}\n`);
+      continue;
+    }
+    try {
+      run("gh", ["variable", "set", "NEON_PROJECT_ID", "--repo", `dapperAuteur/${repo}`, "--body", p.id]);
+      run("gh", ["secret", "set", "NEON_API_KEY", "--repo", `dapperAuteur/${repo}`], secret);
+      console.log(`   stored NEON_PROJECT_ID and NEON_API_KEY on dapperAuteur/${repo}\n`);
+    } catch (e) {
+      failures++;
+      console.log(`   FAILED to store on GitHub: ${e instanceof Error ? e.message : e}\n`);
+    }
   }
 
   if (unmatched.length) {
@@ -174,8 +252,25 @@ function main() {
     for (const u of unmatched) console.log(`#   ${u}`);
     console.log("");
   }
-  console.log(`# NEON_PROJECT_KEYS for the witus-online Vercel project (server env only):`);
-  console.log(JSON.stringify(keysMap));
+  const count = Object.keys(keysMap).length;
+  if (!STORE) {
+    console.log(`# --store would also set NEON_PROJECT_KEYS (${count} project(s)) on the witus-online Vercel project, Production.`);
+    return;
+  }
+  try {
+    // Replace, not append: Vercel refuses to add a name that already exists. Absent is fine.
+    spawnSync("vercel", ["env", "rm", "NEON_PROJECT_KEYS", "production", "--yes"], { encoding: "utf8" });
+    run("vercel", ["env", "add", "NEON_PROJECT_KEYS", "production", "--sensitive"], JSON.stringify(keysMap));
+    console.log(`# Stored NEON_PROJECT_KEYS (${count} project(s)) on witus-online, Production. Redeploy witus-online to load it.`);
+  } catch (e) {
+    failures++;
+    console.log(`# FAILED to store NEON_PROJECT_KEYS on Vercel: ${e instanceof Error ? e.message : e}`);
+  }
+  if (failures) {
+    console.log(`# ${failures} step(s) failed (above). Rerun --store: it makes fresh keys and revokes these.`);
+    process.exit(1);
+  }
+  console.log("# Done. No key was printed.");
 }
 
 try {
