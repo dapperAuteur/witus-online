@@ -23,11 +23,28 @@ export interface VercelPreviewDeployment {
 
 const BASE = "https://api.vercel.com";
 
-async function vercelFetch(token: string, path: string, init?: RequestInit): Promise<Response> {
+// Vercel allows 200 deployment deletes per rate-limit window (x-ratelimit-limit: 200, read 2026-10-22);
+// that day's cleanup stopped at about 200 of 272 and every later delete got 429. A caller that can wait
+// (the CLI, not the admin page's request) raises this so a 429 sleeps until x-ratelimit-reset and retries.
+let maxRateLimitWaitMs = 0;
+export function allowRateLimitWait(ms: number): void {
+  maxRateLimitWaitMs = ms;
+}
+
+async function vercelFetch(token: string, path: string, init?: RequestInit, attempt = 0): Promise<Response> {
   const res = await fetch(`${BASE}${path}`, {
     ...init,
     headers: { Authorization: `Bearer ${token}`, ...(init?.headers ?? {}) },
   });
+  if (res.status === 429 && attempt < 3) {
+    const reset = Number(res.headers.get("x-ratelimit-reset")) * 1000;
+    const wait = Math.max(1000, (reset || Date.now() + 60_000) - Date.now()) + 1000;
+    if (wait <= maxRateLimitWaitMs) {
+      console.log(`vercel rate limit reached; waiting ${Math.ceil(wait / 1000)}s for the window to reset`);
+      await new Promise((r) => setTimeout(r, wait));
+      return vercelFetch(token, path, init, attempt + 1);
+    }
+  }
   if (!res.ok) {
     const body = (await res.text()).slice(0, 300);
     throw new Error(`Vercel ${init?.method ?? "GET"} ${path.replace(/teamId=[^&]+/, "teamId=…")} → ${res.status}: ${body}`);
