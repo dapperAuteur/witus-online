@@ -127,6 +127,10 @@ const ANALYTICS_SLUG_ALIASES = {
 const EXPECTED_APP_SLUG = {
   // OIDC clients — must equal the slug in lib/identity/clients.ts
   witus: "online",
+  // Same repo under its GitHub name. CI checks out to .../witus-online/witus-online, so the
+  // basename is "witus-online", not BAM's local folder name "witus". Without this key the
+  // CI run would skip the slug value check silently.
+  "witus-online": "online",
   "witus-learn": "learn",
   "flashlearn-ai": "flashlearn",
   "wanderlearn-app": "wanderlearn",
