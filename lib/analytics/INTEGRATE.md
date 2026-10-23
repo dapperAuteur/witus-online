@@ -201,6 +201,48 @@ Look at **Activity**, not **Persons**. With anonymous-only capture, Persons stay
 
 ---
 
+## Run the checker in this repo's CI
+
+The witus-online repo runs the checker on itself in `.github/workflows/ci.yml`. A sibling repo can run the same checker on every pull request without copying it: download it from the raw GitHub URL and point it at the checkout. In plain words: a robot reads your PostHog settings on every pull request and turns the check red if one has drifted from the standard.
+
+The checker is one file with no dependencies. It only reads files, so it needs Node and nothing else: no `npm ci`, no secrets, no env vars. Add this step to the sibling repo's workflow, after `actions/checkout`:
+
+```yaml
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      # Audits this repo's PostHog setup against the ecosystem standard.
+      # Source: witus-online/scripts/check-posthog-conformance.mjs
+      - name: PostHog conformance
+        env:
+          # Pin to a commit SHA, not main. See "Pin the version" below.
+          CHECKER_REF: main
+        run: |
+          curl -fsSL "https://raw.githubusercontent.com/dapperAuteur/witus-online/${CHECKER_REF}/scripts/check-posthog-conformance.mjs" \
+            -o "$RUNNER_TEMP/check-posthog-conformance.mjs"
+          node "$RUNNER_TEMP/check-posthog-conformance.mjs" "$GITHUB_WORKSPACE"
+```
+
+To run the same thing on your own machine, from the sibling repo's folder:
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/dapperAuteur/witus-online/main/scripts/check-posthog-conformance.mjs \
+  -o /tmp/check-posthog-conformance.mjs
+node /tmp/check-posthog-conformance.mjs "$PWD"
+```
+
+What to know:
+
+- **Always pass a path.** With no path the checker walks `docs/ecosystem-repos.json`, which lists folders on BAM's machine. In CI those don't exist.
+- **Pass an absolute path, not `.`.** The checker finds the expected `ANALYTICS_APP` slug by the repo's **folder name**, looked up in `EXPECTED_APP_SLUG`. GitHub Actions checks out to `/home/runner/work/<repo>/<repo>`, so `$GITHUB_WORKSPACE` ends in the GitHub repo name. The folder name of `.` is `.`, which matches nothing, so the slug check is skipped with no warning.
+- **Check that your repo's GitHub name is a key in `EXPECTED_APP_SLUG`.** If it isn't, the slug value check is skipped the same way. Add the key in witus-online (a one-line PR) rather than renaming anything. `witus-online` and `witus` are both listed for this reason: one is the GitHub name, the other is BAM's local folder.
+- **Pin the version.** Fetching from `main` means a change to the checker in witus-online can turn a sibling's CI red with no change in the sibling. That is sometimes what you want (a new rule applies everywhere at once), but it surprises people. For a stable build, set `CHECKER_REF` to a witus-online commit SHA and bump it on purpose.
+- **Exit codes.** `1` means drift: an error the checker explains line by line. Warnings (for example "not proxied") print but don't fail the build. A repo with no `posthog.init(` yet reports "not instrumented" and passes, so the step is safe to add before the integration lands.
+- **The registry check is not for siblings.** `scripts/check-registries.mjs` compares `lib/products.ts` with `lib/identity/clients.ts`, and both files live only in witus-online. It runs in witus-online's CI and nowhere else.
+
+---
+
 ## What is deliberately NOT enabled
 
 Don't turn these on in one repo. Each is an ecosystem decision with a consent cost — see `plans/user-tasks/53-posthog-operator-guide.md`.
@@ -223,4 +265,4 @@ Don't turn these on in one repo. Each is an ecosystem decision with a consent co
 - `plans/26-posthog-ecosystem-rollout.md` — decisions, SWOT, wave sequence
 - `plans/user-tasks/52-…` — env provisioning checklist
 - `plans/user-tasks/53-…` — operator guide: enabled/disabled features
-- `scripts/check-posthog-conformance.mjs` — drift checker
+- `scripts/check-posthog-conformance.mjs` — drift checker (run it from a sibling's CI: see "Run the checker in this repo's CI")
