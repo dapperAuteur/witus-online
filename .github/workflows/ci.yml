@@ -41,6 +41,21 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # Doctor checks. Both are plain Node scripts with no dependencies, so they run
+      # in a second or two and fail fast before the slower typecheck and build.
+      #
+      # PostHog: audits THIS repo only. Pass an absolute path: the checker reads the
+      # folder name ("witus-online") to look up the expected app slug, and "." has none.
+      # Run with no argument it walks docs/ecosystem-repos.json, whose paths only exist
+      # on BAM's machine.
+      - name: PostHog conformance
+        run: node scripts/check-posthog-conformance.mjs "$GITHUB_WORKSPACE"
+
+      # Registries: lib/products.ts must agree with lib/identity/clients.ts. Both files
+      # live in this repo, so this check only makes sense here, not in sibling repos.
+      - name: Registry cross-check
+        run: node scripts/check-registries.mjs
+
       - name: Typecheck
         run: npx tsc --noEmit
 
