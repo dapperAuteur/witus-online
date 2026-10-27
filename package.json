@@ -16,6 +16,7 @@
     "tutorial:docs": "node scripts/tutorial-video/gen-docs.mjs",
     "tutorial:video": "node scripts/tutorial-video/compose.mjs",
     "library:pdf": "node scripts/render-library-pdf.mjs",
+    "library:epub": "node scripts/render-library-epub.mjs",
     "check:pdf-freshness": "node scripts/render-library-pdf.mjs --check",
     "check:idp-alg": "node scripts/check-idp-id-token-alg.mjs",
     "neon:usage": "npx tsx scripts/neon-usage.ts",
