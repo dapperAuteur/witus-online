@@ -374,6 +374,26 @@ export const products: Product[] = [
     surfaces: ["public-directory", "oidc-client"],
   },
   {
+    // Invest.WitUS — learn to invest by following one taught method, on paper first. Repo
+    // ai-builds/claude/invest-witus (private while the test runs): a Python tutorial app whose
+    // first web page is still unbuilt, so this lands ahead of the deploy the same way vogoat
+    // did. Domain decided by BAM 2026-10-27. Information, never advice: no market data or
+    // performance claims on public pages.
+    slug: "invest-witus",
+    name: "Invest.WitUS",
+    tagline: "Pick a taught investing method and stay with it",
+    description:
+      "Choose an investing method taught in Learn.WitUS or ElementaryMBA, run it on paper first, and let the app hold you to the method's rules, with a link from every rule back to the lesson that teaches it. A learning tool, not advice. Repo: ai-builds/claude/invest-witus.",
+    href: "https://invest.witus.online",
+    accent: "sky",
+    status: "coming-soon",
+    external: true,
+    signInHref: "https://invest.witus.online/auth/witus/login/",
+    // "Sign in with WitUS" client — matching entry in lib/identity/clients.ts (slug `invest`).
+    oidcSlug: "invest",
+    surfaces: ["public-directory", "oidc-client"],
+  },
+  {
     slug: "ride-witus",
     name: "RideWitUS",
     tagline: "Community transport, built on the Monon",
