@@ -84,7 +84,11 @@ for (const [repo, name] of changed) {
   const target = onOlderUpdateBranch ? cur : BRANCH;
   if (cur !== target) {
     const exists = gitQuiet(repo, ["rev-parse", "--verify", "--quiet", target]).ok;
-    const co = gitQuiet(repo, exists ? ["checkout", target] : ["checkout", "-b", target]);
+    // A new branch starts from the remote's tip, not the local checkout's, which may be behind
+    // (BAM merges and pushes from other checkouts). The local main/master is never moved.
+    const fetched = gitQuiet(repo, ["fetch", "-q", "origin", cur]).ok;
+    const base = fetched && gitQuiet(repo, ["rev-parse", "--verify", "--quiet", `origin/${cur}`]).ok ? `origin/${cur}` : cur;
+    const co = gitQuiet(repo, exists ? ["checkout", target] : ["checkout", "-b", target, base]);
     if (!co.ok) {
       skipped.push([name, `checkout failed: ${co.out}`]);
       continue;
@@ -98,7 +102,7 @@ for (const [repo, name] of changed) {
     continue;
   }
   const msg =
-    "chore: delete the Neon preview branch when a PR closes (ecosystem preview-branch cleanup rule)\n\nCo-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>";
+    "chore: Neon preview cleanup v2, sweep merged and deleted branches (ecosystem preview-branch cleanup rule)\n\nv1 ran only when a pull request closed, so branches merged from the command line kept their\npreview databases. v2 runs on push to the default branch, branch deletion, PR close, daily and on\ndemand. Canonical copy: gemini/witus .github/templates/neon-preview-cleanup.yml.\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>";
   const commit = gitQuiet(repo, ["commit", "-m", msg]);
   if (!commit.ok) {
     skipped.push([name, `commit failed: ${commit.out}`]);
