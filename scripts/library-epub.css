@@ -1,0 +1,9 @@
+/* E-reader stylesheet for library EPUBs (scripts/render-library-epub.mjs). E-ink first: no color, serif body. */
+body { font-family: serif; line-height: 1.45; }
+h1, h2, h3, h4 { font-family: sans-serif; line-height: 1.2; page-break-after: avoid; }
+table { border-collapse: collapse; width: 100%; font-size: 0.85em; }
+th, td { border: 1px solid #555; padding: 0.25em 0.4em; vertical-align: top; text-align: left; }
+th { font-weight: bold; }
+blockquote { margin: 1em 1.5em; font-style: italic; }
+code { font-family: monospace; font-size: 0.9em; }
+pre { white-space: pre-wrap; font-size: 0.8em; }
