@@ -1,4 +1,4 @@
-import { pgTable, pgEnum, text, timestamp, primaryKey, integer, bigint, uuid, unique, boolean, numeric, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, pgEnum, text, timestamp, primaryKey, integer, bigint, uuid, unique, boolean, numeric, jsonb, index } from "drizzle-orm/pg-core";
 import type { AdapterAccount } from "next-auth/adapters";
 
 /** NextAuth tables. Standard @auth/drizzle-adapter shape. Mirrors witus-inbox. */
@@ -220,3 +220,50 @@ export const claudeUsageSnapshots = pgTable("claude_usage_snapshots", {
   /** By-month, by-model and by-project tables, the ledger rows, the unpriced models, the price table source. */
   detail: jsonb("detail").$type<Record<string, unknown>>(),
 });
+
+// ---------------------------------------------------------------------------
+// Claude Code usage archive: one row per API response, written by `scripts/usage-report.mjs --push`
+// (or `--archive-only`) with INSERT ... ON CONFLICT DO NOTHING, so a push is idempotent. This is the
+// durable copy of the per-response data: Claude Code deletes local transcripts after
+// cleanupPeriodDays, and a snapshot above only keeps the month totals. With the archive, a later
+// run (`--with-archive`) can merge the responses whose transcripts are gone back into its totals and
+// into the mistake-ledger windows. Same privacy line as the snapshots: token counts, timestamps,
+// model ids and file names only; no transcript text.
+// ---------------------------------------------------------------------------
+export const claudeUsageResponses = pgTable(
+  "claude_usage_responses",
+  {
+    /**
+     * The API message id (msg_...), the de-duplication key of the report. A transcript line with no
+     * message id is keyed by the script as "<absolute file path>#<line uuid>", and that synthetic key
+     * is stored as-is; it is stable for the same machine.
+     */
+    messageId: text("message_id").primaryKey(),
+    /** Timestamp of the response, from the transcript line (UTC). */
+    ts: timestamp("ts", { withTimezone: true }).notNull(),
+    /** Hostname of the machine whose transcript held the response. */
+    machine: text("machine").notNull(),
+    /** Project dir name under ~/.claude/projects (the directory the session was started in). */
+    project: text("project").notNull(),
+    /**
+     * The transcript file's path relative to the projects dir ("<project>/<session id>.jsonl" or
+     * "<project>/<session id>/subagents/<agent>.jsonl"), so a ledger row keyed by session file still
+     * resolves after the file is deleted.
+     */
+    session: text("session").notNull(),
+    /** True for a subagent transcript. */
+    isSub: boolean("is_sub").notNull(),
+    model: text("model").notNull(),
+    inputTokens: bigint("input_tokens", { mode: "number" }).notNull(),
+    cacheWrite5mTokens: bigint("cache_write_5m_tokens", { mode: "number" }).notNull(),
+    cacheWrite1hTokens: bigint("cache_write_1h_tokens", { mode: "number" }).notNull(),
+    cacheReadTokens: bigint("cache_read_tokens", { mode: "number" }).notNull(),
+    outputTokens: bigint("output_tokens", { mode: "number" }).notNull(),
+    /** When the row was archived (the push that first inserted it). */
+    archivedAt: timestamp("archived_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    index("claude_usage_responses_ts_idx").on(t.ts),
+    index("claude_usage_responses_session_ts_idx").on(t.session, t.ts),
+  ]
+);

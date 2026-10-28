@@ -57,6 +57,13 @@
       "when": 1793160179149,
       "tag": "0007_claude_usage_snapshots",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1793220974459,
+      "tag": "0008_claude_usage_responses",
+      "breakpoints": true
     }
   ]
 }
