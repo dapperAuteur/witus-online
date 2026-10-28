@@ -64,10 +64,10 @@ jobs:
       # - name: Lint
       #   run: npm run lint
 
-      # This repo has no `test` script in package.json. Enable this step once
-      # one is added.
-      # - name: Test
-      #   run: npm test
+      # Unit tests: node --test over scripts/lib/*.test.mjs (usage-report de-duplication, pricing,
+      # ledger windows). No database, no network.
+      - name: Test
+        run: npm test
 
       - name: Build
         run: npm run build
