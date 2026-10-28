@@ -285,6 +285,7 @@ export function detailOf(snapshot) {
     unpricedModels: snapshot.unpricedModels,
     prices: { source: snapshot.prices.source, cached: snapshot.prices.cached, unit: snapshot.prices.unit },
     ledger: snapshot.ledger,
+    archive: snapshot.archive ?? null,
   };
 }
 
@@ -311,4 +312,150 @@ export function buildSnapshotInsert(snapshot) {
   const placeholders = SNAPSHOT_COLUMNS.map((c, i) => (c === "detail" ? `$${i + 1}::jsonb` : `$${i + 1}`));
   const text = `INSERT INTO claude_usage_snapshots (${SNAPSHOT_COLUMNS.join(", ")}) VALUES (${placeholders.join(", ")}) RETURNING id, taken_at`;
   return { text, values };
+}
+
+// ---- archive rows (claude_usage_responses) ------------------------------------------------------
+// One row per API response, the durable copy of what the transcripts hold once Claude Code deletes
+// them. Written by --push and --archive-only, read back by --with-archive.
+
+/** Column order of the claude_usage_responses insert (db/schema.ts claudeUsageResponses). */
+export const RESPONSE_COLUMNS = [
+  "message_id",
+  "ts",
+  "machine",
+  "project",
+  "session",
+  "is_sub",
+  "model",
+  "input_tokens",
+  "cache_write_5m_tokens",
+  "cache_write_1h_tokens",
+  "cache_read_tokens",
+  "output_tokens",
+];
+
+/**
+ * One record's values in RESPONSE_COLUMNS order. The `session` column holds the transcript's path
+ * under the projects dir (the record's `rel`), not the bare session id, so a ledger row that names
+ * a session file still resolves after the file is gone. A record with no message id keeps its
+ * synthetic "<file>#<uuid>" key as-is.
+ */
+export function responseRowValues(r, machine) {
+  return [r.id, r.ts, machine, r.project, r.rel, r.isSub === true, r.model, r.input, r.cacheWrite5m, r.cacheWrite1h, r.cacheRead, r.output];
+}
+
+/**
+ * Splits the records into the ones the archive can take and the ones it leaves out: a record that
+ * itself came from the archive (fromArchive) is already there, and a record with no timestamp has
+ * nothing for the not-null `ts` column. Returns { records, skippedFromArchive, skippedNoTimestamp }.
+ */
+export function archivable(records) {
+  const out = [];
+  let skippedFromArchive = 0;
+  let skippedNoTimestamp = 0;
+  for (const r of records.values()) {
+    if (r.fromArchive) skippedFromArchive++;
+    else if (!r.ts) skippedNoTimestamp++;
+    else out.push(r);
+  }
+  return { records: out, skippedFromArchive, skippedNoTimestamp };
+}
+
+/**
+ * Batched, parameterised inserts for the archive: [{ sql, params, rows }], each statement holding
+ * up to `batchSize` records as one multi-row INSERT with ON CONFLICT (message_id) DO NOTHING, so a
+ * re-run inserts only what is new and the driver's rowCount says how many that was. `records` is
+ * the Map the report builds or a plain array; records the archive cannot take (see archivable) are
+ * left out here too. Placeholders are numbered across the whole statement, row by row, in
+ * RESPONSE_COLUMNS order.
+ */
+export function buildResponseInserts(records, machine, batchSize = 500) {
+  if (!Number.isInteger(batchSize) || batchSize < 1) throw new Error(`archive insert: batchSize must be a positive integer, got ${batchSize}`);
+  if (!machine) throw new Error("archive insert: machine is required");
+  const asMap = Array.isArray(records) ? new Map(records.map((r) => [r.id, r])) : records;
+  const list = archivable(asMap).records;
+  const width = RESPONSE_COLUMNS.length;
+  const columns = RESPONSE_COLUMNS.join(", ");
+  const statements = [];
+  for (let i = 0; i < list.length; i += batchSize) {
+    const chunk = list.slice(i, i + batchSize);
+    const params = [];
+    const tuples = [];
+    for (let j = 0; j < chunk.length; j++) {
+      params.push(...responseRowValues(chunk[j], machine));
+      const base = j * width;
+      tuples.push(`(${RESPONSE_COLUMNS.map((_, k) => `$${base + k + 1}`).join(", ")})`);
+    }
+    statements.push({
+      sql: `INSERT INTO claude_usage_responses (${columns}) VALUES ${tuples.join(", ")} ON CONFLICT (message_id) DO NOTHING`,
+      params,
+      rows: chunk.length,
+    });
+  }
+  return statements;
+}
+
+/** The SELECT that reads back archived responses whose transcript path is not among $1 (text[]). */
+export const ARCHIVE_SELECT = `SELECT ${RESPONSE_COLUMNS.join(", ")} FROM claude_usage_responses WHERE NOT (session = ANY($1::text[]))`;
+
+/** File meta for a transcript path relative to the projects dir: { rel, project, session, isSub }. */
+export function fileMetaOf(rel) {
+  const parts = rel.split("/");
+  const isSub = rel.includes("/subagents/");
+  return { rel, project: parts[0], session: isSub ? parts[1] : parts[parts.length - 1].replace(/\.jsonl$/, ""), isSub };
+}
+
+/** ISO string (millisecond precision, UTC) from a Date or a timestamp string as the driver returns it. */
+export function isoOf(v) {
+  if (v instanceof Date) return v.toISOString();
+  if (v == null || v === "") return "";
+  const d = new Date(v);
+  return Number.isNaN(d.getTime()) ? String(v) : d.toISOString();
+}
+
+/**
+ * Merges archived rows (claude_usage_responses columns as the driver returns them) into `records`.
+ * A row is skipped when its transcript path is in `onDiskRels` (that file was read, so its responses
+ * are already in `records`) or when its message id is already present (a response read from disk
+ * wins over its archived copy). Merged records look like the ones addUsageLine builds, plus
+ * fromArchive: true, and `file` is the path the transcript had under `transcriptRoot`. Returns
+ * { merged, skipped, files }: `files` are the metas of the merged paths (fromArchive: true), to add
+ * to the list the ledger uses for its found check so a row for a deleted session still costs.
+ */
+export function mergeArchivedRecords(records, rows, onDiskRels, transcriptRoot = "") {
+  const onDisk = new Set(onDiskRels);
+  const files = new Map();
+  let merged = 0;
+  let skipped = 0;
+  for (const row of rows) {
+    const id = row.message_id;
+    const rel = row.session;
+    if (!id || !rel || onDisk.has(rel) || records.has(id)) {
+      skipped++;
+      continue;
+    }
+    const meta = fileMetaOf(rel);
+    const file = transcriptRoot ? `${transcriptRoot.replace(/\/$/, "")}/${rel}` : rel;
+    const project = row.project || meta.project;
+    const isSub = row.is_sub === true;
+    if (!files.has(rel)) files.set(rel, { file, rel, project, session: meta.session, isSub, fromArchive: true });
+    records.set(id, {
+      id,
+      file,
+      rel,
+      project,
+      session: meta.session,
+      isSub,
+      ts: isoOf(row.ts),
+      model: row.model || "unknown",
+      input: Number(row.input_tokens) || 0,
+      cacheWrite5m: Number(row.cache_write_5m_tokens) || 0,
+      cacheWrite1h: Number(row.cache_write_1h_tokens) || 0,
+      cacheRead: Number(row.cache_read_tokens) || 0,
+      output: Number(row.output_tokens) || 0,
+      fromArchive: true,
+    });
+    merged++;
+  }
+  return { merged, skipped, files: [...files.values()] };
 }
