@@ -1,7 +1,7 @@
 import "server-only";
-import { desc } from "drizzle-orm";
+import { count as countRows, desc, min } from "drizzle-orm";
 import type { Db } from "@/db";
-import { claudeUsageSnapshots } from "@/db/schema";
+import { claudeUsageResponses, claudeUsageSnapshots } from "@/db/schema";
 
 // The latest Claude Code usage snapshot for /admin/usage. Rows are written by
 // scripts/usage-report.mjs --push from BAM's machine; this module only reads. The shapes below
@@ -38,6 +38,24 @@ export interface LedgerRow {
   usd: number;
 }
 
+/**
+ * What the push wrote to the archive (claude_usage_responses) in the run that made this snapshot.
+ * `read` is the number of responses the run merged back from the archive (--with-archive) because
+ * their transcripts were gone; the rest are the counts of the archive pass (absent when the run did
+ * not push, null when the driver did not report an inserted count).
+ */
+export interface ArchiveDetail {
+  read?: number;
+  attempted?: number;
+  inserted?: number | null;
+  skipped_existing?: number | null;
+  skipped_no_timestamp?: number;
+  batches?: number;
+  batch_size?: number;
+  rows?: number;
+  earliest?: string | null;
+}
+
 export interface SnapshotDetail {
   credits?: string;
   transcriptRoot?: string;
@@ -55,6 +73,7 @@ export interface SnapshotDetail {
     listedNotCounted?: UsageBucket;
     share?: number;
   };
+  archive?: ArchiveDetail | null;
 }
 
 export type SnapshotRow = typeof claudeUsageSnapshots.$inferSelect;
@@ -87,9 +106,41 @@ export async function latestClaudeUsageSnapshot(db: Db): Promise<LatestSnapshot>
   }
 }
 
-/** The one command that refreshes this page, run on the machine that holds the transcripts. */
+export type ArchiveStatus =
+  | { status: "ok"; rows: number; earliest: Date | string | null }
+  | { status: "no-table"; message: string };
+
+/**
+ * How many responses the archive (claude_usage_responses) holds and its earliest timestamp, live.
+ * "no-table" when migration 0008 has not been applied yet, so the page can say so instead of
+ * failing (same pattern as latestClaudeUsageSnapshot).
+ */
+export async function claudeUsageArchiveStatus(db: Db): Promise<ArchiveStatus> {
+  try {
+    const rows = await db
+      .select({ rows: countRows(), earliest: min(claudeUsageResponses.ts) })
+      .from(claudeUsageResponses);
+    const row = rows[0];
+    // min() over a timestamptz column arrives as a Date (drizzle maps it with the column) or, from
+    // some driver paths, as the raw string; stamp() takes either.
+    const earliest = (row?.earliest ?? null) as Date | string | null;
+    return { status: "ok", rows: Number(row?.rows ?? 0), earliest };
+  } catch (e) {
+    const message = e instanceof Error ? e.message : String(e);
+    if (/relation .*claude_usage_responses.* does not exist/i.test(message)) {
+      return { status: "no-table", message };
+    }
+    throw e;
+  }
+}
+
+/**
+ * The one command that refreshes this page, run on the machine that holds the transcripts. It
+ * archives every response, counts the archived responses whose transcripts are gone, and inserts
+ * the snapshot row.
+ */
 export const PUSH_COMMAND =
-  "node /Users/bam/Code_NOiCloud/ai-builds/gemini/witus/scripts/usage-report.mjs --push";
+  "node /Users/bam/Code_NOiCloud/ai-builds/gemini/witus/scripts/usage-report.mjs --push --with-archive";
 
 export const CREDIT_DEFINITION = "1 credit = 1 US dollar of API list price";
 
