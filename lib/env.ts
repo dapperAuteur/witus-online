@@ -31,6 +31,13 @@ const RawEnvShape = z.object({
   CRON_SECRET: z.string().min(16).optional(),
   CENTOS_EVENTS_URL: z.string().url().optional(),
   CENTOS_EVENTS_SECRET: z.string().min(16).optional(),
+  // Optional: the Claude plan's monthly allowance in credits (1 credit = 1 US dollar of API list
+  // price), for the "used this month / allowance" percentage on /admin/usage. Absent = the page
+  // shows credits alone. Whole or decimal number, no currency sign.
+  CLAUDE_MONTHLY_ALLOWANCE_CREDITS: z
+    .string()
+    .regex(/^\d+(\.\d+)?$/, "whole or decimal credits, e.g. 200")
+    .optional(),
 });
 
 const EnvSchema = RawEnvShape.transform((raw, ctx) => {
@@ -57,6 +64,10 @@ const EnvSchema = RawEnvShape.transform((raw, ctx) => {
     CRON_SECRET: raw.CRON_SECRET,
     CENTOS_EVENTS_URL: raw.CENTOS_EVENTS_URL,
     CENTOS_EVENTS_SECRET: raw.CENTOS_EVENTS_SECRET,
+    CLAUDE_MONTHLY_ALLOWANCE_CREDITS:
+      raw.CLAUDE_MONTHLY_ALLOWANCE_CREDITS && Number(raw.CLAUDE_MONTHLY_ALLOWANCE_CREDITS) > 0
+        ? Number(raw.CLAUDE_MONTHLY_ALLOWANCE_CREDITS)
+        : undefined,
   };
 });
 
