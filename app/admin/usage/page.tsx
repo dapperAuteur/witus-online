@@ -4,6 +4,7 @@ import { getEnv } from "@/lib/env";
 import {
   CREDIT_DEFINITION,
   PUSH_COMMAND,
+  claudeUsageArchiveStatus,
   count,
   credits,
   latestClaudeUsageSnapshot,
@@ -11,6 +12,8 @@ import {
   percent,
   stamp,
   tokensOf,
+  type ArchiveDetail,
+  type ArchiveStatus,
   type UsageBucket,
 } from "@/lib/claude-usage/snapshot";
 
@@ -88,8 +91,40 @@ function HowToUpdate() {
       <p className="mt-2 text-xs text-slate-500">
         Add <span className="font-mono">--md</span> to also write the Markdown report. The script reads the transcripts
         read-only, de-duplicates by message id, prices from <span className="font-mono">scripts/lib/claude-prices.json</span>, sums
-        the ledger in <span className="font-mono">plans/usage-reports/mistakes.jsonl</span>, and inserts one row here. Local
-        transcripts are deleted after Claude Code&apos;s cleanup period (default 30 days); the pushed snapshot is the durable copy.
+        the ledger in <span className="font-mono">plans/usage-reports/mistakes.jsonl</span>, archives every response as one row of{" "}
+        <span className="font-mono">claude_usage_responses</span> (only what is new; a re-run adds nothing twice), and inserts one
+        snapshot row here. Local transcripts are deleted after Claude Code&apos;s cleanup period; the archive is the durable copy, and{" "}
+        <span className="font-mono">--with-archive</span> counts the archived responses whose transcripts are gone, so the by-month
+        table and the ledger keep their history.
+      </p>
+    </section>
+  );
+}
+
+/** Live archive count and earliest timestamp, plus what the latest push wrote (from detail.archive). */
+function ArchiveTile({ archive, lastPush }: { archive: ArchiveStatus; lastPush?: ArchiveDetail | null }) {
+  const read = lastPush?.read ?? 0;
+  const pushed = lastPush && typeof lastPush.attempted === "number" ? lastPush : null;
+  return (
+    <section className={tile}>
+      <h2 className="text-sm font-medium text-slate-100">Archive</h2>
+      {archive.status === "no-table" ? (
+        <p className="mt-1 text-sm text-amber-200/90">
+          The claude_usage_responses table is not in this database yet. Apply migration 0008 (<span className="font-mono">npm run db:migrate</span>);
+          until then a push stops before the snapshot and nothing survives transcript deletion.
+        </p>
+      ) : (
+        <p className="mt-1 text-sm text-slate-300">
+          {count(archive.rows)} responses archived
+          {archive.rows > 0 && archive.earliest ? <>, earliest {stamp(archive.earliest)}</> : null}
+          {archive.rows === 0 ? "; nothing has been pushed to the archive yet" : ""}.
+        </p>
+      )}
+      <p className="mt-1 text-xs text-slate-500">
+        {pushed
+          ? `Latest push: ${count(pushed.attempted)} responses attempted, ${pushed.inserted == null ? "inserted count not reported by the driver" : `${count(pushed.inserted)} inserted`}${pushed.skipped_existing == null ? "" : `, ${count(pushed.skipped_existing)} already archived`}${pushed.skipped_no_timestamp ? `, ${count(pushed.skipped_no_timestamp)} skipped for no timestamp` : ""}.`
+          : "The latest snapshot came from a run that did not write the archive."}
+        {read > 0 ? ` ${count(read)} responses in this snapshot were read from the archive because their transcripts are no longer on disk.` : " No responses in this snapshot came from the archive."}
       </p>
     </section>
   );
@@ -98,7 +133,8 @@ function HowToUpdate() {
 export default async function UsagePage() {
   const env = getEnv();
   const allowance = env.CLAUDE_MONTHLY_ALLOWANCE_CREDITS;
-  const latest = await latestClaudeUsageSnapshot(getDb());
+  const db = getDb();
+  const [latest, archive] = await Promise.all([latestClaudeUsageSnapshot(db), claudeUsageArchiveStatus(db)]);
   const thisMonth = monthKey(new Date());
 
   return (
@@ -120,10 +156,11 @@ export default async function UsagePage() {
           <section className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-amber-100">
             <p className="font-medium">The claude_usage_snapshots table is not in this database yet.</p>
             <p className="mt-1 text-amber-200/80">
-              Apply migration 0007 first (<span className="font-mono">npm run db:migrate</span> from the witus repo root, the way
-              migration 0006 was applied), then push a snapshot with the command below.
+              Apply migrations 0007 and 0008 first (<span className="font-mono">npm run db:migrate</span> from the witus repo root,
+              the way migration 0006 was applied), then push a snapshot with the command below.
             </p>
           </section>
+          <ArchiveTile archive={archive} />
           <HowToUpdate />
         </>
       ) : latest.status === "empty" ? (
@@ -136,10 +173,11 @@ export default async function UsagePage() {
                 : "To see used-this-month as a percentage, set CLAUDE_MONTHLY_ALLOWANCE_CREDITS (Vercel env, Production) to the plan's monthly allowance in credits."}
             </p>
           </section>
+          <ArchiveTile archive={archive} />
           <HowToUpdate />
         </>
       ) : (
-        <UsageBody latest={latest} thisMonth={thisMonth} allowance={allowance} />
+        <UsageBody latest={latest} archive={archive} thisMonth={thisMonth} allowance={allowance} />
       )}
     </main>
   );
@@ -147,14 +185,17 @@ export default async function UsagePage() {
 
 function UsageBody({
   latest,
+  archive,
   thisMonth,
   allowance,
 }: {
   latest: Extract<Awaited<ReturnType<typeof latestClaudeUsageSnapshot>>, { status: "ok" }>;
+  archive: ArchiveStatus;
   thisMonth: string;
   allowance: number | undefined;
 }) {
   const { row, detail } = latest;
+  const fromArchive = detail.archive?.read ?? 0;
   const byMonth = Object.entries(detail.byMonth ?? {});
   const byModel = Object.entries(detail.byModel ?? {});
   const byProject = Object.entries(detail.byProject ?? {});
@@ -206,13 +247,16 @@ function UsageBody({
           </dd>
         </div>
         <div className={tile}>
-          <dt className="text-slate-400">All usage on disk</dt>
+          <dt className="text-slate-400">{fromArchive > 0 ? "All usage (disk plus archive)" : "All usage on disk"}</dt>
           <dd className="text-lg font-semibold">{credits(row.listPriceUsd)} credits</dd>
           <dd className="text-xs text-slate-500">
             {count(row.responses)} responses, {count(tokensOf(total))} tokens
+            {fromArchive > 0 ? `; ${count(fromArchive)} responses from the archive` : ""}
           </dd>
         </div>
       </dl>
+
+      <ArchiveTile archive={archive} lastPush={detail.archive} />
 
       <HowToUpdate />
 
@@ -295,7 +339,7 @@ function UsageBody({
             <h3 className="text-sm font-medium text-slate-100">Coverage</h3>
             <p className="text-xs text-slate-400">
               Transcript root <span className="font-mono">{detail.transcriptRoot ?? ""}</span>: {count(detail.files)} files, {count(detail.usageLines)} usage
-              lines, {count(row.responses)} API responses after de-duplication. Earliest usage {stamp(row.coverageStart)}; latest {stamp(row.coverageEnd)}.
+              lines, {count(row.responses)} API responses after de-duplication{fromArchive > 0 ? ` (${count(fromArchive)} read from the archive for transcripts no longer on disk)` : ""}. Earliest usage {stamp(row.coverageStart)}; latest {stamp(row.coverageEnd)}.
               {detail.unpricedModels?.length ? ` Unpriced model ids: ${detail.unpricedModels.map((u) => `${u.model} (${count(u.responses)} responses)`).join(", ")}.` : " Every model id in the transcripts is priced."}
             </p>
           </div>
@@ -304,7 +348,7 @@ function UsageBody({
             <ul className="mt-1 list-disc space-y-1 pl-5 text-xs text-slate-400">
               <li>Windows over-count turns that mixed a fix with other work: every response between the report and the fix is in, including re-reads for unrelated items in the same turn.</li>
               <li>They under-count mistakes nobody reported, sessions no longer on disk, second-order cost (BAM&apos;s time at the merge gate, cloud credit, a failed SQL run), and the larger context re-reads in later turns.</li>
-              <li>The share is of local transcripts only; the run that produced the snapshot is in the total but in no ledger row.</li>
+              <li>The share is of local transcripts{fromArchive > 0 ? " plus the archived responses for deleted ones" : " only"}; the run that produced the snapshot is in the total but in no ledger row.</li>
               <li>Anthropic&apos;s usage page and invoices are the billing record. These are API-equivalent list prices.</li>
             </ul>
           </div>
