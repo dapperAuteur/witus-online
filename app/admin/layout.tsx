@@ -80,6 +80,12 @@ export default async function AdminLayout({
             >
               Costs
             </Link>
+            <Link
+              href="/admin/usage"
+              className="text-slate-300 hover:text-teal-300"
+            >
+              Usage
+            </Link>
             <a
               href={`${betterAuthUrl()}/account`}
               target="_blank"

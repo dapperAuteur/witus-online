@@ -1,0 +1,15 @@
+# Format of plans/usage-reports/mistakes.jsonl (gitignored; this example file is tracked so the shape lives in git).
+# One JSON object per line. Fields:
+#   id          short label (M1, M4a, M9-origin, X1, N3); ledger order follows the file
+#   date        YYYY-MM-DD of the report (YYYY-MM when only the month is known)
+#   repo        the repo or repos the detour touched
+#   session     transcript file: "<session id>.jsonl" (top-level), or "<session id>/subagents/<agent>.jsonl" for one subagent file;
+#               a short id prefix (8+ characters) is accepted for sessions no longer on disk
+#   start, end  ISO UTC timestamps copied from the transcript that bound the detour; both null means the whole file
+#   scope       "main" = that file only; "with-subagents" = plus every file under <session id>/subagents/
+#   description what went wrong, in one sentence
+#   reported    a short quote of the message that reported it (BAM's words, or Claude's own line when Claude caught it)
+#   counted     true when the row sums into the mistake total; false needs a "reason" (origin turn, adjacent, session not on disk)
+# Rows whose session file is missing get zero usage and found: false in the report (not_found), never an estimate.
+# Rule: when BAM reports a mistake, the session appends a row here, with the window, before it fixes anything else.
+{"id":"EX1","date":"2026-01-01","repo":"example-repo","session":"00000000-0000-4000-8000-000000000000.jsonl","start":"2026-01-01T12:00:00.000Z","end":"2026-01-01T12:10:00.000Z","scope":"main","description":"Example only: wrote the file to the wrong repo and had to move it","reported":"that's the wrong repo","counted":true}

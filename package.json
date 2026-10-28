@@ -20,7 +20,9 @@
     "check:pdf-freshness": "node scripts/render-library-pdf.mjs --check",
     "check:idp-alg": "node scripts/check-idp-id-token-alg.mjs",
     "neon:usage": "npx tsx scripts/neon-usage.ts",
-    "neon:limits": "npx tsx scripts/neon-limits.ts"
+    "neon:limits": "npx tsx scripts/neon-limits.ts",
+    "usage:report": "node scripts/usage-report.mjs",
+    "test": "node --test scripts/lib/*.test.mjs"
   },
   "dependencies": {
     "@auth/drizzle-adapter": "^1.11.2",

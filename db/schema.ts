@@ -1,4 +1,4 @@
-import { pgTable, pgEnum, text, timestamp, primaryKey, integer, uuid, unique, boolean, numeric, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, pgEnum, text, timestamp, primaryKey, integer, bigint, uuid, unique, boolean, numeric, jsonb } from "drizzle-orm/pg-core";
 import type { AdapterAccount } from "next-auth/adapters";
 
 /** NextAuth tables. Standard @auth/drizzle-adapter shape. Mirrors witus-inbox. */
@@ -186,4 +186,37 @@ export const serviceSnapshots = pgTable("service_snapshot", {
   detail: jsonb("detail").$type<Record<string, unknown>>(),
   source: text("source").notNull(),
   collectedAt: timestamp("collected_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+// ---------------------------------------------------------------------------
+// Claude Code usage snapshots (admin/usage). One row per run of `scripts/usage-report.mjs --push`,
+// taken on BAM's machine from the local Claude Code transcripts: de-duplicated token totals, the
+// API-equivalent list price, and the mistake ledger total. Money columns are US dollars of API list
+// price; the page shows them as credits, 1 credit = 1 US dollar. The subscription does not bill per
+// token, so these are API-equivalent figures, not what the plan charges. Nothing from a transcript is
+// stored here beyond token counts, timestamps, model ids and the ledger rows BAM wrote.
+// ---------------------------------------------------------------------------
+export const claudeUsageSnapshots = pgTable("claude_usage_snapshots", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  takenAt: timestamp("taken_at", { withTimezone: true }).notNull().defaultNow(),
+  /** Hostname of the machine whose transcripts were read. */
+  machine: text("machine").notNull(),
+  coverageStart: timestamp("coverage_start", { withTimezone: true }),
+  coverageEnd: timestamp("coverage_end", { withTimezone: true }),
+  /** Distinct API responses after de-duplication by message id. */
+  responses: integer("responses").notNull().default(0),
+  // Token counts reach the billions (cache reads), so bigint, read back as a JS number.
+  inputTokens: bigint("input_tokens", { mode: "number" }).notNull().default(0),
+  cacheWrite5mTokens: bigint("cache_write_5m_tokens", { mode: "number" }).notNull().default(0),
+  cacheWrite1hTokens: bigint("cache_write_1h_tokens", { mode: "number" }).notNull().default(0),
+  cacheReadTokens: bigint("cache_read_tokens", { mode: "number" }).notNull().default(0),
+  outputTokens: bigint("output_tokens", { mode: "number" }).notNull().default(0),
+  /** API-equivalent list price of everything in the coverage range, US dollars. */
+  listPriceUsd: numeric("list_price_usd", { precision: 12, scale: 4 }).notNull().default("0"),
+  /** Same, for the counted mistake-ledger rows only. */
+  mistakePriceUsd: numeric("mistake_price_usd", { precision: 12, scale: 4 }).notNull().default("0"),
+  /** mistake_price_usd / list_price_usd, a fraction (0.0189 = 1.89 percent). */
+  mistakeShare: numeric("mistake_share", { precision: 9, scale: 6 }).notNull().default("0"),
+  /** By-month, by-model and by-project tables, the ledger rows, the unpriced models, the price table source. */
+  detail: jsonb("detail").$type<Record<string, unknown>>(),
 });

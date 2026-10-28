@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { products } from "@/lib/products";
 import { getDb } from "@/db";
 import { latestCostRows } from "@/lib/costs/collect";
@@ -94,6 +95,8 @@ export default async function CostsPage() {
       ) : null}
       <p className="text-xs text-neutral-500">
         Plans and fees for manual rows are set in the database (service table) until an edit form exists; "verify" means nobody has checked the vendor yet. Marketplace charges (Neon, Supabase, Upstash) bill on the Vercel invoice and are not in the Vercel usage lines.
+        Claude Code token usage and the cost of Claude&apos;s mistakes are on{" "}
+        <Link className="text-teal-700 underline" href="/admin/usage">Usage</Link>, in credits (1 credit = 1 US dollar of API list price), not here: the plan does not bill per token, so it is not a vendor line.
       </p>
     </div>
   );
