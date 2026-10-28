@@ -1,0 +1,16 @@
+{
+  "_source": "claude-api skill bundled with Claude Code (bundled-skills 2.1.311), section 'Current Models', with the cache multipliers from its shared/prompt-caching.md 'Economics' paragraph: cache writes cost 1.25 times the input price for the 5-minute TTL and 2 times for the 1-hour TTL; cache reads cost 0.1 times the input price, except 0.025 times on Claude Fable 5.1 and 0.05 times on Claude Opus 5.5. Copied from plans/usage-reports/2026-10-27-token-usage-and-mistake-cost.md section 3. Haiku 5.5 is priced at its rate for prompts of 100K tokens or fewer; the over-100K rate is not applied.",
+  "_cached": "2026-10-06",
+  "_unit": "US dollars per million tokens; 1 credit = 1 US dollar of API list price",
+  "_rule": "A model id that is not in `models` (after `aliases`) is reported as unpriced, never guessed. Add it here with its source and bump `_cached`.",
+  "models": {
+    "claude-fable-5-1": { "input": 10, "cacheWrite5m": 12.5, "cacheWrite1h": 20, "cacheRead": 0.25, "output": 50 },
+    "claude-opus-5-5": { "input": 4, "cacheWrite5m": 5, "cacheWrite1h": 8, "cacheRead": 0.2, "output": 20 },
+    "claude-opus-5": { "input": 5, "cacheWrite5m": 6.25, "cacheWrite1h": 10, "cacheRead": 0.5, "output": 25 },
+    "claude-haiku-5-5": { "input": 0.1, "cacheWrite5m": 0.125, "cacheWrite1h": 0.2, "cacheRead": 0.01, "output": 0.5 },
+    "claude-haiku-4-5": { "input": 1, "cacheWrite5m": 1.25, "cacheWrite1h": 2, "cacheRead": 0.1, "output": 5 }
+  },
+  "aliases": {
+    "claude-haiku-4-5-20251001": "claude-haiku-4-5"
+  }
+}
