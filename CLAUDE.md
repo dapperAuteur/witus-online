@@ -44,6 +44,7 @@ When a new product joins the WitUS ecosystem (a new app, sub-site, or shared inf
 8. **Add the new product to `plans/ecosystem/README.md`** product index in this repo (local-only — `plans/` is gitignored).
 9. **Update [the consolidated playbook ebook](plans/playbook/2026-10-05-witus-commercial-playbook.md)** §0 Master Source Index, §9 Pre-Launch Features, and **§16 the ecosystem app registry** (added 2026-09-03) so the new product's launch-prep doc is linked and the product appears in the registry table with its status and OIDC client. (The filename prefix means "current as of" and moves when the ebook is revised — if the link is dead, `ls plans/playbook/*commercial-playbook.md`.)
 10. **Update the witus auto-memory** at `~/.claude/projects/-Users-bam-Code-NOiCloud-ai-builds-gemini-witus/memory/` so the rule list reflects the new product's existence.
+11. **Automate its post-deploy steps** from day one, if it has a database or any other step that must run after a deploy: a migrate (or seed, or sync) workflow on merge to `main` plus `workflow_dispatch`, the manual fallback commands in its tracked `docs/` runbook, and a row in the witus admin's post-deploy page registry. See the Post-deploy automation rule below.
 
 The principle: identity confusion is a *first-day* problem. Catching it on day one in CLAUDE.md is cheap; catching it after multiple sessions of misnamed work is expensive and BAM has paid that cost more than once.
 
@@ -275,6 +276,26 @@ A hardcoded "apex domain → A record `76.76.21.21`" check in witus-learn declar
 ### Onboarding action when adding a new ecosystem repo
 
 Add a short pointer to this rule in the new repo's `CLAUDE.md` (name it, point back here for the full text), alongside the identity / operator-task / branch-hygiene / citation pointers.
+
+## Post-deploy automation rule: no step after a deploy is run by hand
+
+Any step that must run after a deploy is automated, has a written manual fallback, and can be run from the witus.online admin. "Step" means database migrations (Drizzle `db:migrate`, Supabase SQL, Django `migrate`, Prisma), seeds of reference data (witus-learn's course seeds), search or cache rebuilds, and content syncs (this repo's library sync). The short form lives in the shared block (`docs/shared-rules.md`, v9); this is the full text.
+
+### How to apply
+
+1. **Workflow.** `.github/workflows/<step>-production.yml` runs the step on the push to `main` that changes its inputs (a `paths:` filter on the migrations folder, the seed data, the synced files) and on `workflow_dispatch`. It uses a `concurrency` group with `cancel-in-progress: false`, fails closed with an `::error::` line naming the missing secret and the runbook section, prints what ran to `$GITHUB_STEP_SUMMARY`, and is safe to run twice (migrations and seeds are idempotent). Prefer additive migrations, so the old code keeps working while the job runs.
+2. **Secrets.** Repository secrets in GitHub, set by piping a CLI into `gh secret set` so no value is pasted into a terminal, a chat, or a log: `neon connection-string --project-id <id> | gh secret set NEON_DIRECT_URL --repo dapperAuteur/<repo>`. Migrations use the direct (unpooled) string. Setting the secret is an operator task.
+3. **Manual fallback.** The repo's tracked operations runbook (`docs/NN-operations.md` or the repo's existing ops doc) has a section per step with the exact commands to run it from the laptop, where the values come from, and the expected output. A fallback that exists only in a gitignored plan does not count.
+4. **Admin button.** witus.online gets an admin page that lists every app's post-deploy steps from a registry (app, repo, workflow file, ref, inputs), shows each workflow's last run, and has a Run button that calls GitHub's `workflow_dispatch` API with a fine-grained token (Actions read and write on the listed repos only). Every click writes an audit row. Until the page ships, the Actions tab's **Run workflow** button is the manual trigger. The design and the per-app backlog live in `plans/future/post-deploy-automation-backlog-2026-10-28.md`.
+5. **In the same change.** A session that adds a migration or another post-deploy step to a repo without the workflow adds the workflow, the runbook section, and the operator task for the secret in that change. The older DX rule "any DB migration files a run-migration user task" still applies to repos that have no workflow yet.
+
+**Reference implementation:** invest-witus `.github/workflows/migrate-production.yml` (Django on Neon, `uv run python manage.py migrate --database direct`, then `--check`) and its `docs/05-operations.md`.
+
+**Watch for:** repos whose database has no migration history table (tour-manager-os applies Supabase SQL by hand, so `supabase db push` would replay every file). Those need a baseline first; see the backlog.
+
+### Why this rule exists
+
+On 2026-10-28 invest-witus migrations needed a connection string pasted into a terminal four times in one evening. Every Vercel project variable was Sensitive, so `vercel env pull` and `vercel env run` could not supply it, and a missed migration left pages answering 500 until someone noticed. A step that a person must remember after every merge is a step that gets missed.
 
 ## Rendering library PDFs — use the repo script, never a hand-rolled Chrome call
 
