@@ -135,8 +135,12 @@ Canonical winner in **bold**; losing variants noted so you recognize legacy code
   `console.log` left behind.
 - **Media (Cloudinary):** signed uploads; build delivery URLs via helpers, never by hand; only
   surface assets with `status === "ready"`.
-- **Migration → user-task gate:** any DB migration files a `plans/user-tasks/NN-run-migration-*.md`
-  before the branch can merge (BAM runs prod migrations; `DATABASE_URL` from shell, never `.env`).
+- **Post-deploy steps are automated:** migrations, reference-data seeds, and syncs run from a
+  workflow on merge to `main` (plus `workflow_dispatch`), with the manual fallback in the repo's
+  tracked `docs/` runbook and a Run button on the witus.online admin. Full rule: shared rules v9,
+  "Post-deploy automation rule". **Until a repo has that workflow**, the old gate holds: any DB
+  migration files a `plans/user-tasks/NN-run-migration-*.md` before the branch can merge
+  (`DATABASE_URL` from shell, never `.env`).
 
 ### Stack-specific: DATABASE
 
