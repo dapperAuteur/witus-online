@@ -8,6 +8,7 @@ import { getIdentityDb, identitySchema } from "./db";
 import { betterAuthSecret, betterAuthUrl } from "./env";
 import { sendIdentityMagicLink } from "./mailer";
 import { buildTrustedClients, ecosystemOrigins } from "./clients";
+import { geoForStorage, geoFromHeaders } from "./devices.mjs";
 
 /**
  * WitUS Accounts — the ecosystem identity provider.
@@ -50,6 +51,34 @@ export const auth = betterAuth({
     provider: "pg",
     schema: identitySchema,
   }),
+  /**
+   * Approximate sign-in location for the "Your devices" page (app/accounts/devices). The adapter
+   * writes only fields the schema declares, so the columns must be listed here as well as in
+   * db/identity-schema.ts. `input: false` keeps them out of update-session's body, so a client
+   * can't rewrite where it signed in from.
+   */
+  session: {
+    additionalFields: {
+      city: { type: "string", required: false, input: false },
+      region: { type: "string", required: false, input: false },
+      country: { type: "string", required: false, input: false },
+    },
+  },
+  databaseHooks: {
+    session: {
+      create: {
+        // Verified in better-auth 1.6.23 (dist/db/with-hooks.mjs): create.before receives the
+        // endpoint context, whose `headers` are the incoming request's (the magic-link verify
+        // request, for this IdP). On Vercel those carry x-vercel-ip-* geo headers; elsewhere
+        // they are absent and the fields store "" (unknown).
+        before: async (session, context) => {
+          const headers = context?.headers ?? context?.request?.headers;
+          const geo = geoForStorage(geoFromHeaders((name) => headers?.get(name) ?? null));
+          return { data: { ...session, ...geo } };
+        },
+      },
+    },
+  },
   plugins: [
     magicLink({
       sendMagicLink: async ({ email, url }) => sendIdentityMagicLink(email, url),
