@@ -1,5 +1,5 @@
 ---
-app: anatomy-tool
+app: anatomy
 name: Anatomy Tool
 stage: idea
 updated: 2026-10-29
