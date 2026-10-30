@@ -1,5 +1,6 @@
 import type { Accent, ProductStatus } from "@/lib/products";
 import { ProductLink } from "@/components/ProductLink";
+import { waitlistHref } from "@/lib/waitlist/waitlist.mjs";
 
 interface ProductCardProps {
   name: string;
@@ -106,6 +107,7 @@ const accentStyles: Record<Accent, AccentStyle> = {
 const statusLabel: Record<ProductStatus, string> = {
   live: "Live",
   beta: "Beta",
+  alpha: "Alpha",
   "coming-soon": "Coming soon",
   infrastructure: "Infrastructure",
 };
@@ -113,6 +115,7 @@ const statusLabel: Record<ProductStatus, string> = {
 const statusBadge: Record<ProductStatus, string> = {
   live: "bg-slate-800 text-slate-300 border border-slate-700",
   beta: "bg-amber-500/10 text-amber-300 border border-amber-500/20",
+  alpha: "bg-sky-500/10 text-sky-300 border border-sky-500/20",
   "coming-soon": "bg-slate-900 text-slate-400 border border-slate-800",
   infrastructure: "bg-slate-900 text-slate-400 border border-slate-800",
 };
@@ -161,7 +164,18 @@ export default function ProductCard({
         {description}
       </p>
 
-      {isDisabled ? (
+      {status === "alpha" ? (
+        // Alpha: the app is not open yet, so the card's one action is the waitlist on this site.
+        <ProductLink
+          href={waitlistHref(slug)}
+          name={name}
+          slug={slug}
+          status={status}
+          external={false}
+          label={`Join the ${name} waitlist`}
+          className={ctaClasses}
+        />
+      ) : isDisabled ? (
         <span
           className={disabledClasses}
           role="button"

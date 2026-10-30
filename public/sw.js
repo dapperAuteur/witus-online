@@ -58,6 +58,9 @@ self.addEventListener("activate", (event) => {
 function isBypass(url) {
   return (
     url.pathname.startsWith("/api/") ||
+    // WitUS Accounts pages show per-user data (signed-in devices, IP addresses). Network only, so
+    // a stale copy is never cached or served offline.
+    url.pathname.startsWith("/accounts/") ||
     url.pathname === "/sitemap.xml" ||
     url.pathname === "/robots.txt" ||
     url.pathname === "/manifest.webmanifest"

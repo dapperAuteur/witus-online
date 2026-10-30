@@ -151,7 +151,9 @@ export const ECOSYSTEM_APPS: readonly EcosystemApp[] = [
     extraRedirectUris: [`https://wanderlearn.witus.online${BETTER_AUTH_CB}`],
   },
   { slug: "fly", name: "Fly.WitUS", origin: "https://fly.witus.online", callbackPath: BETTER_AUTH_CB },
-  { slug: "tour", name: "Tour Manager OS", origin: "https://tour.witus.online", callbackPath: BETTER_AUTH_CB },
+  // Supabase app: custom OIDC code flow (app/api/auth/witus/*), like CentenarianOS
+  // below, so its redirect URI is /api/auth/witus/callback, not the better-auth default.
+  { slug: "tour", name: "Tour Manager OS", origin: "https://tour.witus.online", callbackPath: "/api/auth/witus/callback" },
   // Supabase app: uses a custom OIDC code flow (app/api/auth/witus/*), so its
   // redirect URI is /api/auth/witus/callback, not the better-auth default.
   // The deployed site serves from `www.` and sends that as its redirect_uri
@@ -248,8 +250,8 @@ export const ECOSYSTEM_APPS: readonly EcosystemApp[] = [
   // client in this registry registers one (redirect URIs are exact-match), so a dev
   // callback would be a new precedent — BAM's call, via extraRedirectUris if ever wanted.
   { slug: "vogoat", name: "VO GOAT", origin: "https://vogoat.witus.online", callbackPath: BETTER_AUTH_CB },
-  // Invest.WitUS — Python (Django) app, repo ai-builds/claude/invest-witus, no web app yet
-  // (tutorial chapter 07 adds the OIDC client with Authlib). Django, not Better Auth, so the
+  // Invest.WitUS — Python (Django) app, repo ai-builds/claude/invest-witus, live for its owner
+  // at invest.witus.online in alpha (tutorial chapter 07 added the OIDC client with Authlib). Django, not Better Auth, so the
   // callback is the app's own route, decided 2026-10-27 and recorded in its
   // docs/02-ecosystem-integration.md; the login start route is /auth/witus/login/. Inert until
   // WITUS_OIDC_SECRET__INVEST is set here. No localhost redirect URI, same as vogoat.

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { products } from "@/lib/products";
 import { learnSubRoutes } from "@/lib/learn";
+import { waitlistHref } from "@/lib/waitlist/waitlist.mjs";
 
 const linkClasses =
   "inline-flex items-center min-h-[32px] py-1 hover:text-white transition-colors focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white rounded";
@@ -40,7 +41,17 @@ export default function Footer() {
                     p.surfaces.includes("public-directory")
                 )
                 .map((product) =>
-                  product.status === "coming-soon" ? (
+                  product.status === "alpha" ? (
+                    <li key={product.slug}>
+                      <Link
+                        href={waitlistHref(product.slug)}
+                        className={linkClasses}
+                      >
+                        {product.name}
+                        <span className="ml-1 text-slate-400">(alpha waitlist)</span>
+                      </Link>
+                    </li>
+                  ) : product.status === "coming-soon" ? (
                     <li key={product.slug} className="text-slate-400 italic">
                       {product.name}
                     </li>

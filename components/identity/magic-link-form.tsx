@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { identityAuthClient } from "@/lib/identity/auth-client";
+import { safeAccountsNext } from "@/lib/identity/devices.mjs";
 
 /**
  * WitUS Accounts magic-link sign-in. Passes an ABSOLUTE same-origin callbackURL
@@ -20,12 +21,14 @@ export function IdentityMagicLinkForm() {
     // we must return to the authorize endpoint (now with a session) so the OIDC
     // flow continues back to the client app — NOT land on the IdP home page, which
     // would strand the user on accounts.witus.online. Direct sign-ins (no client_id)
-    // fall back to home.
+    // return to `?next=` when it is an /accounts/ page (e.g. /accounts/devices sends
+    // signed-out visitors here), otherwise home.
     const params = new URLSearchParams(window.location.search);
     const origin = window.location.origin;
+    const next = safeAccountsNext(params.get("next"));
     const callbackURL = params.has("client_id")
       ? `${origin}/api/idp/oauth2/authorize?${params.toString()}`
-      : `${origin}/`;
+      : `${origin}${next ?? "/"}`;
     const { error } = await identityAuthClient.signIn.magicLink({ email, callbackURL });
     setStatus(error ? "error" : "sent");
   }

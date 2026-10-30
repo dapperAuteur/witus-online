@@ -26,6 +26,7 @@ export function ProductLink({
   status,
   external,
   className,
+  label,
 }: {
   href: string;
   name: string;
@@ -33,6 +34,8 @@ export function ProductLink({
   status?: string;
   external?: boolean;
   className?: string;
+  /** Visible link text. Defaults to "Open {name}". Alpha cards pass "Join the {name} waitlist". */
+  label?: string;
 }) {
   return (
     <a
@@ -50,7 +53,7 @@ export function ProductLink({
         });
       }}
     >
-      <span>Open {name}</span>
+      <span>{label ?? `Open ${name}`}</span>
       <span aria-hidden="true" className="ml-2">
         &rarr;
       </span>
