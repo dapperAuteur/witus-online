@@ -181,7 +181,7 @@ export const ROADMAP_APPS: readonly RoadmapApp[] = [
     note: "A Shopify store, so there is no code repo to hold a roadmap.",
   }),
   inWitus("anatomy", "Anatomy tool (BioDigital)", {
-    note: "Idea: BioDigital Human anatomy viewer in Learn.WitUS classes. Not vetted (witus task 103).",
+    note: "Idea: BioDigital Human anatomy tool. CentOS has an admin-only viewer prototype. Not vetted (witus task 103).",
   }),
   inWitus("fit-t-cent-assessments", "Fit T. Cent Assessments", {
     // Read from `git -C /Users/bam/Code_NOiCloud/cent/fit-t-cent-assessments remote get-url origin`.
