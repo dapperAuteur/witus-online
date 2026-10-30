@@ -19,8 +19,12 @@ import { geoForStorage, geoFromHeaders } from "./devices.mjs";
  * `WITUS_OIDC_SECRET__<SLUG>` is set on this project (see lib/identity/clients.ts).
  *
  * NOTE: better-auth 1.6 marks `oidcProvider` deprecated in favor of
- * `@better-auth/oauth-provider`. It is fully functional this major; migrate
- * before the next better-auth major. See plans/21-witus-accounts-idp-buildout.md.
+ * `@better-auth/oauth-provider`, and 1.7.0 REMOVES it (no export in 1.7.x). That is
+ * why package.json pins `better-auth` with a tilde (`~1.6.x`): a caret range would
+ * let a fresh install resolve 1.7 and break this import. Moving to 1.7 means porting
+ * this config to `@better-auth/oauth-provider` plus its schema/data migration
+ * (oauthApplication -> oauthClient, new token tables); see better-auth's 1.7 upgrade
+ * guide, "As an identity provider", and plans/21-witus-accounts-idp-buildout.md.
  */
 export const auth = betterAuth({
   appName: "WitUS Accounts",
