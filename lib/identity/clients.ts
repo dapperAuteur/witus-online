@@ -250,8 +250,8 @@ export const ECOSYSTEM_APPS: readonly EcosystemApp[] = [
   // client in this registry registers one (redirect URIs are exact-match), so a dev
   // callback would be a new precedent — BAM's call, via extraRedirectUris if ever wanted.
   { slug: "vogoat", name: "VO GOAT", origin: "https://vogoat.witus.online", callbackPath: BETTER_AUTH_CB },
-  // Invest.WitUS — Python (Django) app, repo ai-builds/claude/invest-witus, no web app yet
-  // (tutorial chapter 07 adds the OIDC client with Authlib). Django, not Better Auth, so the
+  // Invest.WitUS — Python (Django) app, repo ai-builds/claude/invest-witus, live for its owner
+  // at invest.witus.online in alpha (tutorial chapter 07 added the OIDC client with Authlib). Django, not Better Auth, so the
   // callback is the app's own route, decided 2026-10-27 and recorded in its
   // docs/02-ecosystem-integration.md; the login start route is /auth/witus/login/. Inert until
   // WITUS_OIDC_SECRET__INVEST is set here. No localhost redirect URI, same as vogoat.
