@@ -24,11 +24,15 @@
  * ecosystem sign-in down twice in July 2026 — a registry saying one thing while the
  * runtime believed another. `oidcSlug` makes the link explicit; this script enforces it.
  *
+ * It also checks lib/roadmap/registry.ts (the /admin/roadmap app list) against
+ * docs/ecosystem-repos.json, and re-reads each clone's origin remote where the path exists.
+ *
  * Companion to scripts/check-oidc-env.mjs (env vs registry) and
  * scripts/check-posthog-conformance.mjs (analytics config across repos). Same shape:
  * cheap, specific, exits non-zero, explains itself.
  */
 import { spawnSync } from "node:child_process";
+import { existsSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 
 /** Node 22 needs --experimental-strip-types to import the .ts registries; 23.6+ doesn't. */
@@ -48,6 +52,8 @@ async function load(path) {
 
 const products = (await load("../lib/products.ts")).products;
 const { ECOSYSTEM_APPS, clientIdFor, redirectUrisFor } = await load("../lib/identity/clients.ts");
+const { ROADMAP_APPS } = await load("../lib/roadmap/registry.ts");
+const ecosystemRepos = JSON.parse(readFileSync(new URL("../docs/ecosystem-repos.json", import.meta.url), "utf8"));
 
 const errors = [];
 const warnings = [];
@@ -143,8 +149,67 @@ for (const p of products) {
   }
 }
 
+// ── Roadmap registry (lib/roadmap/registry.ts) vs docs/ecosystem-repos.json ─────────────────
+// Every repo in ecosystem-repos.json (source + targets) needs exactly one roadmap entry, or the
+// /admin/roadmap page silently leaves an app out. The GitHub repo name must come from the clone's
+// origin remote (authoritative-values rule), so where the path exists on this machine the remote is
+// re-read and compared. In CI the paths do not exist and that half is skipped.
+let roadmapRemotesChecked = 0;
+{
+  const repoPaths = [ecosystemRepos.source, ...ecosystemRepos.targets];
+  const byPath = new Map();
+  const slugs = new Set();
+  for (const a of ROADMAP_APPS) {
+    if (slugs.has(a.slug)) errors.push(`roadmap registry: slug "${a.slug}" appears twice in lib/roadmap/registry.ts.`);
+    slugs.add(a.slug);
+    for (const field of ["githubRepo", "roadmapRepo"]) {
+      if (a[field] !== null && !/^[\w.-]+\/[\w.-]+$/.test(a[field])) {
+        errors.push(`roadmap registry: "${a.slug}" ${field} "${a[field]}" is not "owner/repo".`);
+      }
+    }
+    if (a.localPath) {
+      if (byPath.has(a.localPath)) {
+        errors.push(`roadmap registry: "${a.slug}" and "${byPath.get(a.localPath)}" share localPath ${a.localPath}.`);
+      }
+      byPath.set(a.localPath, a.slug);
+      if (!repoPaths.includes(a.localPath)) {
+        errors.push(
+          `roadmap registry: "${a.slug}" points at ${a.localPath}, which is not in\n` +
+            `    docs/ecosystem-repos.json (source or targets). Add the repo there, or fix the path.`,
+        );
+      }
+    }
+  }
+  for (const p of repoPaths) {
+    if (!byPath.has(p)) {
+      errors.push(
+        `docs/ecosystem-repos.json lists ${p}, but lib/roadmap/registry.ts has no entry for it,\n` +
+          `    so /admin/roadmap leaves that app out. Add an entry with its GitHub repo read from\n` +
+          `    \`git -C ${p} remote get-url origin\`.`,
+      );
+    }
+  }
+  for (const a of ROADMAP_APPS) {
+    if (!a.localPath || !existsSync(a.localPath)) continue;
+    const r = spawnSync("git", ["-C", a.localPath, "remote", "get-url", "origin"], { encoding: "utf8" });
+    const remote = r.status === 0 ? r.stdout.trim() : "";
+    const m = /github\.com[:/]([\w.-]+\/[\w.-]+?)(?:\.git)?$/.exec(remote);
+    const actual = m ? m[1] : null;
+    roadmapRemotesChecked++;
+    if (actual !== a.githubRepo) {
+      errors.push(
+        `roadmap registry: "${a.slug}" says githubRepo ${a.githubRepo ?? "null"}, but the origin remote of\n` +
+          `    ${a.localPath} is ${actual ?? "(none)"}. The remote wins; update the registry.`,
+      );
+    }
+  }
+}
+
 const rule = "─".repeat(72);
-console.log(`\nRegistry cross-check — ${products.length} products, ${ECOSYSTEM_APPS.length} OIDC clients`);
+console.log(
+  `\nRegistry cross-check — ${products.length} products, ${ECOSYSTEM_APPS.length} OIDC clients, ` +
+    `${ROADMAP_APPS.length} roadmap apps (${roadmapRemotesChecked} origin remotes re-read)`,
+);
 console.log(rule);
 
 for (const e of errors) console.log(`\n✖ ERROR  ${e}`);

@@ -51,8 +51,9 @@ jobs:
       - name: PostHog conformance
         run: node scripts/check-posthog-conformance.mjs "$GITHUB_WORKSPACE"
 
-      # Registries: lib/products.ts must agree with lib/identity/clients.ts. Both files
-      # live in this repo, so this check only makes sense here, not in sibling repos.
+      # Registries: lib/products.ts must agree with lib/identity/clients.ts, and
+      # lib/roadmap/registry.ts must cover docs/ecosystem-repos.json. All live in this
+      # repo, so this check only makes sense here, not in sibling repos.
       - name: Registry cross-check
         run: node scripts/check-registries.mjs
 
