@@ -151,7 +151,9 @@ export const ECOSYSTEM_APPS: readonly EcosystemApp[] = [
     extraRedirectUris: [`https://wanderlearn.witus.online${BETTER_AUTH_CB}`],
   },
   { slug: "fly", name: "Fly.WitUS", origin: "https://fly.witus.online", callbackPath: BETTER_AUTH_CB },
-  { slug: "tour", name: "Tour Manager OS", origin: "https://tour.witus.online", callbackPath: BETTER_AUTH_CB },
+  // Supabase app: custom OIDC code flow (app/api/auth/witus/*), like CentenarianOS
+  // below, so its redirect URI is /api/auth/witus/callback, not the better-auth default.
+  { slug: "tour", name: "Tour Manager OS", origin: "https://tour.witus.online", callbackPath: "/api/auth/witus/callback" },
   // Supabase app: uses a custom OIDC code flow (app/api/auth/witus/*), so its
   // redirect URI is /api/auth/witus/callback, not the better-auth default.
   // The deployed site serves from `www.` and sends that as its redirect_uri
