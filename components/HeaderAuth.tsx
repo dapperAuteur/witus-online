@@ -23,6 +23,10 @@ const linkClass =
  * deployment, so renaming or removing it fails CI. Showing "Sign in" during the loading state means
  * a signed-in visitor may see it for a moment before "Sign out" replaces it; that beats hiding the
  * control from the majority, who are not signed in.
+ *
+ * "Sign out" here ends only the witus.online session, never the WitUS session at
+ * accounts.witus.online (BAM, 2026-10-29, witus task 128 option (b)). The separate
+ * "Sign out of WitUS everywhere" control lives in the admin bar (app/admin/layout.tsx).
  */
 export function HeaderAuth() {
   const { status } = useSession();

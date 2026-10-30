@@ -4,7 +4,9 @@ import { betterAuthUrl } from "@/lib/identity/env";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { isAdminEmail } from "@/lib/admin-auth";
+import { witusEndSessionUrl } from "@/lib/identity/end-session";
 import { SignOutButton } from "./SignOutButton";
+import { SignOutEverywhereButton } from "./SignOutEverywhereButton";
 
 export const dynamic = "force-dynamic";
 
@@ -17,6 +19,9 @@ export default async function AdminLayout({
   if (!session?.user?.email) {
     redirect("/auth/sign-in?callbackUrl=/admin");
   }
+  // Non-null only when witus.online is a configured "Sign in with WitUS" client. Plain "Sign out"
+  // ends only this site's session; the second control also ends the WitUS session (task 128 (b)).
+  const endSessionUrl = await witusEndSessionUrl();
   if (!isAdminEmail(session.user.email)) {
     return (
       <main
@@ -31,8 +36,9 @@ export default async function AdminLayout({
             Signed in as <span className="font-mono">{session.user.email}</span>
             , which is not the admin account.
           </p>
-          <div className="pt-2">
+          <div className="flex flex-col items-center gap-2 pt-2">
             <SignOutButton />
+            <SignOutEverywhereButton endSessionUrl={endSessionUrl} />
           </div>
         </div>
       </main>
@@ -95,9 +101,12 @@ export default async function AdminLayout({
               WitUS Accounts ↗
             </a>
           </div>
-          <div className="flex items-center gap-3">
-            <span className="text-xs text-slate-500">{session.user.email}</span>
+          <div className="flex items-start gap-3">
+            <span className="min-h-9 inline-flex items-center text-xs text-slate-500">
+              {session.user.email}
+            </span>
             <SignOutButton />
+            <SignOutEverywhereButton endSessionUrl={endSessionUrl} />
           </div>
         </div>
       </nav>
