@@ -34,6 +34,22 @@ rows in `drizzle.__drizzle_migrations`, so you can see what production has.
 drizzle-kit applies only the journal entries whose `when` is newer than the newest
 `created_at` in `drizzle.__drizzle_migrations`. Running it twice is a no-op.
 
+### Order: migration first, code second
+
+better-auth's drizzle adapter reads with `select()` over EVERY column declared in
+`db/identity-schema.ts` and writes with `returning()`. If code that declares a new column reaches
+production before the column exists, every session read fails (`column ... does not exist`), and
+"Sign in with WitUS" breaks for every app. So a change that adds identity columns ships in two
+merges:
+
+1. A branch with only the migration files (`db/identity-migrations/**`). Merging it runs this
+   workflow; wait for it to go green. The extra nullable columns are unused and harmless.
+2. Then the branch that adds the columns to `db/identity-schema.ts` and the code that uses them.
+
+Don't run `npm run db:identity:generate` between the two merges: `main` would have a snapshot that
+lists the new columns and a schema that doesn't, and drizzle-kit would write a migration dropping
+them.
+
 ### Set the secret (once)
 
 Pipe the value so it is never pasted into a terminal, chat or log. Find the identity project's id
