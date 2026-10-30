@@ -4,7 +4,7 @@ import Link from "next/link";
 import { signOut, useSession } from "next-auth/react";
 
 const linkClass =
-  "inline-flex items-center min-h-11 px-3 hover:text-white transition-colors focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white rounded";
+  "inline-flex items-center min-h-11 px-2 sm:px-3 hover:text-white transition-colors focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white rounded";
 
 /**
  * Header auth control. Two states, and the sign-in control is always present for a visitor who
@@ -39,7 +39,8 @@ export function HeaderAuth() {
       </Link>
       {authenticated ? (
         <>
-          <Link href="/admin" className={linkClass}>
+          {/* Below sm, Admin lives in HeaderMenu so the bar fits a 320px screen. */}
+          <Link href="/admin" className={`hidden sm:inline-flex ${linkClass}`}>
             Admin
           </Link>
           <button

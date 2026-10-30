@@ -28,8 +28,29 @@ test("homepage renders and is accessible", async ({ page }) => {
 test("primary nav reaches the learn section", async ({ page }) => {
   await page.goto("/");
   // Semantic link copy is a charter rule — target the destination by accessible name, not by CSS.
-  await page.getByRole("link", { name: /learn/i }).first().click();
+  // Below the sm breakpoint the section links sit behind the header's Menu button.
+  const nav = page.getByRole("navigation", { name: /primary/i });
+  const menu = nav.getByRole("button", { name: /^menu$/i });
+  if (await menu.isVisible()) await menu.click();
+  await nav.getByRole("link", { name: /^learn$/i }).click();
   await expect(page).toHaveURL(/\/learn/);
   await expect(page.locator("h1").first()).toBeVisible();
   await expectNoSeriousA11yViolations(page);
+});
+
+test("header fits a 320px screen without sideways scrolling", async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 640 });
+  await page.goto("/");
+  const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+  expect(overflow).toBeLessThanOrEqual(0);
+  const nav = page.getByRole("navigation", { name: /primary/i });
+  await expect(nav.getByRole("link", { name: /^sign in$/i })).toBeVisible();
+  // The button reads "Menu" when closed and "Close" when open.
+  const menu = nav.getByRole("button", { name: /^(menu|close)$/i });
+  await menu.click();
+  await expect(menu).toHaveAttribute("aria-expanded", "true");
+  await expect(nav.getByRole("link", { name: /^roadmap$/i })).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(nav.getByRole("link", { name: /^roadmap$/i })).toBeHidden();
+  await expect(menu).toBeFocused();
 });
