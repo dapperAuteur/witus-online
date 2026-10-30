@@ -38,6 +38,10 @@ const RawEnvShape = z.object({
     .string()
     .regex(/^\d+(\.\d+)?$/, "whole or decimal credits, e.g. 200")
     .optional(),
+  // Optional: ecosystem roadmap page (/admin/roadmap). Fine-grained read-only GitHub PAT
+  // (Contents: read, Metadata: read) on the repos in lib/roadmap/registry.ts; operator task 132.
+  // Absent = the page lists the registry with a "set GITHUB_ROADMAP_TOKEN" notice.
+  GITHUB_ROADMAP_TOKEN: z.string().min(1).optional(),
 });
 
 const EnvSchema = RawEnvShape.transform((raw, ctx) => {
@@ -68,6 +72,7 @@ const EnvSchema = RawEnvShape.transform((raw, ctx) => {
       raw.CLAUDE_MONTHLY_ALLOWANCE_CREDITS && Number(raw.CLAUDE_MONTHLY_ALLOWANCE_CREDITS) > 0
         ? Number(raw.CLAUDE_MONTHLY_ALLOWANCE_CREDITS)
         : undefined,
+    GITHUB_ROADMAP_TOKEN: raw.GITHUB_ROADMAP_TOKEN,
   };
 });
 

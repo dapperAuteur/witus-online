@@ -42,7 +42,7 @@ B4C LLC / AwesomeWebStore.com  ← legal entity
 | `/educators` | Educator-facing page |
 | `/roadmap` | Public roadmap for CentenarianOS and Work.WitUS |
 | `/accounts/sign-in` | Sign in with WitUS (the IdP's sign-in page) |
-| `/admin` | Admin: episodes, invitations, the private library (`/admin/library`) |
+| `/admin` | Admin: episodes, invitations, the private library (`/admin/library`), the ecosystem roadmap (`/admin/roadmap`, reads each app's `docs/roadmap.md` from GitHub with `GITHUB_ROADMAP_TOKEN`) |
 | `/account` | Shared account explainer + FAQ |
 | `/terms` | Umbrella terms of service |
 | `/privacy` | Privacy policy covering both apps |
