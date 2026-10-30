@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
-import { SITE_URL } from "@/lib/products";
+import { SITE_URL, products } from "@/lib/products";
+import { alphaProducts, waitlistHref } from "@/lib/waitlist/waitlist.mjs";
 import { learnSubRoutes } from "@/lib/learn";
 
 export default function sitemap(): MetadataRoute.Sitemap {
@@ -47,5 +48,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.5,
   };
 
-  return [...top, learnIndex, ...learnLeaves, feedback];
+  // One waitlist page per alpha product; the list changes as products move through alpha.
+  const waitlists = alphaProducts(products).map((p) => ({
+    url: `${SITE_URL}${waitlistHref(p.slug)}`,
+    lastModified: now,
+    changeFrequency: "monthly" as const,
+    priority: 0.5,
+  }));
+
+  return [...top, learnIndex, ...learnLeaves, feedback, ...waitlists];
 }
