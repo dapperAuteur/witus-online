@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { products, SITE_URL, type Accent } from "@/lib/products";
+import { betterAuthUrl } from "@/lib/identity/env";
 
 export const metadata: Metadata = {
   title: "Accounts",
@@ -152,6 +153,16 @@ export default function AccountPage() {
           Each WitUS tool is its own app with its own account and its own subscription.
           A unified WitUS account is on the roadmap. Until then, this page collects
           the sign-in doors in one place.
+        </p>
+        <p className="text-sm text-slate-400 leading-relaxed -mt-8 mb-12 max-w-xl">
+          Use Sign in with WitUS?{" "}
+          <a
+            href={`${betterAuthUrl()}/accounts/devices`}
+            className="font-semibold text-slate-200 underline underline-offset-2 hover:text-white focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current"
+          >
+            See and sign out your devices
+          </a>
+          .
         </p>
 
         <h2

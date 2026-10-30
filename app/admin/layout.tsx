@@ -105,6 +105,15 @@ export default async function AdminLayout({
             <span className="min-h-9 inline-flex items-center text-xs text-slate-500">
               {session.user.email}
             </span>
+            {/* WitUS sign-ins live on the IdP host, so this opens accounts.witus.online. */}
+            <a
+              href={`${betterAuthUrl()}/accounts/devices`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center min-h-9 px-3 py-1.5 rounded-md text-xs font-semibold text-slate-300 hover:text-teal-300 focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-300"
+            >
+              Your devices ↗<span className="sr-only"> (opens in new tab)</span>
+            </a>
             <SignOutButton />
             <SignOutEverywhereButton endSessionUrl={endSessionUrl} />
           </div>
