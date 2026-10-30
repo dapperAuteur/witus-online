@@ -1,6 +1,7 @@
 // Ecosystem roadmap parser and staleness rule (lib/roadmap/roadmap.mjs), behind /admin/roadmap.
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import {
   STAGES,
   appSlugMatches,
@@ -170,7 +171,7 @@ test("CRLF, BOM, quoted values, code fences and wrapped lines", () => {
 });
 
 test("stages list matches the documented format", () => {
-  assert.deepEqual([...STAGES], ["idea", "vetted", "building", "beta", "live", "paused", "retired"]);
+  assert.deepEqual([...STAGES], ["idea", "vetted", "building", "alpha", "beta", "live", "paused", "retired"]);
 });
 
 test("isIsoDate accepts real dates only", () => {
@@ -195,4 +196,36 @@ test("app slug matches the registry slug or an alias", () => {
   assert.equal(appSlugMatches("Witus-Learn", "learn-witus", ["witus-learn"]), true);
   assert.equal(appSlugMatches("shop-witus", "learn-witus", ["witus-learn"]), false);
   assert.equal(appSlugMatches(null, "learn-witus"), false);
+});
+
+test("alpha stage (2026-10-30) parses and sits between building and beta", () => {
+  const r = parseRoadmap(`---
+app: invest-witus
+name: Invest.WitUS
+stage: Alpha
+url: https://invest.witus.online
+updated: 2026-10-30
+---
+
+## In progress
+- Waitlist signups on witus.online
+`);
+  assert.equal(r.ok, true);
+  assert.deepEqual(r.errors, []);
+  assert.equal(r.meta.stage, "alpha");
+  assert.equal(STAGES.indexOf("alpha"), STAGES.indexOf("building") + 1);
+  assert.equal(STAGES.indexOf("beta"), STAGES.indexOf("alpha") + 1);
+  assert.equal(sectionItems(r, "inProgress")[0].text, "Waitlist signups on witus.online");
+});
+
+test("stage filter on /admin/roadmap is built from STAGES, so it offers alpha", () => {
+  const page = readFileSync(new URL("../../app/admin/roadmap/page.tsx", import.meta.url), "utf8");
+  assert.match(page, /const FILTERS = \["all", \.\.\.STAGES, "none"\]/);
+});
+
+test("documented stage lists include alpha", () => {
+  for (const p of ["lib/roadmap/roadmap.mjs", "docs/shared-rules.md"]) {
+    const src = readFileSync(new URL(`../../${p}`, import.meta.url), "utf8");
+    assert.match(src, /stage: idea \| vetted \| building \| alpha \| beta \| live \| paused \| retired/, p);
+  }
 });
