@@ -231,6 +231,10 @@ npm run db:identity:generate # identity DB — generate migration
 npm run db:identity:migrate  # identity DB — apply migrations
 ```
 
+Production identity migrations run automatically on merge to `main`
+(`.github/workflows/identity-migrate-production.yml`). The secret, the history-table check and the
+manual fallback are in [`docs/01-operations.md`](docs/01-operations.md).
+
 ## Uptime monitoring
 
 **Point every uptime monitor at `/api/health`, not at `/`.**
