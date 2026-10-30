@@ -1,0 +1,85 @@
+# Migrate the production IDENTITY database (WitUS Accounts, accounts.witus.online) after a merge to
+# main, so nobody pastes a connection string. Post-deploy automation rule, CLAUDE.md / shared rules v9.
+#
+# Runs when a push to main changes an identity migration, and on demand (Actions -> "Migrate
+# production identity database" -> Run workflow). It reads one repository secret,
+# IDENTITY_STORAGE_DATABASE_URL_UNPOOLED: the Neon DIRECT (unpooled) connection string for the
+# identity database. That is the first variable drizzle.identity.config.ts reads. Set it once
+# without copying the value (docs/01-operations.md, "Identity database migrations"):
+#   neon connection-string --project-id <identity project id> | gh secret set IDENTITY_STORAGE_DATABASE_URL_UNPOOLED --repo dapperAuteur/witus-online
+# GitHub masks the value in every log line. The job fails closed when the secret is missing.
+#
+# This is the identity DB only (db/identity-migrations, drizzle.identity.config.ts). The app DB
+# (db/migrations, drizzle.config.ts) is a separate database and is not touched here.
+#
+# Timing: Vercel deploys the same push in parallel. Keep identity migrations additive (new nullable
+# columns, new tables) so the old code keeps working while this runs. drizzle-kit migrate applies
+# only entries newer than the last row in drizzle.__drizzle_migrations, so a second run is a no-op.
+name: Migrate production identity database
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "db/identity-migrations/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: identity-migrate-production
+  cancel-in-progress: false
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Require IDENTITY_STORAGE_DATABASE_URL_UNPOOLED
+        env:
+          IDENTITY_STORAGE_DATABASE_URL_UNPOOLED: ${{ secrets.IDENTITY_STORAGE_DATABASE_URL_UNPOOLED }}
+        run: |
+          if [ -z "$IDENTITY_STORAGE_DATABASE_URL_UNPOOLED" ]; then
+            echo "::error::Set the repository secret IDENTITY_STORAGE_DATABASE_URL_UNPOOLED (see docs/01-operations.md, Identity database migrations)."
+            exit 1
+          fi
+
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Migrate
+        env:
+          IDENTITY_STORAGE_DATABASE_URL_UNPOOLED: ${{ secrets.IDENTITY_STORAGE_DATABASE_URL_UNPOOLED }}
+        run: npx drizzle-kit migrate --config drizzle.identity.config.ts
+
+      - name: Summary
+        if: always()
+        env:
+          IDENTITY_STORAGE_DATABASE_URL_UNPOOLED: ${{ secrets.IDENTITY_STORAGE_DATABASE_URL_UNPOOLED }}
+          PGCONNECT_TIMEOUT: "15"
+        run: |
+          {
+            echo "### Production identity migrations"
+            echo
+            echo "Migration files in the repo:"
+            echo
+            echo '```'
+            ls -1 db/identity-migrations/*.sql
+            echo '```'
+            echo
+            echo "Rows in drizzle.__drizzle_migrations (id, created_at = journal \"when\"):"
+            echo
+            echo '```'
+            psql "$IDENTITY_STORAGE_DATABASE_URL_UNPOOLED" -X -A -t \
+              -c "select id || ' ' || created_at from drizzle.__drizzle_migrations order by id" \
+              2>&1 || echo "(could not read the history table)"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
