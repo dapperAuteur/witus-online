@@ -35,6 +35,14 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npx playwright install --with-deps chromium
+      - name: Check the protection bypass secret
+        env:
+          VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+        run: |
+          if [ -z "$VERCEL_AUTOMATION_BYPASS_SECRET" ]; then
+            echo "::error::Set the repository secret VERCEL_AUTOMATION_BYPASS_SECRET (Vercel, witus-online, Settings, Deployment Protection, Protection Bypass for Automation). Without it every preview URL answers with Vercel's login page. See witus plans/user-tasks/136."
+            exit 1
+          fi
       - name: Run e2e suite against the preview URL
         run: npx playwright test
         env:
@@ -67,4 +75,9 @@ jobs:
       - name: Run @smoke tests against production
         run: npx playwright test --grep "@smoke" --project=desktop
         env:
-          PLAYWRIGHT_BASE_URL: ${{ github.event.deployment_status.environment_url }}
+          # The public domain, not environment_url: environment_url is the per-deployment
+          # *.vercel.app URL, which Deployment Protection puts behind a Vercel login, so every
+          # smoke test got Vercel's HTML instead of the site (failing since 2026-10-28). Vercel
+          # reports success after the production alias moves, so the domain serves this deploy.
+          PLAYWRIGHT_BASE_URL: https://www.witus.online
+          VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
