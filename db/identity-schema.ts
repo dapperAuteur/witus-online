@@ -38,6 +38,12 @@ export const session = pgTable("session", {
   userId: text("user_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
+  // Approximate sign-in location from the host's IP geo headers (lib/identity/auth.ts
+  // databaseHooks.session.create.before). Declared to better-auth as session.additionalFields
+  // with input: false. NULL in all three = the row predates recording; "" = unknown.
+  city: text("city"),
+  region: text("region"),
+  country: text("country"),
 });
 
 export const account = pgTable("account", {
