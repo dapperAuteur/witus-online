@@ -213,7 +213,7 @@ Every ecosystem repo keeps a tracked `docs/roadmap.md` in this format. The witus
 ---
 app: <slug>
 name: <display name>
-stage: idea | vetted | building | beta | live | paused | retired
+stage: idea | vetted | building | alpha | beta | live | paused | retired
 url: <optional>
 updated: YYYY-MM-DD
 ---

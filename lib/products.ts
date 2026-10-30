@@ -1,4 +1,9 @@
-export type ProductStatus = "live" | "beta" | "coming-soon" | "infrastructure";
+// "alpha" (added 2026-10-30, BAM): the app exists but is not open to the public yet, so its
+// card offers a waitlist (/waitlist/<slug>, gated in lib/waitlist/waitlist.mjs) instead of an
+// "Open" link. Lifecycle order: coming-soon, alpha, beta, live. Adding a value here is
+// deliberately breaking: the exhaustive Record<ProductStatus, …> maps in
+// components/ProductCard.tsx fail to compile until they gain an entry.
+export type ProductStatus = "live" | "beta" | "alpha" | "coming-soon" | "infrastructure";
 
 // Which ecosystem "surfaces" (lists) an app belongs to. This file is the CANONICAL
 // ecosystem registry — every other list should reconcile against it, and app counts
@@ -330,7 +335,8 @@ export const products: Product[] = [
       "Virtual tours for commercial and residential real estate for sale: professionally captured 360° tours as branded listing pages, with copy-paste embeds for agents' own websites. Repo: ai-builds/claude/realestate-witus.",
     href: "https://realestate.witus.online",
     accent: "slate",
-    status: "coming-soon",
+    // Alpha with a waitlist, BAM 2026-10-30.
+    status: "alpha",
     external: true,
     // Joined ecosystem SSO 2026-09-02 (BAM's decision, witus task 82). This previously read
     // "product-local Better Auth like Stay.WitUS — not an OIDC client", which had gone stale:
@@ -375,10 +381,10 @@ export const products: Product[] = [
   },
   {
     // Invest.WitUS — learn to invest by following one taught method, on paper first. Repo
-    // ai-builds/claude/invest-witus (private while the test runs): a Python tutorial app whose
-    // first web page is still unbuilt, so this lands ahead of the deploy the same way vogoat
-    // did. Domain decided by BAM 2026-10-27. Information, never advice: no market data or
-    // performance claims on public pages.
+    // ai-builds/claude/invest-witus is PUBLIC on GitHub (BAM confirmed that is fine). The app is
+    // live for its owner at invest.witus.online with tutorial chapters 00 to 14; the public gets
+    // a waitlist while it is in alpha (BAM 2026-10-30). Domain decided by BAM 2026-10-27.
+    // Information, never advice: no market data or performance claims on public pages.
     slug: "invest-witus",
     name: "Invest.WitUS",
     tagline: "Pick a taught investing method and stay with it",
@@ -386,7 +392,7 @@ export const products: Product[] = [
       "Choose an investing method taught in Learn.WitUS or ElementaryMBA, run it on paper first, and let the app hold you to the method's rules, with a link from every rule back to the lesson that teaches it. A learning tool, not advice. Repo: ai-builds/claude/invest-witus.",
     href: "https://invest.witus.online",
     accent: "sky",
-    status: "coming-soon",
+    status: "alpha",
     external: true,
     signInHref: "https://invest.witus.online/auth/witus/login/",
     // "Sign in with WitUS" client — matching entry in lib/identity/clients.ts (slug `invest`).
@@ -441,3 +447,4 @@ export const products: Product[] = [
     surfaces: ["oidc-client"],
   },
 ];
+
