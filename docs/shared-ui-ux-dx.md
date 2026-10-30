@@ -17,7 +17,7 @@ New repos and existing Drizzle-lineage repos follow this.
 - **CentenarianOS** (`gemini/centenarian-os`)
 - **Work.WitUS / ContractorOS** (`gemini/contractor-os`)
 
-These two run on Supabase (Postgres + RLS + Supabase Auth with MFA), each on its own database, and keep
+These two run on Supabase (Postgres + RLS + Supabase Auth with MFA), **on one shared Supabase project** (see below), and keep
 that tooling until BAM decides otherwise. Their DB/testing sections below apply to
 them; everything non-stack-specific (a11y, UX, microcopy, git, TypeScript, naming) applies to them
 too.
@@ -26,10 +26,15 @@ too.
 Jest installed. CentenarianOS runs unit tests with Node's built-in `node --test` plus a Playwright
 accessibility suite; Work.WitUS runs `node --test` suites only. Both use npm.
 
-**Database split: done (BAM, 2026-10-28: "no apps share a db anymore").** Every ecosystem app has its own
-database. The shared-DB safety rules below are historical; keep them only as a guide if two apps are ever
-pointed at one database again. A local `.env.local` that still names another app's project is stale: read
-the app's Vercel project for the current value (authoritative-values rule).
+**Database split: NOT done for these two (verified 2026-10-30).** Every other ecosystem app has its own
+database. CentenarianOS and Work.WitUS production both use the same Supabase project: the public Supabase
+URL in each live site's browser bundle is the same project, and Work.WitUS's code reads only the
+unprefixed `NEXT_PUBLIC_SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY`. The separate database attached to
+the Work.WitUS Vercel project through the Supabase integration (the `SUPABASE__*` variables) is connected
+but unused by code. A 2026-10-28 note here said the split was done; that was based on the dashboard
+showing a second database, not on what the code reads. The shared-DB safety rules below are in force
+for these two until CentenarianOS plan 55 Phase 3 moves the tables and both apps point at their own
+projects.
 
 **Pending decision, not yet reconciled:** `tour-manager-os` (Supabase + Vitest + npm) and
 `fly-witus` (already Neon + Drizzle, npm, no unit runner). An earlier version of this file listed
