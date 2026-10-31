@@ -237,3 +237,12 @@ It uses `GITHUB_ROADMAP_TOKEN` (task 132), which needs **Deployments: Read-only*
 Contents and Metadata. Without it the tab says so and every row reads "Could not read". Add it on
 GitHub (Settings, Developer settings, Fine-grained tokens, the roadmap token, Edit, Repository
 permissions); no Vercel change is needed because the token value stays the same.
+
+## Unmerged branches (/admin/tasks/branches)
+
+The Branches tab lists, per registry repo, every branch ahead of `main` (ahead and behind counts,
+last commit, subject), with `fix/security-*` first, then `bundle/*`, and a Stale flag after 14 days
+without a commit. One GraphQL query per 100 branches (`Ref.compare` against `main`), cached five
+minutes under the same tag as Deploys. It needs only Contents and Metadata read on
+`GITHUB_ROADMAP_TOKEN`. It is read-only: each row links to GitHub's compare page, and merging stays
+there.
