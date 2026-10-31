@@ -223,3 +223,18 @@ test("plainPreview strips markdown and cuts at a word boundary", () => {
   assert.equal(long, "one two three four…");
   assert.equal(plainPreview("", 10), "");
 });
+
+test("classifyDeploy: failed, behind, building, live, none", async () => {
+  const { classifyDeploy, deployRank } = await import("../../lib/ops/deploy-state.mjs");
+  const main = "m".repeat(40);
+  const old = "o".repeat(40);
+  assert.deepEqual(classifyDeploy({ latestState: null, latestSha: null, liveSha: null, mainSha: main }), { state: "none", tone: "grey" });
+  assert.equal(classifyDeploy({ latestState: "failure", latestSha: main, liveSha: old, mainSha: main }).state, "failed");
+  assert.equal(classifyDeploy({ latestState: "error", latestSha: main, liveSha: null, mainSha: main }).tone, "red");
+  assert.equal(classifyDeploy({ latestState: "in_progress", latestSha: main, liveSha: old, mainSha: main }).state, "in-progress");
+  assert.equal(classifyDeploy({ latestState: "success", latestSha: old, liveSha: old, mainSha: main }).state, "behind");
+  assert.equal(classifyDeploy({ latestState: "success", latestSha: main, liveSha: main, mainSha: main }).state, "live");
+  // Unknown main: cannot say behind, so trust the deploy.
+  assert.equal(classifyDeploy({ latestState: "success", latestSha: old, liveSha: old, mainSha: null }).state, "live");
+  assert.ok(deployRank("failed") < deployRank("behind") && deployRank("behind") < deployRank("live"));
+});

@@ -1,9 +1,10 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { isAdminEmail } from "@/lib/admin-auth";
+import { isAdminEmail, isAdminRequest } from "@/lib/admin-auth";
+import { OPS_GITHUB_TAG } from "@/lib/github/client";
 import { getDb } from "@/db";
 import { setTaskDone } from "@/lib/operator-tasks/queries";
 
@@ -45,4 +46,17 @@ export async function markTaskDoneAction(_prev: TaskActionResult, formData: Form
 /** "Undo": clears a done mark made by mistake (also audited). */
 export async function undoTaskDoneAction(_prev: TaskActionResult, formData: FormData): Promise<TaskActionResult> {
   return toggle(formData, false);
+}
+
+export type RefreshResult =
+  | { ok: true; data: { refreshedAt: string } }
+  | { ok: false; error: string; code: string }
+  | null;
+
+/** "Refresh now" on the Deploys and Branches tabs: expire the five-minute GitHub cache. */
+export async function refreshGithubAction(_prev: RefreshResult, _formData: FormData): Promise<RefreshResult> {
+  if (!(await isAdminRequest())) return { ok: false, error: "Not authorized.", code: "forbidden" };
+  updateTag(OPS_GITHUB_TAG);
+  revalidatePath("/admin/tasks", "layout");
+  return { ok: true, data: { refreshedAt: new Date().toISOString() } };
 }

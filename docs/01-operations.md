@@ -225,3 +225,15 @@ file that matches a secret pattern is not uploaded; the output names the file, t
 line, never the value. "Mark done" on the site only records the click (with an audit row in
 `operator_task_event`); the next run lists those tasks with their file paths so the session moves
 each file to `completed/`, and the upload after that drops the row.
+
+## Production deploy check (/admin/tasks/deploys)
+
+The Deploys tab reads GitHub's deployments API for every repo in `lib/roadmap/registry.ts`: the
+newest `Production` deployment, its newest status, the newest successful one, and the head of
+`main`. Red means the newest production deploy failed or the live deploy is not `main`'s head
+("merged" is not "live"). Reads are cached five minutes; **Refresh now** expires the cache.
+
+It uses `GITHUB_ROADMAP_TOKEN` (task 132), which needs **Deployments: Read-only** in addition to
+Contents and Metadata. Without it the tab says so and every row reads "Could not read". Add it on
+GitHub (Settings, Developer settings, Fine-grained tokens, the roadmap token, Edit, Repository
+permissions); no Vercel change is needed because the token value stays the same.
