@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 export const TASK_TABS = [
   { href: "/admin/tasks", label: "Tasks" },
   { href: "/admin/tasks/deploys", label: "Deploys" },
+  { href: "/admin/tasks/branches", label: "Branches" },
 ] as const;
 
 export function TaskTabs() {

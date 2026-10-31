@@ -238,3 +238,29 @@ test("classifyDeploy: failed, behind, building, live, none", async () => {
   assert.equal(classifyDeploy({ latestState: "success", latestSha: old, liveSha: old, mainSha: null }).state, "live");
   assert.ok(deployRank("failed") < deployRank("behind") && deployRank("behind") < deployRank("live"));
 });
+
+test("branch flags and order: security, then bundle, then newest", async () => {
+  const { flagBranch, sortBranches } = await import("../../lib/ops/branch-flags.mjs");
+  const now = Date.parse("2026-10-31T12:00:00Z");
+  assert.deepEqual(flagBranch({ name: "fix/security-patches-2026-10-30", committedDate: "2026-10-30T12:00:00Z" }, now), {
+    bundle: false,
+    security: true,
+    stale: false,
+    ageDays: 1,
+  });
+  assert.equal(flagBranch({ name: "feat/x", committedDate: "2026-10-01T00:00:00Z" }, now).stale, true);
+  assert.equal(flagBranch({ name: "feat/x", committedDate: null }, now).ageDays, null);
+  const sorted = sortBranches(
+    [
+      { name: "feat/old", committedDate: "2026-09-01T00:00:00Z" },
+      { name: "feat/new", committedDate: "2026-10-31T00:00:00Z" },
+      { name: "bundle/a-2026-10-31", committedDate: "2026-10-30T00:00:00Z" },
+      { name: "fix/security-x", committedDate: "2026-08-01T00:00:00Z" },
+    ],
+    now,
+  );
+  assert.deepEqual(
+    sorted.map((b) => b.name),
+    ["fix/security-x", "bundle/a-2026-10-31", "feat/new", "feat/old"],
+  );
+});
