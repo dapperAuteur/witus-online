@@ -267,3 +267,64 @@ export const claudeUsageResponses = pgTable(
     index("claude_usage_responses_session_ts_idx").on(t.session, t.ts),
   ]
 );
+
+// ---------------------------------------------------------------------------
+// Operator tasks (admin/tasks). The things only BAM can do outside the editor live in each
+// ecosystem repo's gitignored plans/user-tasks/ folder (Operator-task rule, CLAUDE.md), so the site
+// cannot read them. `node scripts/sync-user-tasks.mjs` on BAM's machine parses every repo's
+// 00-descriptions.md index, attaches each open task's markdown, and replaces that repo's rows here.
+// A task file that matches a secret pattern is never uploaded (the row keeps its index text and
+// `body_withheld` says why). "Mark done" on the page sets done_at/done_by and writes an
+// operator_task_event row; the next local sync lists those rows so Claude moves the file to
+// completed/, and a row disappears once its file is no longer open locally.
+// ---------------------------------------------------------------------------
+export const operatorTasks = pgTable(
+  "operator_task",
+  {
+    /** "<app slug>/<file name>", or "<app slug>/#<number>" for an index row with no file. */
+    key: text("key").primaryKey(),
+    /** lib/roadmap/registry.ts slug of the repo the task lives in (repo folder name if none). */
+    app: text("app").notNull(),
+    appName: text("app_name").notNull(),
+    /** Absolute path of the repo on BAM's machine, so the reconcile step knows where to move the file. */
+    repoPath: text("repo_path").notNull(),
+    /** The index's `#` cell as written ("07", "141"). */
+    number: text("number"),
+    numberInt: integer("number_int"),
+    /** File name inside plans/user-tasks/, null when the index row has no open file. */
+    file: text("file"),
+    title: text("title").notNull(),
+    scope: text("scope").notNull().default(""),
+    blocks: text("blocks").notNull().default(""),
+    status: text("status").notNull().default(""),
+    /** The task file's markdown. Null when there is no file or it was withheld. */
+    body: text("body"),
+    /** Why the body was not uploaded ("secret pattern: JWT-looking token, line 12"). */
+    bodyWithheld: text("body_withheld"),
+    /** True for an open task file that its repo's index does not list. */
+    unindexed: boolean("unindexed").notNull().default(false),
+    /** The task file's modification time on BAM's machine. */
+    sourceUpdatedAt: timestamp("source_updated_at", { withTimezone: true }),
+    syncedAt: timestamp("synced_at", { withTimezone: true }).notNull().defaultNow(),
+    /** Set by "Mark done" on the site; the sync never overwrites it. */
+    doneAt: timestamp("done_at", { withTimezone: true }),
+    doneBy: text("done_by"),
+  },
+  (t) => [index("operator_task_app_idx").on(t.app)]
+);
+
+/** Audit trail: one row per "Mark done" / "Undo" click on /admin/tasks. Never deleted by the sync. */
+export const operatorTaskEvents = pgTable(
+  "operator_task_event",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    taskKey: text("task_key").notNull(),
+    app: text("app").notNull(),
+    title: text("title").notNull(),
+    /** "done" | "undo" */
+    action: text("action").notNull(),
+    actor: text("actor").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("operator_task_event_created_idx").on(t.createdAt)]
+);
