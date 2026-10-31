@@ -9,6 +9,7 @@ import {
   groupByApp,
   isClosedStatus,
   parseIndexTable,
+  plainPreview,
   scanForSecrets,
   sortTasks,
   splitRow,
@@ -214,4 +215,11 @@ test("collectRepo skips a repo that is missing or has no queue", () => {
   } finally {
     rmSync(repo, { recursive: true, force: true });
   }
+});
+
+test("plainPreview strips markdown and cuts at a word boundary", () => {
+  assert.equal(plainPreview("**Blocks** the [launch](./x.md) of `app`", 100), "Blocks the launch of app");
+  const long = plainPreview("one two three four five six seven eight nine ten", 20);
+  assert.equal(long, "one two three four…");
+  assert.equal(plainPreview("", 10), "");
 });

@@ -48,53 +48,60 @@ export default async function AdminLayout({
   return (
     <div className="flex flex-1 flex-col">
       <nav className="border-b border-slate-800 bg-slate-950/50">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
-          <div className="flex items-center gap-4 text-sm">
+        {/* Wraps instead of scrolling sideways: BAM opens the admin on his phone (320px rule). */}
+        <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-3">
+          <div className="flex min-w-0 flex-wrap items-center gap-x-4 gap-y-1 text-sm">
             <Link
               href="/admin"
-              className="font-semibold text-slate-100 hover:text-teal-300"
+              className="inline-flex min-h-11 items-center font-semibold text-slate-100 hover:text-teal-300"
             >
               witus.online admin
             </Link>
             <Link
+              href="/admin/tasks"
+              className="inline-flex min-h-11 items-center text-slate-300 hover:text-teal-300"
+            >
+              Tasks
+            </Link>
+            <Link
               href="/admin/episodes"
-              className="text-slate-300 hover:text-teal-300"
+              className="inline-flex min-h-11 items-center text-slate-300 hover:text-teal-300"
             >
               Episodes
             </Link>
             <Link
               href="/admin/invitations"
-              className="text-slate-300 hover:text-teal-300"
+              className="inline-flex min-h-11 items-center text-slate-300 hover:text-teal-300"
             >
               Invitations
             </Link>
             <Link
               href="/admin/library"
-              className="text-slate-300 hover:text-teal-300"
+              className="inline-flex min-h-11 items-center text-slate-300 hover:text-teal-300"
             >
               Library
             </Link>
             <Link
               href="/admin/roadmap"
-              className="text-slate-300 hover:text-teal-300"
+              className="inline-flex min-h-11 items-center text-slate-300 hover:text-teal-300"
             >
               Roadmap
             </Link>
             <Link
               href="/admin/cost-cleanup"
-              className="text-slate-300 hover:text-teal-300"
+              className="inline-flex min-h-11 items-center text-slate-300 hover:text-teal-300"
             >
               Cost cleanup
             </Link>
             <Link
               href="/admin/costs"
-              className="text-slate-300 hover:text-teal-300"
+              className="inline-flex min-h-11 items-center text-slate-300 hover:text-teal-300"
             >
               Costs
             </Link>
             <Link
               href="/admin/usage"
-              className="text-slate-300 hover:text-teal-300"
+              className="inline-flex min-h-11 items-center text-slate-300 hover:text-teal-300"
             >
               Usage
             </Link>
@@ -102,13 +109,13 @@ export default async function AdminLayout({
               href={`${betterAuthUrl()}/account`}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-slate-300 hover:text-teal-300"
+              className="inline-flex min-h-11 items-center text-slate-300 hover:text-teal-300"
             >
               WitUS Accounts ↗
             </a>
           </div>
-          <div className="flex items-start gap-3">
-            <span className="min-h-9 inline-flex items-center text-xs text-slate-500">
+          <div className="flex flex-wrap items-start gap-3">
+            <span className="min-h-9 inline-flex min-w-0 items-center break-all text-xs text-slate-500">
               {session.user.email}
             </span>
             {/* WitUS sign-ins live on the IdP host, so this opens accounts.witus.online. */}

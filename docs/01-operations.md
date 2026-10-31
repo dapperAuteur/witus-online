@@ -9,7 +9,7 @@ This repo has two separate Neon databases. Never point one's tooling at the othe
 
 | Database | Schema | Migrations | drizzle config | Automated |
 | --- | --- | --- | --- | --- |
-| App (witus.online site) | `db/schema.ts` | `db/migrations/` | `drizzle.config.ts` | Not yet |
+| App (witus.online site) | `db/schema.ts` | `db/migrations/` | `drizzle.config.ts` | Yes, below (from migration 0009) |
 | Identity (WitUS Accounts, accounts.witus.online) | `db/identity-schema.ts` | `db/identity-migrations/` | `drizzle.identity.config.ts` | Yes, below |
 
 Never use `db:push` / `drizzle-kit push` against either production database. Generate a migration
@@ -122,3 +122,106 @@ the newest row's `created_at` should equal the newest `when` in `meta/_journal.j
 | --- | --- | --- |
 | `0000_far_namorita.sql` | better-auth tables for core + magic-link + jwt + oidcProvider | n/a (initial) |
 | `0001_session_location.sql` | `session.city`, `session.region`, `session.country` (nullable text) for the Your devices page | Yes |
+
+## App database migrations
+
+### What runs, and when
+
+`.github/workflows/migrate-production.yml` runs `npx drizzle-kit migrate --config drizzle.config.ts`:
+
+- on every push to `main` that changes `db/migrations/**`, and
+- on demand: GitHub, **Actions**, **Migrate production app database**, **Run workflow**.
+
+It reads one repository secret, `STORAGE_DATABASE_URL_UNPOOLED`: the direct (unpooled) Neon
+connection string for the site's database (the project Vercel's `STORAGE_DATABASE_URL` points at,
+not the identity project). That is the first variable `drizzle.config.ts` looks for. If the secret
+is missing the job fails at its first step with an `::error::` that points here. The job summary
+lists the migration files and the rows in `drizzle.__drizzle_migrations`.
+
+Before this workflow (through 0008), app migrations were applied by hand with `npm run db:migrate`
+(tasks 106 and 126).
+
+### Order
+
+App migrations are additive (new tables, new nullable columns), and the pages that read a new table
+show "not in this database yet" instead of failing, so code and migration can merge together:
+Vercel deploys while the workflow runs, and the page works once the job is green. A change that
+renames or drops a column needs two merges (migration first), as described for the identity
+database above.
+
+### Set the secret (once)
+
+Pipe the value so it is never pasted into a terminal, chat or log. Find the site project's id with
+`neon projects list` (the witus.online app database, not the identity project):
+
+```sh
+neon connection-string --project-id <site project id> \
+  | gh secret set STORAGE_DATABASE_URL_UNPOOLED --repo dapperAuteur/witus-online
+```
+
+`neon connection-string` returns the direct string unless `--pooled` is passed. Add `--branch` /
+`--role` if Vercel's `STORAGE_DATABASE_URL_UNPOOLED` uses a non-default branch or role.
+
+### Check the history table (read-only)
+
+From a laptop with the production app URL in `.env.local`, from the repo root (prints no secrets):
+
+```sh
+node -e '
+const {config}=require("dotenv"); const r={}; config({path:".env.local",processEnv:r,quiet:true});
+const u=new URL(r.STORAGE_DATABASE_URL_UNPOOLED);
+require("child_process").spawnSync("psql",["-X","-A","-t","-c",
+ "select id, created_at from drizzle.__drizzle_migrations order by id"],
+ {stdio:"inherit",env:{...process.env,PGHOST:u.hostname,PGUSER:decodeURIComponent(u.username),
+ PGPASSWORD:decodeURIComponent(u.password),PGDATABASE:u.pathname.slice(1),PGSSLMODE:"require",
+ PGOPTIONS:"-c default_transaction_read_only=on"}});'
+```
+
+Expected: one row per applied migration; the newest `created_at` equals the newest `when` in
+`db/migrations/meta/_journal.json`. On 2026-10-31 the database `.env.local` points at had 9 rows
+(0000 through 0008, newest `created_at` 1793220974459), so the first workflow run applies 0009 only.
+
+### Manual fallback (run the migration from the laptop)
+
+Use this only when the workflow can't run. From the repo root, with the production app database's
+direct URL in `.env.local` as `STORAGE_DATABASE_URL_UNPOOLED`:
+
+```sh
+npm ci
+npm run db:migrate
+```
+
+Expected output ends with `[✓] migrations applied successfully!`. Re-run the read-only check above.
+
+### Migration log
+
+| File | What it does | Additive |
+| --- | --- | --- |
+| `0000_auth_foundation.sql` | NextAuth tables: `user`, `account`, `session`, `verificationToken` | n/a (initial) |
+| `0001_episodes.sql` | `episode` table and the `episode_status` / `podcast_show` enums | Yes |
+| `0002_disctopia_import.sql` | `episode.disctopia_guid` (unique), `episode_number` nullable, drops the show+number unique | No (drops a constraint) |
+| `0003_invitations.sql` | `invitation` table | Yes |
+| `0004_gigantic_magik.sql` | `library_document` table | Yes |
+| `0005_freezing_whizzer.sql` | `library_document.pdf`, `pdf_bytes` | Yes |
+| `0006_aromatic_epoch.sql` | `service`, `service_snapshot` (admin costs) | Yes |
+| `0007_claude_usage_snapshots.sql` | `claude_usage_snapshots` (admin usage) | Yes |
+| `0008_claude_usage_responses.sql` | `claude_usage_responses` archive plus two indexes | Yes |
+| `0009_operator_tasks.sql` | `operator_task`, `operator_task_event` (admin tasks) plus two indexes | Yes |
+
+## Operator task sync (a laptop command, not a post-deploy step)
+
+`/admin/tasks` shows every ecosystem repo's open operator tasks. Those live in gitignored
+`plans/user-tasks/` folders on BAM's machine, so no workflow can read them; like
+`scripts/sync-library.mjs`, the sync runs from the laptop:
+
+```sh
+node scripts/sync-user-tasks.mjs --dry-run   # parse every queue, no database
+node scripts/sync-user-tasks.mjs --check     # read-only: what was marked done on the site
+node scripts/sync-user-tasks.mjs             # upload (replaces each app's rows)
+```
+
+It reads the site database URL from `.env.local` (same variables as `sync-library.mjs`). A task
+file that matches a secret pattern is not uploaded; the output names the file, the pattern and the
+line, never the value. "Mark done" on the site only records the click (with an audit row in
+`operator_task_event`); the next run lists those tasks with their file paths so the session moves
+each file to `completed/`, and the upload after that drops the row.
