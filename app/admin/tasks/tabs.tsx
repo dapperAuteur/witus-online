@@ -4,7 +4,10 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 /** Sections of /admin/tasks. Each is its own route so a phone loads only the tab it opens. */
-export const TASK_TABS = [{ href: "/admin/tasks", label: "Tasks" }] as const;
+export const TASK_TABS = [
+  { href: "/admin/tasks", label: "Tasks" },
+  { href: "/admin/tasks/deploys", label: "Deploys" },
+] as const;
 
 export function TaskTabs() {
   const pathname = usePathname();
