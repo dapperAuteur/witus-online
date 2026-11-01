@@ -14,11 +14,18 @@
  *   stored base64 encoded (see db/schema.ts for why base64 and not bytea) and
  *   served by /admin/library/<slug>/download. No sibling file means the column
  *   is cleared, so deleting a stale PDF locally removes it here on the next run.
+ * EPUB = the sibling `<same-name>.epub` (`npm run library:epub`), handled exactly
+ *   like the PDF and served by /admin/library/<slug>/download?format=epub.
+ * Size cap: a PDF or EPUB over 4 MiB is not stored (its column is cleared and a
+ *   warning printed), because the download route returns the whole file in one
+ *   response and Vercel caps function responses at 4.5 MB. See
+ *   lib/library/formats.mjs.
  */
 import { readFileSync } from "node:fs";
 import { basename } from "node:path";
 import { neon } from "@neondatabase/serverless";
 import { config as loadEnv } from "dotenv";
+import { MAX_LIBRARY_FILE_BYTES, readSibling } from "../lib/library/formats.mjs";
 
 loadEnv({ path: ".env.local", quiet: true });
 loadEnv({ quiet: true });
@@ -66,16 +73,26 @@ function descriptionFor(content) {
   return null;
 }
 
-/** Reads the sibling `<markdown path minus .md>.pdf`, or null when there is none. */
-function pdfFor(file) {
-  const path = file.replace(/\.md$/i, ".pdf");
-  try {
-    const buf = readFileSync(path);
-    return { base64: buf.toString("base64"), bytes: buf.length, path };
-  } catch (err) {
-    if (err.code === "ENOENT") return null;
-    throw err;
+/**
+ * The sibling file of one format, or null when there is none. A file over the
+ * size cap is reported and treated as missing, so its column is cleared.
+ */
+function siblingFor(file, format) {
+  const found = readSibling(file, format, (path) => readFileSync(path));
+  if (found?.tooLarge) {
+    console.warn(
+      `WARNING: ${basename(found.path)} is ${found.bytes}B, over the ${MAX_LIBRARY_FILE_BYTES}B cap ` +
+        `(Vercel's 4.5 MB function response limit); not stored, ${format} column cleared.`
+    );
+    return null;
   }
+  return found;
+}
+
+function noteFor(found, format) {
+  return found
+    ? `+ ${format} ${basename(found.path)} (${found.bytes}B)`
+    : `no sibling ${format}`;
 }
 
 const sql = neon(dbUrl);
@@ -86,34 +103,37 @@ for (const file of files) {
   const slug = slugFor(file);
   const title = titleFor(content, slug);
   const description = descriptionFor(content);
-  const pdf = pdfFor(file);
+  const pdf = siblingFor(file, "pdf");
+  const epub = siblingFor(file, "epub");
   order += 10;
   await sql`
-    INSERT INTO library_document (slug, title, description, content, pdf, pdf_bytes, sort_order, updated_at)
-    VALUES (${slug}, ${title}, ${description}, ${content}, ${pdf?.base64 ?? null}, ${pdf?.bytes ?? null}, ${order}, now())
+    INSERT INTO library_document (slug, title, description, content, pdf, pdf_bytes, epub, epub_bytes, sort_order, updated_at)
+    VALUES (${slug}, ${title}, ${description}, ${content}, ${pdf?.base64 ?? null}, ${pdf?.bytes ?? null}, ${epub?.base64 ?? null}, ${epub?.bytes ?? null}, ${order}, now())
     ON CONFLICT (slug) DO UPDATE SET
       title = excluded.title,
       description = excluded.description,
       content = excluded.content,
       pdf = excluded.pdf,
       pdf_bytes = excluded.pdf_bytes,
+      epub = excluded.epub,
+      epub_bytes = excluded.epub_bytes,
       sort_order = excluded.sort_order,
       updated_at = now()
   `;
-  const pdfNote = pdf
-    ? `+ pdf ${basename(pdf.path)} (${pdf.bytes}B)`
-    : "no sibling pdf";
-  console.log(`upserted ${slug}  (${title})  ${pdfNote}`);
+  console.log(
+    `upserted ${slug}  (${title})  ${noteFor(pdf, "pdf")}  ${noteFor(epub, "epub")}`
+  );
 }
 
 const rows = await sql`
-  SELECT slug, title, length(content) AS bytes, pdf_bytes, sort_order, updated_at
+  SELECT slug, title, length(content) AS bytes, pdf_bytes, epub_bytes, sort_order, updated_at
   FROM library_document ORDER BY sort_order, title
 `;
 console.log("\nlibrary_document now contains:");
 for (const r of rows) {
   const pdfCol = r.pdf_bytes == null ? "no pdf" : `pdf ${r.pdf_bytes}B`;
+  const epubCol = r.epub_bytes == null ? "no epub" : `epub ${r.epub_bytes}B`;
   console.log(
-    `  ${String(r.sort_order).padStart(3)}  ${r.slug}  ${r.bytes}B  ${pdfCol}  ${r.updated_at.toISOString?.() ?? r.updated_at}`
+    `  ${String(r.sort_order).padStart(3)}  ${r.slug}  ${r.bytes}B  ${pdfCol}  ${epubCol}  ${r.updated_at.toISOString?.() ?? r.updated_at}`
   );
 }

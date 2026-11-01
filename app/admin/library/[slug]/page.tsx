@@ -5,6 +5,7 @@ import { marked } from "marked";
 import { getDb } from "@/db";
 import { libraryDocuments } from "@/db/schema";
 import { formatBytes } from "@/lib/format-bytes";
+import { libraryDownloadHref } from "@/lib/library/formats.mjs";
 
 export const dynamic = "force-dynamic";
 
@@ -23,12 +24,14 @@ export default async function LibraryDocumentPage({
   const db = getDb();
   const doc = await db.query.libraryDocuments.findFirst({
     where: eq(libraryDocuments.slug, slug),
-    // `pdf: false` matters: the column holds up to a megabyte of base64 and the
-    // reader never needs the bytes, only whether the download link belongs here.
-    // The bytes are fetched by the download route and nowhere else.
-    columns: { pdf: false },
+    // `pdf: false` and `epub: false` matter: each column holds up to a few
+    // megabytes of base64 and the reader never needs the bytes, only whether the
+    // download links belong here. The bytes are fetched by the download route
+    // and nowhere else.
+    columns: { pdf: false, epub: false },
     extras: {
       hasPdf: sql<boolean>`${libraryDocuments.pdf} is not null`.as("has_pdf"),
+      hasEpub: sql<boolean>`${libraryDocuments.epub} is not null`.as("has_epub"),
     },
   });
   if (!doc) notFound();
@@ -38,6 +41,10 @@ export default async function LibraryDocumentPage({
   // markdown → HTML without a sanitizer is acceptable here.
   const html = await marked.parse(doc.content);
   const size = doc.hasPdf ? formatBytes(doc.pdfBytes) : null;
+  const epubSize = doc.hasEpub ? formatBytes(doc.epubBytes) : null;
+  // 44px tall (min-h-11): the touch-target floor in docs/shared-ui-ux-dx.md.
+  const buttonClass =
+    "inline-flex min-h-11 items-center rounded-md border border-slate-700 px-3 py-1.5 text-xs font-semibold text-slate-200 transition-colors hover:border-teal-400 hover:text-teal-300 focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-300";
 
   return (
     <main id="main" className="mx-auto max-w-3xl flex-1 px-4 py-8">
@@ -48,13 +55,15 @@ export default async function LibraryDocumentPage({
         >
           ← Library
         </Link>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           {doc.hasPdf ? (
-            <a
-              href={`/admin/library/${doc.slug}/download`}
-              className="inline-flex min-h-9 items-center rounded-md border border-slate-700 px-3 py-1.5 text-xs font-semibold text-slate-200 transition-colors hover:border-teal-400 hover:text-teal-300 focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-300"
-            >
+            <a href={libraryDownloadHref(doc.slug, "pdf")} className={buttonClass}>
               Download PDF{size ? ` (${size})` : ""}
+            </a>
+          ) : null}
+          {doc.hasEpub ? (
+            <a href={libraryDownloadHref(doc.slug, "epub")} className={buttonClass}>
+              Download EPUB{epubSize ? ` (${epubSize})` : ""}
             </a>
           ) : null}
           <span className="text-xs text-slate-500">

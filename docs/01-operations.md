@@ -207,6 +207,7 @@ Expected output ends with `[✓] migrations applied successfully!`. Re-run the r
 | `0007_claude_usage_snapshots.sql` | `claude_usage_snapshots` (admin usage) | Yes |
 | `0008_claude_usage_responses.sql` | `claude_usage_responses` archive plus two indexes | Yes |
 | `0009_operator_tasks.sql` | `operator_task`, `operator_task_event` (admin tasks) plus two indexes | Yes |
+| `0010_library_epub.sql` | `library_document.epub`, `epub_bytes` (nullable; EPUB download on /admin/library) | Yes |
 
 ## Operator task sync (a laptop command, not a post-deploy step)
 
