@@ -1,0 +1,23 @@
+# Dependabot rules for witus-online (added 2026-11-01).
+# Alerts stay on for everything; these ignores stop pull requests that are known to break the build.
+# The ignore rules also apply to security-update PRs.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    # Version updates are off; only security updates open PRs (they ignore this limit).
+    open-pull-requests-limit: 0
+    ignore:
+      # The IdP is built on better-auth's oidcProvider plugin, which 1.7.0 removed. Moving to 1.7 is a
+      # planned port to @better-auth/oauth-provider with a data migration, not a dependency bump.
+      # The pin in package.json is ~1.6.33 (lib/identity/auth.ts explains it).
+      - dependency-name: "better-auth"
+        versions: [">=1.7.0"]
+      - dependency-name: "@better-auth/*"
+        versions: [">=1.7.0"]
+      # next-auth 4.24.15 declares nodemailer ^7.0.7 as a peer, so npm refuses to install nodemailer 8+
+      # next to it (Vercel build failed 2026-11-01 on ERESOLVE). Lift this when next-auth allows it.
+      - dependency-name: "nodemailer"
+        versions: [">=8.0.0"]
