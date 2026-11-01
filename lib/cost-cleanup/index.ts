@@ -3,6 +3,7 @@
 // auth file). Nothing here touches production deployments or non-preview Neon branches.
 import * as vercel from "./vercel";
 import * as neon from "./neon";
+import { runCleanup, type CleanupResult } from "./run";
 
 export interface Credentials {
   vercelToken?: string;
@@ -69,44 +70,32 @@ export async function inventory(creds: Credentials): Promise<Inventory> {
   return inv;
 }
 
-export interface CleanupResult {
-  vercelDeleted: number;
-  neonDeleted: number;
-  failures: string[];
-}
+export type { CleanupResult, RateLimited } from "./run";
+export { summarizeCleanup } from "./run";
 
-/** Deletes everything the inventory lists. Neon first (explicit), then Vercel (which also triggers
- *  Neon's own cleanup for branches the integration still tracks). */
+/** Deletes everything the inventory lists: Vercel first, then Neon branches still present after a
+ *  re-list (Neon removes an integration branch itself when its last Vercel preview goes). Stops
+ *  calling Vercel on the first 429 and reports the rest as waiting; a Neon 404 counts as already
+ *  gone. The loop and its rules live in ./run.ts. */
 export async function cleanup(creds: Credentials, inv: Inventory, log: (line: string) => void = () => {}): Promise<CleanupResult> {
-  const result: CleanupResult = { vercelDeleted: 0, neonDeleted: 0, failures: [] };
-  if (creds.neonProjectKeys) {
-    for (const b of inv.neon.branches) {
-      const key = creds.neonProjectKeys[b.projectId];
-      if (!key) {
-        result.failures.push(`neon ${b.projectName}/${b.name}: no key for project ${b.projectId}`);
-        continue;
-      }
-      try {
-        await neon.deleteBranch(key, b.projectId, b.id);
-        result.neonDeleted++;
-        log(`neon   deleted ${b.projectName} / ${b.name}`);
-      } catch (e) {
-        result.failures.push(`neon ${b.projectName}/${b.name}: ${e instanceof Error ? e.message : String(e)}`);
-      }
-    }
-  }
-  if (creds.vercelToken) {
-    for (const d of inv.vercel.deployments) {
-      try {
-        await vercel.deleteDeployment(creds.vercelToken, inv.vercel.teamOf[d.uid], d.uid);
-        result.vercelDeleted++;
-        log(`vercel deleted ${d.projectName} / ${d.url}${d.gitBranch ? ` (${d.gitBranch})` : ""}`);
-      } catch (e) {
-        result.failures.push(`vercel ${d.projectName}/${d.url}: ${e instanceof Error ? e.message : String(e)}`);
-      }
-    }
-  }
-  return result;
+  const keys = creds.neonProjectKeys;
+  const token = creds.vercelToken;
+  return runCleanup(
+    inv.vercel.deployments,
+    inv.neon.branches,
+    {
+      vercel: token ? { deleteDeployment: (d) => vercel.deleteDeployment(token, inv.vercel.teamOf[d.uid], d.uid) } : undefined,
+      neon: keys
+        ? {
+            hasKey: (projectId) => Boolean(keys[projectId]),
+            listBranches: (b) => neon.listBranches(keys[b.projectId], { id: b.projectId, name: b.projectName }),
+            isDeletable: neon.isDeletablePreviewBranch,
+            deleteBranch: (b) => neon.deleteBranch(keys[b.projectId], b.projectId, b.id),
+          }
+        : undefined,
+    },
+    log,
+  );
 }
 
 // ---- Selection: ids the admin page round-trips through a form ----------------------------------

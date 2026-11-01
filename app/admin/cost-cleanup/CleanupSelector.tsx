@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useMemo, useState } from "react";
+import { useActionState, useEffect, useMemo, useState } from "react";
 import { deleteSelectedAction, type CleanupActionState } from "./actions";
 
 export interface Row {
@@ -18,11 +18,30 @@ export interface Group {
 
 const initial: CleanupActionState = { ok: true, message: "", lines: [] };
 
+/** "Vercel's delete limit was reached. 40 items were not attempted; run again after 9:41 PM." The time
+ *  is the viewer's locale and zone, so it is formatted here in the browser, not on the server. */
+function rateLimitLine(rl: NonNullable<CleanupActionState["rateLimited"]>): string {
+  const items = `${rl.remaining} ${rl.remaining === 1 ? "item was" : "items were"} not attempted`;
+  const at = rl.retryAt ? new Date(rl.retryAt) : null;
+  const when =
+    at && !Number.isNaN(at.getTime())
+      ? `run again after ${at.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })}`
+      : "run again later (Vercel did not say when the limit resets)";
+  return `Vercel's delete limit was reached. ${items}; ${when}. They are still ticked below.`;
+}
+
 /** Checkbox per row, select-all per project, select-all across everything; deletes only the ticked ids. */
 export function CleanupSelector({ groups }: { groups: Group[] }) {
   const allIds = useMemo(() => groups.flatMap((g) => g.rows.map((r) => r.id)), [groups]);
   const [selected, setSelected] = useState<Set<string>>(() => new Set());
   const [state, action, pending] = useActionState(deleteSelectedAction, initial);
+
+  // After a run, keep ticked only what Vercel's limit kept this run from trying, so the next run picks
+  // up where this one stopped. Everything else that was ticked was deleted, already gone, or failed.
+  // Refusals ("tick the confirmation box first") carry no keepSelected and leave the ticks alone.
+  useEffect(() => {
+    if (state.keepSelected) setSelected(new Set(state.keepSelected));
+  }, [state]);
 
   const toggle = (id: string, on: boolean) =>
     setSelected((prev) => {
@@ -101,6 +120,11 @@ export function CleanupSelector({ groups }: { groups: Group[] }) {
         {state.message ? (
           <p className={`text-sm ${state.ok ? "text-teal-300" : "text-red-300"}`} role="status">
             {state.message}
+          </p>
+        ) : null}
+        {state.rateLimited ? (
+          <p className="text-sm text-amber-200" role="status">
+            {rateLimitLine(state.rateLimited)}
           </p>
         ) : null}
         {state.lines.length ? <pre className="max-h-64 overflow-auto rounded border border-slate-800 bg-slate-950 p-2 text-xs text-slate-300">{state.lines.join("\n")}</pre> : null}

@@ -4,13 +4,17 @@ import { revalidatePath } from "next/cache";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { isAdminEmail } from "@/lib/admin-auth";
-import { cleanup, inventory, parseNeonProjectKeys, selectFromInventory } from "@/lib/cost-cleanup";
+import { cleanup, deploymentId, inventory, parseNeonProjectKeys, selectFromInventory, summarizeCleanup } from "@/lib/cost-cleanup";
 import { getEnv } from "@/lib/env";
 
 export interface CleanupActionState {
   ok: boolean;
   message: string;
   lines: string[];
+  /** Set when Vercel's delete limit stopped the run. The page formats retryAt in the viewer's locale. */
+  rateLimited?: { remaining: number; retryAt?: string };
+  /** Ids the page keeps ticked for the next run: the deployments Vercel's limit kept this run from trying. */
+  keepSelected?: string[];
 }
 
 /** Deletes exactly the ticked items. Admin-only. The inventory is re-read on the server and only ids
@@ -35,10 +39,19 @@ export async function deleteSelectedAction(_prev: CleanupActionState, formData: 
   const lines: string[] = [];
   const res = await cleanup(creds, chosen, (l) => lines.push(l));
   revalidatePath("/admin/cost-cleanup");
+  // Selected ids missing from a fresh inventory were deleted since the page loaded, unless the
+  // inventory itself failed: then a missing id proves nothing and is not counted as gone.
   const stale = ids.size - found;
+  const unchecked = full.errors.length ? stale : 0;
+  const rl = res.rateLimited;
   return {
     ok: res.failures.length === 0,
-    message: `Deleted ${res.vercelDeleted} preview deployment(s) and ${res.neonDeleted} Neon branch(es).${stale ? ` ${stale} selected item(s) were already gone.` : ""} ${res.failures.length} failure(s).${full.errors.length ? ` Inventory errors: ${full.errors.join("; ")}` : ""}`,
+    message:
+      summarizeCleanup(res, stale - unchecked) +
+      (unchecked ? ` ${unchecked} selected item(s) could not be checked because the inventory had errors.` : "") +
+      (full.errors.length ? ` Inventory errors: ${full.errors.join("; ")}` : ""),
     lines: [...lines, ...res.failures.map((f) => `FAILED ${f}`)],
+    rateLimited: rl ? { remaining: rl.remaining, retryAt: rl.retryAt } : undefined,
+    keepSelected: rl ? rl.notAttempted.map(deploymentId) : [],
   };
 }
