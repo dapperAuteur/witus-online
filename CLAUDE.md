@@ -97,6 +97,23 @@ The **Blocks** column is the column BAM scans to triage the queue. Every row mus
 - Long-running engineering notes — those don't go here.
 - Trivial one-line context updates that don't actually require a user action.
 
+### Sync and check at session start and end (shared rules v11, approved by BAM 2026-10-31)
+
+At the start and the end of every session, Claude runs
+`node /Users/bam/Code_NOiCloud/ai-builds/gemini/witus/scripts/sync-user-tasks.mjs --check` (read-only),
+moves every task listed as "Marked done on the site" to `completed/` and updates its index Status, then
+runs the sync without `--check` so https://www.witus.online/admin/tasks matches the queues.
+`scripts/tidy-user-tasks.mjs` (dry run by default, `--write` to move) moves tasks whose index Status
+already says closed.
+
+**"Merged" is not done until the production deploy is green.** A task whose last step is a merge stays
+open until /admin/tasks/deploys (or the repo's GitHub deployments) shows that app's newest Production
+deploy succeeded on `main`'s head. A failed or behind deploy reopens it with the failure in its Status.
+
+**Why:** on 2026-10-31 a reconciliation found 1,186 task files outside `completed/` across the
+ecosystem (473 of them already done), and two production deploys of a critical security patch
+(witus-online, witus-learn) that had failed about 24 hours earlier while their tasks said "merged".
+
 ### Why this rule exists
 
 Without it, Claude proposes work that silently depends on BAM having done a dashboard step, and BAM has no central queue to scan. The bam-landing-page launch came within reach of shipping `/hire` and `/partner` forms that would 401 on every submission because the HMAC secret + Inbox slug registration were never written down as user tasks. The user-tasks queue is the single artifact BAM scans before each session to know what's blocking what — if it isn't there, it doesn't get done in time.
