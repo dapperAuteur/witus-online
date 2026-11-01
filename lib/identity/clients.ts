@@ -256,6 +256,15 @@ export const ECOSYSTEM_APPS: readonly EcosystemApp[] = [
   // docs/02-ecosystem-integration.md; the login start route is /auth/witus/login/. Inert until
   // WITUS_OIDC_SECRET__INVEST is set here. No localhost redirect URI, same as vogoat.
   { slug: "invest", name: "Invest.WitUS", origin: "https://invest.witus.online", callbackPath: "/auth/witus/callback/" },
+  // Fit T. Cent Assessments: phone-camera movement assessments, repo cent/fit-t-cent-assessments
+  // (public). Host and slug are BAM's answer of 2026-11-01 to the build plan (fit-t-cent plans/01,
+  // question 2). Better Auth genericOAuth provider `witus` by design, so BETTER_AUTH_CB; the app
+  // pins redirectURI to this path and 307s it to Better Auth's core callback, the vogoat shim. No
+  // app code is deployed yet, so this lands ahead of the client like `create` and `vogoat` did and
+  // stays inert until WITUS_OIDC_SECRET__ASSESSMENTS is set here (fit-t-cent task 06). Not
+  // `notADirectoryProduct`: BAM wants it listed in the directory as beta; that lib/products.ts entry
+  // waits for the deploy, so check-registries warns about the missing product until then.
+  { slug: "assessments", name: "Fit T. Cent Assessments", origin: "https://assessments.witus.online", callbackPath: BETTER_AUTH_CB },
   // Apps BAM administers — each has a human login, so each is an OIDC client (NOT
   // API-key-only). Domains/libs marked TODO are best-guesses: a wrong redirect URI
   // fails closed (sign-in won't work until corrected), so confirm before that app

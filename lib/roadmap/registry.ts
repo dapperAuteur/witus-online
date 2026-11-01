@@ -160,6 +160,14 @@ export const ROADMAP_APPS: readonly RoadmapApp[] = [
     aliases: ["ride-wit-us", "ride"],
     productSlug: "ride-witus",
   }),
+  // Onboarded 2026-11-01 (BAM override in plans/35, build plan approved). Repo read from
+  // `git -C /Users/bam/Code_NOiCloud/cent/fit-t-cent-assessments remote get-url origin`. Its roadmap
+  // moved from docs/roadmaps/ in this repo to the app's own docs/roadmap.md. No productSlug yet: the
+  // directory listing (beta) lands in lib/products.ts when the app is deployed.
+  inRepo("fit-t-cent-assessments", "Fit T. Cent Assessments", `${CENT}/fit-t-cent-assessments`, "fit-t-cent-assessments", {
+    aliases: ["assessments"],
+    note: "Phone-camera movement assessments (hurdle clearance first). Not Centenarian Coach, not cent-agility.",
+  }),
 
   // Sign-in targets and funnels that are not directory products
   inRepo("bam-landing-page", "Brand Anthony McDonald", `${AI}/claude/bam-landing-page`, "bam-landing-page", {
@@ -182,11 +190,6 @@ export const ROADMAP_APPS: readonly RoadmapApp[] = [
   }),
   inWitus("anatomy", "Anatomy tool (BioDigital)", {
     note: "Idea: BioDigital Human anatomy tool. CentOS has an admin-only viewer prototype. Not vetted (witus task 103).",
-  }),
-  inWitus("fit-t-cent-assessments", "Fit T. Cent Assessments", {
-    // Read from `git -C /Users/bam/Code_NOiCloud/cent/fit-t-cent-assessments remote get-url origin`.
-    githubRepo: `${OWNER}/fit-t-cent-assessments`,
-    note: "Idea: phone-camera fitness assessments. The prototype repo exists; the roadmap lives here until it is vetted.",
   }),
 ];
 

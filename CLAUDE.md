@@ -8,6 +8,8 @@ The site **brandanthonymcdonald.com** (BAM's personal portfolio) lives in `/User
 
 This mistake has been made more than once. If you're about to write a file under `projects/bam-portfolio/` or treat it as the canonical BAM portfolio repo, stop and re-read this note: portfolio work goes in `bam-landing-page`.
 
+**Fit T. Cent Assessments** (phone-camera movement assessments, hurdle clearance first; host `assessments.witus.online`, OIDC slug `assessments`) lives in `/Users/bam/Code_NOiCloud/cent/fit-t-cent-assessments/` (GitHub `dapperAuteur/fit-t-cent-assessments`, **public**, so its `plans/` is gitignored and must never be committed). Don't confuse it with Centenarian Coach (`claude/lang-chain/centenarian-coach-multiagent`, slug `coach`, home of "The Story of Fit T. Cent"), `claude/cent-agility` (excluded, timed drills), `gemini/centenarian-academy` (excluded, NASM certification LMS), the retired `projects/fit-t-cent-blogging`, or the stale copies `cent/fit-t-cent-assessments copy` and `cent/fit-t-cent-assessments-main.zip`.
+
 ---
 
 ## New-product vetting rule — score every app idea with the rubric before building
