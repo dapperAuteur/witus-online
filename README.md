@@ -220,7 +220,12 @@ playbook, per-app chapters) into the `library_document` table, readable at `/adm
 the `ADMIN_EMAIL` account only. The content deliberately lives in the database rather than the
 repo: this repo is public, so committing the markdown would publish it regardless of the auth
 gate. Slug comes from the filename (minus any `YYYY-MM-DD-` prefix), title from the first `# `
-heading, ordering from argument position. Re-running upserts in place.
+heading, ordering from argument position. Re-running upserts in place. It also uploads the
+sibling `<name>.pdf` and `<name>.epub` (`npm run library:pdf` / `npm run library:epub`) when they
+sit next to the markdown, and clears either one when its file is gone. The owner downloads them
+from `/admin/library/<slug>/download` (PDF) and `/admin/library/<slug>/download?format=epub`
+(EPUB). A file over 4 MiB is not stored, since the route returns it in one response and Vercel
+caps function responses at 4.5 MB (`lib/library/formats.mjs`).
 
 ### Database
 
