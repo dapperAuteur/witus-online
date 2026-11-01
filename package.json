@@ -40,7 +40,7 @@
     "marked": "^18.0.7",
     "next": "16.4.1",
     "next-auth": "^4.24.15",
-    "nodemailer": "^7.0.13",
+    "nodemailer": "^10.1.4",
     "posthog-js": "^1.407.5",
     "react": "19.2.3",
     "react-dom": "19.2.3",
