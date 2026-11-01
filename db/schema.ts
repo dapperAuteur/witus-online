@@ -132,6 +132,12 @@ export const libraryDocuments = pgTable("library_document", {
   // Size of the DECODED pdf in bytes, so the UI can show a file size without
   // pulling the payload. Set together with `pdf`; NULL exactly when it is NULL.
   pdfBytes: integer("pdf_bytes"),
+  // The sibling EPUB (`npm run library:epub`), for BAM's e-reader. Stored the
+  // same way as `pdf` (base64 in text, for the same reason) and served by the
+  // same download route with `?format=epub`. NULL when no sibling EPUB exists.
+  epub: text("epub"),
+  // Size of the DECODED epub in bytes; NULL exactly when `epub` is NULL.
+  epubBytes: integer("epub_bytes"),
   sortOrder: integer("sort_order").notNull().default(0),
   updatedAt: timestamp("updated_at", { withTimezone: true })
     .notNull()
