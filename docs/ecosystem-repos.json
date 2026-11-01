@@ -26,7 +26,8 @@
     "/Users/bam/Code_NOiCloud/ai-builds/claude/witus-agent-evals",
     "/Users/bam/Code_NOiCloud/ai-builds/claude/bam-landing-page",
     "/Users/bam/Code_NOiCloud/cent/bam/ecs-specialization-course-landing-page",
-    "/Users/bam/Code_NOiCloud/cent/bam/fitness-data-analytics-course-landing-page"
+    "/Users/bam/Code_NOiCloud/cent/bam/fitness-data-analytics-course-landing-page",
+    "/Users/bam/Code_NOiCloud/cent/fit-t-cent-assessments"
   ],
   "excluded": {
     "/Users/bam/Code_NOiCloud/ai-builds/gemini/centenarian-academy": "NASM cert LMS — not an ecosystem product",
