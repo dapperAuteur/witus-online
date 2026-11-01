@@ -19,7 +19,7 @@ import { spawnSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
-import { cleanup, inventory, parseNeonProjectKeys, type Inventory } from "../lib/cost-cleanup";
+import { cleanup, inventory, parseNeonProjectKeys, summarizeCleanup, type Inventory } from "../lib/cost-cleanup";
 import { isDeletablePreviewBranch, PREVIEW_PREFIX, type NeonBranch } from "../lib/cost-cleanup/neon";
 import { allowRateLimitWait } from "../lib/cost-cleanup/vercel";
 import { allProjects, asList, neon as neonCli } from "./neon-cli";
@@ -96,8 +96,8 @@ async function main(): Promise<void> {
     console.log("\nDry run. Re-run with --delete to remove all of the above.");
     process.exit(inv.errors.length ? 1 : 0);
     }
-  // CLI path: Neon first, as cleanup() does with keys, then cleanup() deletes the Vercel half (it skips
-  // Neon itself when there are no keys).
+  // CLI path: the Neon CLI deletes the Neon half first, then cleanup() deletes the Vercel half (it
+  // skips Neon itself when there are no keys; with keys it runs Vercel first, then Neon).
   const cliFailures: string[] = [];
   let cliDeleted = 0;
   if (viaCli) {
@@ -114,9 +114,12 @@ async function main(): Promise<void> {
   const res = await cleanup(creds, inv, (l) => console.log(l));
   res.neonDeleted += cliDeleted;
   res.failures.unshift(...cliFailures);
-  console.log(`\nDeleted: ${res.vercelDeleted} Vercel preview deployment(s), ${res.neonDeleted} Neon preview branch(es). Failures: ${res.failures.length}`);
+  console.log(`\n${summarizeCleanup(res)}`);
+  if (res.rateLimited) {
+    console.log(`Vercel's delete limit was reached; run again${res.rateLimited.retryAt ? ` after ${new Date(res.rateLimited.retryAt).toLocaleTimeString()}` : " later"}.`);
+  }
   for (const f of res.failures) console.error(`  ${f}`);
-  process.exit(res.failures.length ? 1 : 0);
+  process.exit(res.failures.length || res.rateLimited ? 1 : 0);
 }
 
 main().catch((e) => {

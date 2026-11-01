@@ -22,7 +22,7 @@
     "neon:usage": "npx tsx scripts/neon-usage.ts",
     "neon:limits": "npx tsx scripts/neon-limits.ts",
     "usage:report": "node scripts/usage-report.mjs",
-    "test": "node --test scripts/lib/*.test.mjs"
+    "test": "node --experimental-strip-types --test scripts/lib/*.test.mjs"
   },
   "dependencies": {
     "@auth/drizzle-adapter": "^1.11.2",

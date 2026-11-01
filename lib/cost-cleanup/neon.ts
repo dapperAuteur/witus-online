@@ -26,6 +26,16 @@ export interface NeonBranch {
 const BASE = "https://console.neon.tech/api/v2";
 export const PREVIEW_PREFIX = "preview/";
 
+/** Any non-2xx answer from Neon. `status` lets callers tell a 404 from the rest. */
+export class NeonApiError extends Error {
+  status: number;
+  constructor(message: string, status: number) {
+    super(message);
+    this.name = "NeonApiError";
+    this.status = status;
+  }
+}
+
 async function neonFetch(key: string, path: string, init?: RequestInit): Promise<Response> {
   const res = await fetch(`${BASE}${path}`, {
     ...init,
@@ -33,7 +43,7 @@ async function neonFetch(key: string, path: string, init?: RequestInit): Promise
   });
   if (!res.ok) {
     const body = (await res.text()).slice(0, 300);
-    throw new Error(`Neon ${init?.method ?? "GET"} ${path} → ${res.status}: ${body}`);
+    throw new NeonApiError(`Neon ${init?.method ?? "GET"} ${path} → ${res.status}: ${body}`, res.status);
   }
   return res;
 }
@@ -68,6 +78,15 @@ export function isDeletablePreviewBranch(b: NeonBranch, allBranches: NeonBranch[
   return true;
 }
 
-export async function deleteBranch(key: string, projectId: string, branchId: string): Promise<void> {
-  await neonFetch(key, `/projects/${projectId}/branches/${branchId}`, { method: "DELETE" });
+/** "gone" when Neon answers 404: the branch no longer exists. Neon deletes an integration branch
+ *  itself when its last Vercel preview deployment is deleted, so a branch listed a minute ago can be
+ *  gone by the time its turn comes (2026-11-01). That is the outcome we wanted, not a failure. */
+export async function deleteBranch(key: string, projectId: string, branchId: string): Promise<"deleted" | "gone"> {
+  try {
+    await neonFetch(key, `/projects/${projectId}/branches/${branchId}`, { method: "DELETE" });
+    return "deleted";
+  } catch (e) {
+    if (e instanceof NeonApiError && e.status === 404) return "gone";
+    throw e;
+  }
 }

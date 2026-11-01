@@ -31,6 +31,47 @@ export function allowRateLimitWait(ms: number): void {
   maxRateLimitWaitMs = ms;
 }
 
+/** Any non-2xx answer from Vercel. `status` lets callers tell a 404 or 429 from the rest. */
+export class VercelApiError extends Error {
+  status: number;
+  constructor(message: string, status: number) {
+    super(message);
+    this.name = "VercelApiError";
+    this.status = status;
+  }
+}
+
+/** Vercel said 429 and this caller could not wait. `retryAt` is when the window resets (ISO), when
+ *  Vercel said so. The admin page stops calling Vercel for the rest of the run on the first one. */
+export class VercelRateLimitError extends VercelApiError {
+  retryAt?: string;
+  constructor(message: string, retryAt?: string) {
+    super(message, 429);
+    this.name = "VercelRateLimitError";
+    this.retryAt = retryAt;
+  }
+}
+
+/** Epoch seconds or epoch milliseconds → ISO. Vercel's 429 body gives `error.limit.reset` in ms
+ *  (seen 2026-11-01); the `x-ratelimit-reset` header is in seconds. Anything under 1e12 is seconds. */
+function epochToIso(value: unknown): string | undefined {
+  const n = Number(value);
+  if (!Number.isFinite(n) || n <= 0) return undefined;
+  return new Date(n < 1e12 ? n * 1000 : n).toISOString();
+}
+
+/** When a 429's window resets: the body's `error.limit.reset` first, then the header. */
+export function rateLimitResetAt(body: string, headers: Headers): string | undefined {
+  try {
+    const parsed = JSON.parse(body) as { error?: { limit?: { reset?: unknown } } };
+    const fromBody = epochToIso(parsed.error?.limit?.reset);
+    if (fromBody) return fromBody;
+  } catch {
+    /* not JSON */
+  }
+  return epochToIso(headers.get("x-ratelimit-reset"));
+}
+
 async function vercelFetch(token: string, path: string, init?: RequestInit, attempt = 0): Promise<Response> {
   const res = await fetch(`${BASE}${path}`, {
     ...init,
@@ -46,8 +87,10 @@ async function vercelFetch(token: string, path: string, init?: RequestInit, atte
     }
   }
   if (!res.ok) {
-    const body = (await res.text()).slice(0, 300);
-    throw new Error(`Vercel ${init?.method ?? "GET"} ${path.replace(/teamId=[^&]+/, "teamId=…")} → ${res.status}: ${body}`);
+    const full = await res.text();
+    const message = `Vercel ${init?.method ?? "GET"} ${path.replace(/teamId=[^&]+/, "teamId=…")} → ${res.status}: ${full.slice(0, 300)}`;
+    if (res.status === 429) throw new VercelRateLimitError(message, rateLimitResetAt(full, res.headers));
+    throw new VercelApiError(message, res.status);
   }
   return res;
 }
