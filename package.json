@@ -41,7 +41,7 @@
     "next": "16.4.1",
     "next-auth": "^4.24.15",
     "nodemailer": "^7.0.13",
-    "posthog-js": "^1.407.5",
+    "posthog-js": "^1.445.1",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "topojson-client": "^3.1.0",
