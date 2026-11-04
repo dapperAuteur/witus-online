@@ -68,14 +68,22 @@ export default async function DeploysPage() {
         <p className="text-sm text-slate-300">
           {red === 0 ? "No app is failed or behind main." : `${red} app${red === 1 ? " is" : "s are"} failed or behind main.`}{" "}
           Merged is not done until this is green. Read from GitHub&apos;s deployments (Vercel records each
-          one there), cached five minutes.
+          one there), cached five minutes. A repo with no GitHub deployments is read from the commit status
+          Vercel posts on main instead, and its row says so.
         </p>
         <RefreshButton />
-        {overview.permissionMissing ? (
+        {overview.missingPermissions.length > 0 ? (
           <p role="alert" className="rounded-lg border border-amber-600 bg-amber-950/40 p-4 text-sm text-amber-100">
-            The GitHub token cannot read deployments. Edit <span className="font-mono">GITHUB_ROADMAP_TOKEN</span> on
-            GitHub (Fine-grained tokens, the roadmap token, Edit) and add{" "}
-            <strong>Repository permissions, Deployments: Read-only</strong>. No Vercel change is needed (task 141).
+            The GitHub token cannot read {overview.missingPermissions.map((p) => p.toLowerCase()).join(" or ")}. Edit{" "}
+            <span className="font-mono">GITHUB_ROADMAP_TOKEN</span> on GitHub (Fine-grained tokens, the roadmap token, Edit)
+            and add{" "}
+            {overview.missingPermissions.map((p, i) => (
+              <span key={p}>
+                {i > 0 ? " and " : null}
+                <strong>Repository permissions, {p}: Read-only</strong>
+              </span>
+            ))}
+            . No Vercel change is needed ({overview.missingPermissions.map((p) => (p === "Deployments" ? "task 141" : "task 152")).join(", ")}).
           </p>
         ) : null}
       </section>
@@ -90,19 +98,28 @@ export default async function DeploysPage() {
               </span>
               <span className="min-w-0 break-words font-semibold text-slate-100">{a.app.name}</span>
               <a
-                href={`https://github.com/${a.repo}/deployments`}
+                href={a.source === "commit-status" ? `https://github.com/${a.repo}/commits/main` : `https://github.com/${a.repo}/deployments`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className={`text-xs text-slate-400 ${link}`}
               >
                 {a.repo.split("/")[1]}
-                <span className="sr-only"> deployments on GitHub (opens in new tab)</span>
+                <span className="sr-only">
+                  {a.source === "commit-status" ? " commits on main" : " deployments"} on GitHub (opens in new tab)
+                </span>
               </a>
+              {a.source === "commit-status" ? <span className="text-xs text-slate-400">from Vercel&apos;s commit status</span> : null}
             </div>
             <div className="mt-2 space-y-1 text-slate-300">
               {a.latest ? <DeployLine label="Newest" repo={a.repo} d={a.latest} /> : null}
               {a.live ? <DeployLine label="Live" repo={a.repo} d={a.live} /> : null}
-              {a.state === "failed" && !a.live ? <p className="text-red-200">No successful production deploy in the last five.</p> : null}
+              {a.state === "failed" && !a.live ? (
+                <p className="text-red-200">
+                  {a.source === "commit-status"
+                    ? "No Vercel success on main's newest five commits."
+                    : "No successful production deploy in the last five."}
+                </p>
+              ) : null}
               {a.latest?.description && a.tone !== "green" ? <p className="break-words text-slate-400">{a.latest.description}</p> : null}
               {a.mainSha ? (
                 <p>
