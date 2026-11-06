@@ -106,6 +106,24 @@ export default function GlobalError({
           >
             Back to home
           </a>
+          {/* The root layout (and its header) failed, so this minimal shell carries the Sign in
+              link itself (docs/shared-ui-ux-dx.md, "Error pages keep the app shell"). */}
+          <a
+            href="/auth/sign-in"
+            style={{
+              minHeight: "2.75rem",
+              padding: "0.625rem 1.25rem",
+              borderRadius: "0.5rem",
+              color: "#5eead4",
+              textDecoration: "underline",
+              fontWeight: 600,
+              fontSize: "0.875rem",
+              display: "inline-flex",
+              alignItems: "center",
+            }}
+          >
+            Sign in
+          </a>
         </div>
         {error.digest ? (
           <p
