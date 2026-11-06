@@ -105,8 +105,8 @@ Canonical winner in **bold**; losing variants noted so you recognize legacy code
   must render the header and footer itself when the root layout does not); `global-error.tsx`
   renders its own minimal shell (its own `<html>`/`<body>`, the brand name, a home link, and a
   Sign in link) because the root layout is the thing that failed. Every error page has exactly one
-  `<h1>`, a plain message, a link home, and never shows a stack trace, error message, or digest to
-  the visitor. Django apps ship `templates/404.html` and `templates/500.html` that extend the base
+  `<h1>`, a plain message, a link home, and never shows a stack trace or the raw error message to
+  the visitor (an opaque digest id for support is fine). Django apps ship `templates/404.html` and `templates/500.html` that extend the base
   template (500 may use a minimal standalone shell, since the base template's context processors
   can be what failed), checked with `DEBUG=False`. Check: request a missing path on production and
   confirm the HTML contains the Sign in link and the `<footer>`. Why: BAM found apps whose 404 and
