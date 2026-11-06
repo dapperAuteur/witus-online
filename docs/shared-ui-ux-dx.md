@@ -98,6 +98,19 @@ Canonical winner in **bold**; losing variants noted so you recognize legacy code
 ## UX (apply everywhere)
 
 - **Route-level states:** use `loading.tsx` and `error.tsx`; error boundaries in client components.
+- **Error pages keep the app shell (added 2026-11-04):** the not-found page (404), the route error
+  boundary (`error.tsx`), and the 500 page render the app's normal header (with the "Sign in"
+  control above) and footer, so a lost visitor can still sign in or navigate. In Next.js, put
+  `not-found.tsx` and `error.tsx` inside the layout that renders the shell (a root `app/not-found.tsx`
+  must render the header and footer itself when the root layout does not); `global-error.tsx`
+  renders its own minimal shell (its own `<html>`/`<body>`, the brand name, a home link, and a
+  Sign in link) because the root layout is the thing that failed. Every error page has exactly one
+  `<h1>`, a plain message, a link home, and never shows a stack trace or the raw error message to
+  the visitor (an opaque digest id for support is fine). Django apps ship `templates/404.html` and `templates/500.html` that extend the base
+  template (500 may use a minimal standalone shell, since the base template's context processors
+  can be what failed), checked with `DEBUG=False`. Check: request a missing path on production and
+  confirm the HTML contains the Sign in link and the `<footer>`. Why: BAM found apps whose 404 and
+  500 pages dropped the header and footer, leaving visitors on a dead end (2026-11-04).
 - **Announce async:** loading gets `role="status"` + SR text; success `role="status"
   aria-live="polite"`; errors `role="alert"`.
 - **Forms:** validate client-side for UX, server-side for security. Every input has an associated
