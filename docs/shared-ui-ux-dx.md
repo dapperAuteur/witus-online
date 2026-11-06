@@ -111,6 +111,15 @@ Canonical winner in **bold**; losing variants noted so you recognize legacy code
   can be what failed), checked with `DEBUG=False`. Check: request a missing path on production and
   confirm the HTML contains the Sign in link and the `<footer>`. Why: BAM found apps whose 404 and
   500 pages dropped the header and footer, leaving visitors on a dead end (2026-11-04).
+- **Every 4xx and 5xx is handled gracefully (added 2026-11-06):** BAM: "every app should gracefully
+  handle 400/500 errors." Beyond the 404 and 500 pages above: 401 sends the visitor to sign in and back
+  to where they were; 403 shows a "you don't have access" page in the shell that names who to ask; 400
+  and 422 from a form show the problem next to the field in plain words (never a status code or raw
+  JSON); 429 says to wait and retry, with the wait if known; 5xx from an API call made by a page shows a
+  short message with Try again, keeps what the person typed, and logs the detail server-side (Sentry,
+  scrubbed). A vendor's raw error (for example a Gemini or Stripe JSON body) never reaches the screen; an
+  admin tool may show it behind a "Full error" toggle. API routes return a consistent JSON shape
+  (`{ ok: false, error, code }`) so pages can do all of this.
 - **Announce async:** loading gets `role="status"` + SR text; success `role="status"
   aria-live="polite"`; errors `role="alert"`.
 - **Forms:** validate client-side for UX, server-side for security. Every input has an associated
