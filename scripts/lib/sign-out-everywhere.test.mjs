@@ -90,7 +90,11 @@ test("everywhere control: hidden without a URL, help text linked by aria-describ
   assert.match(s, /<span id=\{helpId\}/);
   assert.match(s, /signOut\(\{ redirect: false \}\)/);
   const layout = src("app/admin/layout.tsx");
-  // Beside Sign out in both admin places (nav and the 403 page), never instead of it.
+  // Beside Sign out in both admin places (nav and the 403 page), never instead of it. The control
+  // sits behind its own Suspense boundary (EndSessionControl) so the IdP discovery read never holds
+  // back the admin shell; the boundary must wrap the real button, not replace it.
   assert.equal((layout.match(/<SignOutButton \/>/g) ?? []).length, 2);
-  assert.equal((layout.match(/<SignOutEverywhereButton endSessionUrl=\{endSessionUrl\} \/>/g) ?? []).length, 2);
+  assert.equal((layout.match(/<EndSessionControl \/>/g) ?? []).length, 2);
+  assert.equal((layout.match(/<SignOutEverywhereButton endSessionUrl=\{endSessionUrl\} \/>/g) ?? []).length, 1);
+  assert.match(layout, /async function EndSessionControl\(\) \{\s+const endSessionUrl = await witusEndSessionUrl\(\);/);
 });

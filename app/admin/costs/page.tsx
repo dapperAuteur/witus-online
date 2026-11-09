@@ -25,7 +25,8 @@ export default async function CostsPage() {
   const lastCollected = rows.map((r) => r.collected_at).filter(Boolean).sort().at(-1) ?? null;
 
   return (
-    <div className="space-y-6">
+    // Centered with its own gutters, like the other admin pages (BAM asked for space at the sides).
+    <div className="mx-auto w-full max-w-6xl space-y-6 px-4 py-8">
       <header className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold">Ecosystem costs</h1>
@@ -38,12 +39,14 @@ export default async function CostsPage() {
       </header>
 
       <dl className="grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
-        <div className="rounded border p-3"><dt className="text-neutral-600">Latest-period total</dt><dd className="text-lg font-semibold">{money(total)}</dd></div>
-        <div className="rounded border p-3"><dt className="text-neutral-600">Vercel credit</dt><dd>{credit ? `${money(credit.remaining)} of ${money(credit.total)} left until ${credit.periodEnd.slice(0, 10)}` : "no ledger"}</dd></div>
-        <div className="rounded border p-3"><dt className="text-neutral-600">Collectors</dt><dd>Vercel {configured.vercel ? "on" : "off"} · Neon {configured.neon ? "on" : "off"} · cron {configured.cron ? "on" : "off"}</dd></div>
-        <div className="rounded border p-3"><dt className="text-neutral-600">CentOS push</dt><dd>{configured.centos ? "on" : "off: set CENTOS_EVENTS_URL and CENTOS_EVENTS_SECRET"}</dd></div>
+        <div className="min-w-0 break-words rounded border p-3"><dt className="text-neutral-600">Latest-period total</dt><dd className="text-lg font-semibold">{money(total)}</dd></div>
+        <div className="min-w-0 break-words rounded border p-3"><dt className="text-neutral-600">Vercel credit</dt><dd>{credit ? `${money(credit.remaining)} of ${money(credit.total)} left until ${credit.periodEnd.slice(0, 10)}` : "no ledger"}</dd></div>
+        <div className="min-w-0 break-words rounded border p-3"><dt className="text-neutral-600">Collectors</dt><dd>Vercel {configured.vercel ? "on" : "off"} · Neon {configured.neon ? "on" : "off"} · cron {configured.cron ? "on" : "off"}</dd></div>
+        <div className="min-w-0 break-words rounded border p-3"><dt className="text-neutral-600">CentOS push</dt><dd>{configured.centos ? "on" : "off: set CENTOS_EVENTS_URL and CENTOS_EVENTS_SECRET"}</dd></div>
       </dl>
 
+      {/* Nine columns: on a narrow screen this box scrolls, never the whole page (320px rule). */}
+      <div className="overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b text-left text-neutral-600">
@@ -70,6 +73,7 @@ export default async function CostsPage() {
           ))}
         </tbody>
       </table>
+      </div>
 
       {vercel?.lines?.length ? (
         <section>

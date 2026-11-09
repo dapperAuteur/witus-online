@@ -3,6 +3,7 @@ import { unstable_cache } from "next/cache";
 import { getEnv } from "@/lib/env";
 import { explainGithubError, githubGraphql, OPS_GITHUB_TAG, OPS_REVALIDATE_SECONDS, type GhResult } from "@/lib/github/client";
 import { sortBranches } from "./branch-flags.mjs";
+import { mapWithConcurrency } from "./concurrency.mjs";
 import { deployTargets } from "./deploys";
 
 /**
@@ -111,12 +112,12 @@ const cachedRepo = unstable_cache(
 export async function loadBranchesOverview(): Promise<BranchesOverview> {
   if (!getEnv().GITHUB_ROADMAP_TOKEN) return { tokenSet: false };
   const now = Date.now();
-  const repos = await Promise.all(
-    deployTargets().map(async ({ app, repo }): Promise<RepoBranches> => {
-      const raw = await cachedRepo(repo);
-      return { app: { slug: app.slug, name: app.name }, repo, total: raw.total, unmerged: sortBranches(raw.branches, now), error: raw.error };
-    }),
-  );
+  // Eight repos at a time: a cold read is one or two GraphQL requests per repo, far from GitHub's
+  // burst limit; a warm read is 27 cache lookups and the bound costs nothing noticeable.
+  const repos = await mapWithConcurrency(deployTargets(), 8, async ({ app, repo }): Promise<RepoBranches> => {
+    const raw = await cachedRepo(repo);
+    return { app: { slug: app.slug, name: app.name }, repo, total: raw.total, unmerged: sortBranches(raw.branches, now), error: raw.error };
+  });
   const rank = (r: RepoBranches) => (r.unmerged.some((b) => b.security) ? 0 : r.unmerged.some((b) => b.bundle) ? 1 : r.unmerged.length ? 2 : 3);
   repos.sort((a, b) => rank(a) - rank(b) || b.unmerged.length - a.unmerged.length || a.app.name.localeCompare(b.app.name));
   return { tokenSet: true, repos };

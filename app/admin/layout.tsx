@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { betterAuthUrl } from "@/lib/identity/env";
@@ -10,6 +11,16 @@ import { SignOutEverywhereButton } from "./SignOutEverywhereButton";
 
 export const dynamic = "force-dynamic";
 
+/**
+ * "Sign out of WitUS everywhere", behind its own Suspense boundary so the IdP discovery read (cached
+ * an hour, up to a 2 s timeout on a miss) never holds back the admin shell. Renders nothing when
+ * witus.online is not a configured "Sign in with WitUS" client (task 128 (b)).
+ */
+async function EndSessionControl() {
+  const endSessionUrl = await witusEndSessionUrl();
+  return <SignOutEverywhereButton endSessionUrl={endSessionUrl} />;
+}
+
 export default async function AdminLayout({
   children,
 }: {
@@ -19,9 +30,7 @@ export default async function AdminLayout({
   if (!session?.user?.email) {
     redirect("/auth/sign-in?callbackUrl=/admin");
   }
-  // Non-null only when witus.online is a configured "Sign in with WitUS" client. Plain "Sign out"
-  // ends only this site's session; the second control also ends the WitUS session (task 128 (b)).
-  const endSessionUrl = await witusEndSessionUrl();
+  // Plain "Sign out" ends only this site's session; EndSessionControl also ends the WitUS session.
   if (!isAdminEmail(session.user.email)) {
     return (
       <main
@@ -38,7 +47,9 @@ export default async function AdminLayout({
           </p>
           <div className="flex flex-col items-center gap-2 pt-2">
             <SignOutButton />
-            <SignOutEverywhereButton endSessionUrl={endSessionUrl} />
+            <Suspense fallback={null}>
+              <EndSessionControl />
+            </Suspense>
           </div>
         </div>
       </main>
@@ -128,11 +139,16 @@ export default async function AdminLayout({
               Your devices ↗<span className="sr-only"> (opens in new tab)</span>
             </a>
             <SignOutButton />
-            <SignOutEverywhereButton endSessionUrl={endSessionUrl} />
+            <Suspense fallback={null}>
+              <EndSessionControl />
+            </Suspense>
           </div>
         </div>
       </nav>
-      {children}
+      {/* Side gutters for every admin page (BAM, 2026-11-09: "more space between the sides of the
+          page content and the edges"). Pages keep their own px-4, so content sits 24px from the edge
+          on phones (the 16px floor in docs/shared-ui-ux-dx.md), 32px from sm and 48px from lg. */}
+      <div className="flex min-w-0 flex-1 flex-col px-2 sm:px-4 lg:px-8">{children}</div>
     </div>
   );
 }

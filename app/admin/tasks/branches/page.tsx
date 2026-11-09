@@ -1,5 +1,8 @@
+import { Suspense } from "react";
+import { getEnv } from "@/lib/env";
 import { loadBranchesOverview, type UnmergedBranch } from "@/lib/ops/branches";
 import { STALE_DAYS } from "@/lib/ops/branch-flags.mjs";
+import { LoadingRow } from "../../loading-row";
 import { RefreshButton } from "../refresh-button";
 
 export const dynamic = "force-dynamic";
@@ -16,20 +19,17 @@ function Flags({ b }: { b: UnmergedBranch }) {
   );
 }
 
-export default async function BranchesPage() {
-  const overview = await loadBranchesOverview();
-  if (!overview.tokenSet) {
-    return (
-      <p className="rounded-lg border border-amber-600 bg-amber-950/40 p-4 text-sm text-amber-100">
-        Branches are not being read: <span className="font-mono">GITHUB_ROADMAP_TOKEN</span> is not set (task 132).
-      </p>
-    );
-  }
-  const withBranches = overview.repos.filter((r) => r.unmerged.length > 0 || r.error);
-  const clean = overview.repos.filter((r) => r.unmerged.length === 0 && !r.error);
-  const all = overview.repos.flatMap((r) => r.unmerged);
-  const security = all.filter((b) => b.security).length;
-  const bundles = all.filter((b) => b.bundle).length;
+function NoToken() {
+  return (
+    <p className="rounded-lg border border-amber-600 bg-amber-950/40 p-4 text-sm text-amber-100">
+      Branches are not being read: <span className="font-mono">GITHUB_ROADMAP_TOKEN</span> is not set (task 132).
+    </p>
+  );
+}
+
+/** The heading, explanation and Refresh button render at once; the GitHub read streams in below. */
+export default function BranchesPage() {
+  if (!getEnv().GITHUB_ROADMAP_TOKEN) return <NoToken />;
 
   return (
     <div className="space-y-6">
@@ -38,14 +38,35 @@ export default async function BranchesPage() {
           Unmerged branches
         </h2>
         <p className="text-sm text-slate-300">
-          {all.length} branch{all.length === 1 ? "" : "es"} ahead of main in {withBranches.length} repo
-          {withBranches.length === 1 ? "" : "s"}
-          {security ? `, ${security} security` : ""}
-          {bundles ? `, ${bundles} bundle${bundles === 1 ? "" : "s"}` : ""}. Stale means no commit in {STALE_DAYS} days.
-          Merging stays on GitHub; each row links to its compare page.
+          Stale means no commit in {STALE_DAYS} days. Merging stays on GitHub; each row links to its compare page.
         </p>
         <RefreshButton />
       </section>
+      <Suspense fallback={<LoadingRow label="Reading branches from GitHub…" />}>
+        <BranchSections />
+      </Suspense>
+    </div>
+  );
+}
+
+/** The slow part: every repo's branches ahead of main (lib/ops/branches.ts, cached per repo). */
+async function BranchSections() {
+  const overview = await loadBranchesOverview();
+  if (!overview.tokenSet) return <NoToken />;
+  const withBranches = overview.repos.filter((r) => r.unmerged.length > 0 || r.error);
+  const clean = overview.repos.filter((r) => r.unmerged.length === 0 && !r.error);
+  const all = overview.repos.flatMap((r) => r.unmerged);
+  const security = all.filter((b) => b.security).length;
+  const bundles = all.filter((b) => b.bundle).length;
+
+  return (
+    <div className="space-y-6">
+      <p className="text-sm text-slate-300">
+        {all.length} branch{all.length === 1 ? "" : "es"} ahead of main in {withBranches.length} repo
+        {withBranches.length === 1 ? "" : "s"}
+        {security ? `, ${security} security` : ""}
+        {bundles ? `, ${bundles} bundle${bundles === 1 ? "" : "s"}` : ""}.
+      </p>
 
       {withBranches.map((r) => {
         const headingId = `repo-${r.app.slug}`;

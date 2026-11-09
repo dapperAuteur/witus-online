@@ -1,4 +1,7 @@
+import { Suspense } from "react";
+import { getEnv } from "@/lib/env";
 import { loadDeploysOverview, type AppDeploy, type DeployInfo } from "@/lib/ops/deploys";
+import { LoadingRow } from "../../loading-row";
 import { RefreshButton } from "../refresh-button";
 import { ago } from "../time";
 
@@ -48,16 +51,17 @@ function DeployLine({ label, repo, d }: { label: string; repo: string; d: Deploy
   );
 }
 
-export default async function DeploysPage() {
-  const overview = await loadDeploysOverview();
-  if (!overview.tokenSet) {
-    return (
-      <p className="rounded-lg border border-amber-600 bg-amber-950/40 p-4 text-sm text-amber-100">
-        Deploys are not being read: <span className="font-mono">GITHUB_ROADMAP_TOKEN</span> is not set (task 132).
-      </p>
-    );
-  }
-  const red = overview.apps.filter((a) => a.tone === "red").length;
+function NoToken() {
+  return (
+    <p className="rounded-lg border border-amber-600 bg-amber-950/40 p-4 text-sm text-amber-100">
+      Deploys are not being read: <span className="font-mono">GITHUB_ROADMAP_TOKEN</span> is not set (task 132).
+    </p>
+  );
+}
+
+/** The heading, explanation and Refresh button render at once; the GitHub read streams in below. */
+export default function DeploysPage() {
+  if (!getEnv().GITHUB_ROADMAP_TOKEN) return <NoToken />;
 
   return (
     <div className="space-y-6">
@@ -66,12 +70,31 @@ export default async function DeploysPage() {
           Production deploys
         </h2>
         <p className="text-sm text-slate-300">
-          {red === 0 ? "No app is failed or behind main." : `${red} app${red === 1 ? " is" : "s are"} failed or behind main.`}{" "}
           Merged is not done until this is green. Read from GitHub&apos;s deployments (Vercel records each
           one there), cached five minutes. A repo with no GitHub deployments is read from the commit status
           Vercel posts on main instead, and its row says so.
         </p>
         <RefreshButton />
+      </section>
+      <Suspense fallback={<LoadingRow label="Reading production deploys from GitHub…" />}>
+        <DeployRows />
+      </Suspense>
+    </div>
+  );
+}
+
+/** The slow part: every repo's verdict (lib/ops/deploys.ts, one cached read). */
+async function DeployRows() {
+  const overview = await loadDeploysOverview();
+  if (!overview.tokenSet) return <NoToken />;
+  const red = overview.apps.filter((a) => a.tone === "red").length;
+
+  return (
+    <div className="space-y-6">
+      <div className="space-y-3">
+        <p className="text-sm text-slate-300">
+          {red === 0 ? "No app is failed or behind main." : `${red} app${red === 1 ? " is" : "s are"} failed or behind main.`}
+        </p>
         {overview.missingPermissions.length > 0 ? (
           <p role="alert" className="rounded-lg border border-amber-600 bg-amber-950/40 p-4 text-sm text-amber-100">
             The GitHub token cannot read {overview.missingPermissions.map((p) => p.toLowerCase()).join(" or ")}. Edit{" "}
@@ -86,7 +109,7 @@ export default async function DeploysPage() {
             . No Vercel change is needed ({overview.missingPermissions.map((p) => (p === "Deployments" ? "task 141" : "task 152")).join(", ")}).
           </p>
         ) : null}
-      </section>
+      </div>
 
       <ul className="space-y-2">
         {overview.apps.map((a) => (

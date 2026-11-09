@@ -1,9 +1,16 @@
 // One inventory, one cleanup, for every tool that can bill for things a preview leaves behind.
 // Tokens are passed in (the admin page reads them from env; the CLI from env or the Vercel CLI's
 // auth file). Nothing here touches production deployments or non-preview Neon branches.
+import { mapWithConcurrency } from "../ops/concurrency.mjs";
 import * as vercel from "./vercel";
 import * as neon from "./neon";
 import { runCleanup, type CleanupResult } from "./run";
+
+/** Projects whose preview deployments are listed at once (one or more Vercel calls each). Vercel's
+ * read limits are generous; five turns a 30-project team into six waves instead of 30 calls in a row. */
+export const VERCEL_LIST_CONCURRENCY = 5;
+/** Neon projects read at once (two calls each, each with that project's own key). */
+export const NEON_LIST_CONCURRENCY = 4;
 
 export interface Credentials {
   vercelToken?: string;
@@ -37,14 +44,17 @@ export async function inventory(creds: Credentials): Promise<Inventory> {
     neon: { configured: Boolean(creds.neonProjectKeys), branches: [], skipped: [] },
     errors: [],
   };
-  if (creds.vercelToken) {
+  const token = creds.vercelToken;
+  if (token) {
     try {
-      const teams = await vercel.listTeams(creds.vercelToken);
+      const teams = await vercel.listTeams(token);
       inv.vercel.teams = teams;
       for (const t of teams) {
-        const projects = await vercel.listProjects(creds.vercelToken, t.id);
-        for (const p of projects) {
-          const deps = await vercel.listPreviewDeployments(creds.vercelToken, t.id, p);
+        const projects = await vercel.listProjects(token, t.id);
+        // Bounded parallel, results in project order, so the list reads exactly as the sequential
+        // loop's did (the page sorts it anyway; the CLI prints it grouped).
+        const perProject = await mapWithConcurrency(projects, VERCEL_LIST_CONCURRENCY, (p) => vercel.listPreviewDeployments(token, t.id, p));
+        for (const deps of perProject) {
           for (const d of deps) inv.vercel.teamOf[d.uid] = t.id;
           inv.vercel.deployments.push(...deps);
         }
@@ -54,16 +64,23 @@ export async function inventory(creds: Credentials): Promise<Inventory> {
     }
   }
   if (creds.neonProjectKeys) {
-    for (const [projectId, key] of Object.entries(creds.neonProjectKeys)) {
-      try {
-        const p = await neon.getProject(key, projectId);
-        const all = await neon.listBranches(key, p);
-        for (const b of all) {
-          if (neon.isDeletablePreviewBranch(b, all)) inv.neon.branches.push(b);
-          else if (b.name.startsWith(neon.PREVIEW_PREFIX)) inv.neon.skipped.push(b);
+    const perProject = await mapWithConcurrency(
+      Object.entries(creds.neonProjectKeys),
+      NEON_LIST_CONCURRENCY,
+      async ([projectId, key]): Promise<{ all: neon.NeonBranch[]; error: string | null }> => {
+        try {
+          const p = await neon.getProject(key, projectId);
+          return { all: await neon.listBranches(key, p), error: null };
+        } catch (e) {
+          return { all: [], error: `neon project ${projectId}: ${e instanceof Error ? e.message : String(e)}` };
         }
-      } catch (e) {
-        inv.errors.push(`neon project ${projectId}: ${e instanceof Error ? e.message : String(e)}`);
+      },
+    );
+    for (const { all, error } of perProject) {
+      if (error) inv.errors.push(error);
+      for (const b of all) {
+        if (neon.isDeletablePreviewBranch(b, all)) inv.neon.branches.push(b);
+        else if (b.name.startsWith(neon.PREVIEW_PREFIX)) inv.neon.skipped.push(b);
       }
     }
   }

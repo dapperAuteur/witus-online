@@ -1,6 +1,8 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import { loadRoadmapOverview, type AppRoadmap } from "@/lib/roadmap/github";
 import { STAGES, STALE_AFTER_DAYS } from "@/lib/roadmap/roadmap.mjs";
+import { LoadingRow } from "../loading-row";
 import { RefreshButton } from "./refresh-button";
 import { ErrorCard, FOCUS, LINK, StageCell, StaleFlag, summarize, type SummaryRow } from "./roadmap-parts";
 
@@ -29,14 +31,10 @@ function count(n: number | null): string {
   return n === null ? "" : String(n);
 }
 
+/** The header and Refresh button render at once; the GitHub read (one cached entry) streams in below. */
 export default async function RoadmapPage({ searchParams }: { searchParams: Promise<{ stage?: string }> }) {
   const { stage } = await searchParams;
   const filter: Filter = (FILTERS as readonly string[]).includes(stage ?? "") ? (stage as Filter) : "all";
-  const { tokenSet, apps } = await loadRoadmapOverview();
-  const rows = apps.map((a) => ({ a, row: summarize(a) }));
-  const shown = rows.filter(({ row }) => matches(filter, row));
-  const problems = apps.filter((a) => a.state === "invalid" || a.state === "error");
-  const tally = (f: Filter) => rows.filter(({ row }) => matches(f, row)).length;
 
   return (
     <main id="main" className="mx-auto w-full max-w-5xl flex-1 space-y-6 px-4 py-8">
@@ -52,6 +50,29 @@ export default async function RoadmapPage({ searchParams }: { searchParams: Prom
         <RefreshButton />
       </header>
 
+      <Suspense fallback={<LoadingRow label="Reading roadmaps from GitHub…" />}>
+        <RoadmapBody filter={filter} />
+      </Suspense>
+
+      <p className="text-xs text-slate-400">
+        Format and rule: <span className="font-mono">docs/shared-rules.md</span> (Roadmap rule). Apps with no repo keep
+        their file in this repo under <span className="font-mono">docs/roadmaps/</span>. Registry:{" "}
+        <span className="font-mono">lib/roadmap/registry.ts</span>.
+      </p>
+    </main>
+  );
+}
+
+/** The slow part: the filter counts, the cards or table and the problem cards, from one overview read. */
+async function RoadmapBody({ filter }: { filter: Filter }) {
+  const { tokenSet, apps } = await loadRoadmapOverview();
+  const rows = apps.map((a) => ({ a, row: summarize(a) }));
+  const shown = rows.filter(({ row }) => matches(filter, row));
+  const problems = apps.filter((a) => a.state === "invalid" || a.state === "error");
+  const tally = (f: Filter) => rows.filter(({ row }) => matches(f, row)).length;
+
+  return (
+    <div className="space-y-6">
       {!tokenSet ? (
         <p className="rounded-lg border border-amber-600 bg-amber-950/40 p-4 text-sm text-amber-100">
           <strong className="font-semibold">Roadmaps are not being read.</strong> Set{" "}
@@ -151,13 +172,7 @@ export default async function RoadmapPage({ searchParams }: { searchParams: Prom
           ))}
         </section>
       ) : null}
-
-      <p className="text-xs text-slate-400">
-        Format and rule: <span className="font-mono">docs/shared-rules.md</span> (Roadmap rule). Apps with no repo keep
-        their file in this repo under <span className="font-mono">docs/roadmaps/</span>. Registry:{" "}
-        <span className="font-mono">lib/roadmap/registry.ts</span>.
-      </p>
-    </main>
+    </div>
   );
 }
 

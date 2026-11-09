@@ -1,13 +1,16 @@
 import "server-only";
+import { unstable_cache } from "next/cache";
 import { getEnv } from "@/lib/env";
 import { ROADMAP_APPS, type RoadmapApp } from "@/lib/roadmap/registry";
-import { explainGithubError, githubGet, isPermissionError } from "@/lib/github/client";
+import { explainGithubError, githubGet, isPermissionError, OPS_GITHUB_TAG, OPS_REVALIDATE_SECONDS } from "@/lib/github/client";
+import { mapWithConcurrency } from "./concurrency.mjs";
 import { classifyDeploy, deployRank } from "./deploy-state.mjs";
 import { loadVercelStatus } from "./vercel-status.mjs";
 
 /**
  * Latest Production deployment per app, from GitHub's deployments API (Vercel records every deploy
- * there). Per repo, all cached five minutes:
+ * there). Per repo, in sequence where one answer decides the next; the assembled overview is cached
+ * five minutes as one entry (loadDeploysOverview):
  *   GET /repos/{r}/deployments?environment=Production&per_page=5
  *   GET /repos/{r}/deployments/{id}/statuses?per_page=1   newest first; more only while not success
  *   GET /repos/{r}/commits/main                          head of main
@@ -188,14 +191,38 @@ export async function loadAppDeploy(app: RoadmapApp, repo: string, token: string
   return finish(base, latest, live, token);
 }
 
-/** Every registry repo, most urgent first. */
-export async function loadDeploysOverview(): Promise<DeploysOverview> {
+/** Repos read at once. Each starts two requests, so GitHub sees at most 16 in flight (its secondary
+ * limit refuses bursts near 100). A cold read of 27 repos is four waves, a few seconds in all. */
+export const DEPLOY_CONCURRENCY = 8;
+
+/** Every registry repo, most urgent first. Reads GitHub; pages call the cached wrapper below. */
+async function assembleDeploysOverview(): Promise<DeploysOverview> {
   const token = getEnv().GITHUB_ROADMAP_TOKEN;
   if (!token) return { tokenSet: false };
-  const rows = await Promise.all(deployTargets().map(({ app, repo }) => loadAppDeploy(app, repo, token)));
+  const rows = await mapWithConcurrency(deployTargets(), DEPLOY_CONCURRENCY, ({ app, repo }) => loadAppDeploy(app, repo, token));
   const missingPermissions = [...new Set(rows.flatMap((r) => (r.permission ? [r.permission] : [])))];
   const apps = rows
     .map(({ permission: _permission, ...r }) => r)
     .sort((a, b) => deployRank(a.state) - deployRank(b.state) || a.app.name.localeCompare(b.app.name));
   return { tokenSet: true, missingPermissions, apps };
+}
+
+/**
+ * The whole overview as ONE cache entry, five minutes under OPS_GITHUB_TAG. Before, each of the 80
+ * to 110 GitHub reads was cached on its own, so even a warm page did that many cache lookups, three
+ * or four deep per repo; now a warm page is one lookup. A stale entry is served while Next refetches
+ * in the background; the Refresh button (updateTag) expires it so the next render reads GitHub again.
+ * Fetches inside unstable_cache skip the fetch cache, so this is the only copy. The token is read
+ * inside, never passed, so it can never be part of the cache key.
+ */
+const cachedDeploysOverview = unstable_cache(assembleDeploysOverview, ["ops-deploys-overview-v1"], {
+  revalidate: OPS_REVALIDATE_SECONDS,
+  tags: [OPS_GITHUB_TAG],
+});
+
+/** Every registry repo, most urgent first; cached five minutes. */
+export async function loadDeploysOverview(): Promise<DeploysOverview> {
+  // "No token" is answered without the cache, so a newly set token shows on the next request.
+  if (!getEnv().GITHUB_ROADMAP_TOKEN) return { tokenSet: false };
+  return cachedDeploysOverview();
 }

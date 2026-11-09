@@ -1,13 +1,16 @@
 import "server-only";
+import { unstable_cache } from "next/cache";
 import { getEnv } from "@/lib/env";
+import { mapWithConcurrency } from "@/lib/ops/concurrency.mjs";
 import { isRoadmapStale, parseRoadmap, type ParsedRoadmap } from "./roadmap.mjs";
 import { ROADMAP_APPS, type RoadmapApp } from "./registry";
 
 /**
  * Server-side reads of each app's roadmap from the GitHub REST API.
  *
- * Three calls per app, all GETs cached by Next's fetch cache for an hour under the "roadmap" tag
- * (the admin "Refresh now" action expires the tag):
+ * Three calls per app, in parallel, all GETs cached for an hour under the "roadmap" tag (the admin
+ * "Refresh now" action expires the tag). The overview page caches the assembled result as one entry
+ * (loadRoadmapOverview); the detail page reads one app through the fetch cache:
  *   1. GET /repos/{roadmapRepo}/contents/{path}?ref=main    the roadmap file, raw
  *   2. GET /repos/{githubRepo}/commits?sha=main&per_page=1   latest commit on the app's main
  *   3. GET /repos/{roadmapRepo}/commits?sha=main&path=...    latest commit touching the roadmap
@@ -161,9 +164,32 @@ export async function loadAppRoadmap(app: RoadmapApp, token: string | undefined)
   return out;
 }
 
-/** Every registry app's roadmap, in registry order. */
-export async function loadRoadmapOverview(): Promise<RoadmapOverview> {
+/** Apps read at once; three requests each, so at most 24 in flight (GitHub's secondary limit refuses
+ * bursts near 100). The registry's 29 apps take four waves on a cold read. */
+export const ROADMAP_CONCURRENCY = 8;
+
+async function assembleRoadmapOverview(): Promise<RoadmapOverview> {
   const token = getEnv().GITHUB_ROADMAP_TOKEN;
-  const apps = await Promise.all(ROADMAP_APPS.map((a) => loadAppRoadmap(a, token)));
+  const apps = await mapWithConcurrency(ROADMAP_APPS, ROADMAP_CONCURRENCY, (a) => loadAppRoadmap(a, token));
   return { tokenSet: Boolean(token), apps };
+}
+
+/**
+ * The whole overview as ONE cache entry for an hour under ROADMAP_CACHE_TAG, so a warm page is one
+ * cache lookup instead of 87 (three per app). A stale entry is served while Next refetches in the
+ * background; "Refresh now" (updateTag) expires it. Fetches inside unstable_cache skip the fetch
+ * cache, so this is the only copy. The token is read inside, never passed, so it is never part of
+ * the cache key.
+ */
+const cachedRoadmapOverview = unstable_cache(assembleRoadmapOverview, ["roadmap-overview-v1"], {
+  revalidate: ROADMAP_REVALIDATE_SECONDS,
+  tags: [ROADMAP_CACHE_TAG],
+});
+
+/** Every registry app's roadmap, in registry order; cached an hour. */
+export async function loadRoadmapOverview(): Promise<RoadmapOverview> {
+  // With no token nothing is fetched (every app comes back "no-token"), and that answer is never
+  // cached, so a newly set token shows on the next request.
+  if (!getEnv().GITHUB_ROADMAP_TOKEN) return assembleRoadmapOverview();
+  return cachedRoadmapOverview();
 }
