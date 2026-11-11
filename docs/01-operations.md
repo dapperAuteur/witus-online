@@ -247,3 +247,20 @@ without a commit. One GraphQL query per 100 branches (`Ref.compare` against `mai
 minutes under the same tag as Deploys. It needs only Contents and Metadata read on
 `GITHUB_ROADMAP_TOKEN`. It is read-only: each row links to GitHub's compare page, and merging stays
 there.
+
+## Preview-cleanup workflow sync: which repos get it, and the 2026-11-10 slip
+
+`scripts/sync-preview-cleanup-workflow.mjs` writes the canonical `neon-preview-cleanup.yml` into every repo in
+`docs/ecosystem-repos.json` that has a Neon database. Repos with no Neon database are named in the script's `NON_NEON`
+set and are skipped: no database or MongoDB (flashlearn-ai, bam-landing-page, witus-agent-evals, create-witus) and the
+Supabase apps (tour-manager-os, centenarian-os). Work.WitUS (contractor-os) is also on Supabase but keeps the workflow on
+purpose: its sweep passes because it already holds Neon credentials for its planned move to its own Neon database.
+
+When the rule rolled out (shared rules v6, 2026-10-26) the set did not name the Supabase apps, so Tour Manager OS and
+CentenarianOS received the workflow and showed one red "Cleanup Neon preview branches" run on every push to `main` until
+BAM noticed on 2026-11-10 (witus task 158). Since that fix the script reports, and with `--write` removes, a synced copy
+found in a NON_NEON repo, so a wrong entry shows up in the dry run instead of as a red run in someone else's Actions tab.
+
+Run it without `--write` first and read the summary line (`N repo(s) would change (add/update/remove), N up-to-date,
+N skipped`). Keep `NON_NEON` in step with `plans/ecosystem/db-usage.md`; the durable fix is a `database` field per repo
+in `docs/ecosystem-repos.json` that both this script and `scripts/check-registries.mjs` read (follow-up, not built).
