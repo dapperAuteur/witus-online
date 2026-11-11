@@ -1,0 +1,70 @@
+# Hourly failed-deploy alarm (docs/02-dora-metrics.md, "The alarm"; docs/01-operations.md,
+# "DORA metrics and the failed-deploy alarm"). POSTs to https://www.witus.online/api/cron/dora-alarm
+# with the cron secret. The site does the work: it reads every registry repo's Production
+# deployments and post-deploy workflow runs, and emails BAM once (Mailgun) for each failure open for
+# more than 60 minutes with no later green deployment. Vercel's own cron (vercel.json) runs once a
+# day on this plan, so the hourly trigger lives here; the daily cost-snapshot cron is unchanged.
+#
+# Secret: WITUS_CRON_SECRET, the SAME value as CRON_SECRET on the Vercel project (Production). Set
+# both from one generated value without pasting it anywhere (operator task 159):
+#   v="$(openssl rand -hex 32)"
+#   printf %s "$v" | vercel env add CRON_SECRET production
+#   printf %s "$v" | gh secret set WITUS_CRON_SECRET --repo dapperAuteur/witus-online
+#   unset v
+# then redeploy so the site reads the new CRON_SECRET. The job fails closed when the secret is
+# missing, and the site answers 503 (labelled) when its CRON_SECRET is missing.
+#
+# Optional repository variable WITUS_BASE_URL overrides the host (for a preview check).
+name: DORA failed-deploy alarm
+
+on:
+  schedule:
+    - cron: "17 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: dora-alarm
+  cancel-in-progress: false
+
+jobs:
+  alarm:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Require WITUS_CRON_SECRET
+        env:
+          WITUS_CRON_SECRET: ${{ secrets.WITUS_CRON_SECRET }}
+        run: |
+          if [ -z "$WITUS_CRON_SECRET" ]; then
+            echo "::error::Set the repository secret WITUS_CRON_SECRET to the same value as Vercel's CRON_SECRET (docs/01-operations.md, DORA metrics and the failed-deploy alarm)."
+            exit 1
+          fi
+
+      - name: Run the alarm check
+        env:
+          WITUS_CRON_SECRET: ${{ secrets.WITUS_CRON_SECRET }}
+          BASE_URL: ${{ vars.WITUS_BASE_URL || 'https://www.witus.online' }}
+        run: |
+          code=$(curl -sS -o body.json -w '%{http_code}' --max-time 150 -X POST \
+            -H "Authorization: Bearer $WITUS_CRON_SECRET" \
+            "$BASE_URL/api/cron/dora-alarm") || code=000
+          ok=$(jq -r '.ok // false' body.json 2>/dev/null || echo false)
+          alarms=$(jq -r '.data.alarms // "unknown"' body.json 2>/dev/null || echo unknown)
+          sent=$(jq -r '.data.sent // 0' body.json 2>/dev/null || echo 0)
+          already=$(jq -r '.data.alreadySent // 0' body.json 2>/dev/null || echo 0)
+          resolved=$(jq -r '.data.resolved // 0' body.json 2>/dev/null || echo 0)
+          error=$(jq -r '.error // ""' body.json 2>/dev/null || echo "")
+          {
+            echo "### DORA failed-deploy alarm"
+            echo
+            echo "HTTP $code: $alarms alarms, $sent emailed now, $already already emailed, $resolved resolved."
+            if [ -n "$error" ]; then echo; echo "Error: $error"; fi
+          } >> "$GITHUB_STEP_SUMMARY"
+          echo "HTTP $code: $alarms alarms, $sent emailed now, $already already emailed, $resolved resolved."
+          if [ "$ok" != "true" ]; then
+            echo "::error::Alarm check failed (HTTP $code). ${error:-No JSON answer; see docs/01-operations.md.}"
+            exit 1
+          fi
