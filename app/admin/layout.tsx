@@ -75,6 +75,12 @@ export default async function AdminLayout({
               Tasks
             </Link>
             <Link
+              href="/admin/dora"
+              className="inline-flex min-h-11 items-center text-slate-300 hover:text-teal-300"
+            >
+              DORA
+            </Link>
+            <Link
               href="/admin/episodes"
               className="inline-flex min-h-11 items-center text-slate-300 hover:text-teal-300"
             >
