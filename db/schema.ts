@@ -334,3 +334,30 @@ export const operatorTaskEvents = pgTable(
   },
   (t) => [index("operator_task_event_created_idx").on(t.createdAt)]
 );
+
+// ---------------------------------------------------------------------------
+// DORA failed-deploy alarm (/admin/dora, docs/02-dora-metrics.md). The hourly check
+// (.github/workflows/dora-alarm.yml -> /api/cron/dora-alarm) emails BAM once per failure that has
+// stayed red for more than 60 minutes. One row per (app, sha, kind) is both the "never send twice"
+// record and the audit trail of every send; the Deploys tab's banner reads the unresolved rows.
+// ---------------------------------------------------------------------------
+export const doraAlarms = pgTable(
+  "dora_alarms",
+  {
+    /** lib/roadmap/registry.ts slug. */
+    app: text("app").notNull(),
+    /** The commit whose deployment or post-deploy workflow failed first in the episode. */
+    sha: text("sha").notNull(),
+    /** "deploy" or "workflow:<workflow name>". */
+    kind: text("kind").notNull(),
+    failedAt: timestamp("failed_at", { withTimezone: true }).notNull(),
+    /** When the email went out; null when the send failed (the next check retries). */
+    sentAt: timestamp("sent_at", { withTimezone: true }),
+    /** Set by a later check that finds the app green again. */
+    resolvedAt: timestamp("resolved_at", { withTimezone: true }),
+    /** What failed and the link, as the email said it (no addresses, no secrets). */
+    detail: text("detail"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.app, t.sha, t.kind] }), index("dora_alarms_unresolved_idx").on(t.resolvedAt)]
+);
