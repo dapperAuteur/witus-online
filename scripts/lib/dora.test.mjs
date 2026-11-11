@@ -19,6 +19,7 @@ import {
   percentile,
   projectSlug,
   spread,
+  statusRecords,
   summarize,
   weeklyChanges,
   workflowEvents,
@@ -309,4 +310,24 @@ test("creditsByApp splits app, coordination (with helpers) and unmapped; counts 
 test("costPerChange: direct and all-in with an even coordination share", () => {
   assert.deepEqual(costPerChange({ appCredits: 10, appChanges: 5, coordinationCredits: 100, allChanges: 50 }), { direct: 2, allIn: 4 });
   assert.deepEqual(costPerChange({ appCredits: 10, appChanges: 0, coordinationCredits: 100, allChanges: 50 }), { direct: null, allIn: null });
+});
+
+test("statusRecords walks first parents only and stops using statuses once deployments start", () => {
+  const v = (state, h) => ({ state, at: at(h), url: `https://vercel.example/${h}` });
+  const commits = [
+    { sha: "m", parents: ["c3", "side"], vercel: v("success", 9) },
+    { sha: "side", parents: ["c2"], vercel: v("success", 7) },
+    { sha: "c3", parents: ["c2"], vercel: v("failure", 5) },
+    { sha: "c2", parents: ["c1"], vercel: v("pending", 3) },
+    { sha: "c1", parents: [], vercel: v("success", 1) },
+  ];
+  const all = statusRecords(commits, Infinity);
+  assert.deepEqual(all.map((r) => [r.sha, r.statuses[0].state]), [
+    ["m", "success"],
+    ["c3", "failure"],
+    ["c1", "success"],
+  ]);
+  // A GitHub deployment from hour 6 on: only older statuses are used.
+  assert.deepEqual(statusRecords(commits, T0 + 6 * HOUR_MS).map((r) => r.sha), ["c3", "c1"]);
+  assert.deepEqual(statusRecords([], Infinity), []);
 });
