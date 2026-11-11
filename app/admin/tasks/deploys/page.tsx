@@ -1,5 +1,9 @@
 import { Suspense } from "react";
+import Link from "next/link";
+import { getDb } from "@/db";
 import { getEnv } from "@/lib/env";
+import { kindLabel, openAlarms } from "@/lib/ops/dora-alarm";
+import { roadmapAppBySlug } from "@/lib/roadmap/registry";
 import { loadDeploysOverview, type AppDeploy, type DeployInfo } from "@/lib/ops/deploys";
 import { LoadingRow } from "../../loading-row";
 import { RefreshButton } from "../refresh-button";
@@ -74,12 +78,51 @@ export default function DeploysPage() {
           one there), cached five minutes. A repo with no GitHub deployments is read from the commit status
           Vercel posts on main instead, and its row says so.
         </p>
+        <p className="text-sm text-slate-300">
+          Trends over 30 and 90 days (deploy frequency, lead time, change fail rate, recovery, rework, cost per change) are on{" "}
+          <Link href="/admin/dora" className={link}>DORA metrics</Link>.
+        </p>
         <RefreshButton />
       </section>
+      <Suspense fallback={null}>
+        <AlarmBanner />
+      </Suspense>
       <Suspense fallback={<LoadingRow label="Reading production deploys from GitHub…" />}>
         <DeployRows />
       </Suspense>
     </div>
+  );
+}
+
+/**
+ * Failures the hourly DORA alarm has seen open for more than 60 minutes and not yet seen green
+ * (dora_alarms, lib/ops/dora-alarm.ts). A database read only, so it never waits on GitHub; empty
+ * (renders nothing) before migration 0011 or before the alarm has run.
+ */
+async function AlarmBanner() {
+  const alarms = await openAlarms(getDb());
+  if (alarms.length === 0) return null;
+  return (
+    <section role="alert" aria-labelledby="alarm-heading" className="space-y-2 rounded-lg border border-red-700 bg-red-950/60 p-4 text-sm text-red-100">
+      <h3 id="alarm-heading" className="font-semibold">
+        {alarms.length === 1 ? "1 production failure" : `${alarms.length} production failures`} open for more than an hour
+      </h3>
+      <ul className="space-y-1">
+        {alarms.map((a) => {
+          const app = roadmapAppBySlug(a.app);
+          return (
+            <li key={`${a.app}-${a.sha}-${a.kind}`} className="break-words">
+              <span className="font-semibold">{app?.name ?? a.app}</span>: {kindLabel(a.kind)} on{" "}
+              {app?.githubRepo ? <Sha repo={app.githubRepo} sha={a.sha} /> : <span className="font-mono">{a.sha.slice(0, 7)}</span>}, failed{" "}
+              {ago(a.failedAt.toISOString())}. {a.sentAt ? `Emailed ${ago(a.sentAt.toISOString())}.` : "Not emailed yet (the next hourly check retries)."}
+            </li>
+          );
+        })}
+      </ul>
+      <p className="text-xs text-red-200/80">
+        From the hourly alarm check; it clears at the first check after the app is green again. Live state is in the rows below.
+      </p>
+    </section>
   );
 }
 
