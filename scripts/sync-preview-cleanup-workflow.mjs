@@ -12,7 +12,7 @@
 // Targets: docs/ecosystem-repos.json targets plus this repo, minus repos with no Neon database
 // (NON_NEON below). A repo is also skipped when it has no package.json (nothing deploys from it yet).
 import { execFileSync } from "node:child_process";
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, unlinkSync, writeFileSync } from "node:fs";
 import { basename, dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -22,9 +22,20 @@ const WRITE = process.argv.includes("--write");
 const TEMPLATE = join(ROOT, ".github", "templates", "neon-preview-cleanup.yml");
 const REL = join(".github", "workflows", "neon-preview-cleanup.yml");
 const BRANCH = `chore/update-shared-rules-${new Date().toISOString().slice(0, 10)}`;
-/** Repos in the manifest that have no Neon database (MongoDB, no DB, or docs-only). Keep in step with
- *  docs/shared-rules.md "Preview-branch cleanup rule" and plans/ecosystem/db-usage.md. */
-const NON_NEON = new Set(["flashlearn-ai", "bam-landing-page", "witus-agent-evals", "create-witus"]);
+/** Repos in the manifest that have no Neon database (MongoDB, Supabase, no DB, or docs-only). Keep in
+ *  step with docs/shared-rules.md "Preview-branch cleanup rule" and plans/ecosystem/db-usage.md.
+ *  tour-manager-os and centenarian-os are on Supabase (db-usage.md), so the workflow fails there for
+ *  want of NEON_PROJECT_ID and NEON_API_KEY. contractor-os is NOT listed: it is on Supabase today but
+ *  keeps the workflow because its sweep passes (it has Neon credentials for its planned Neon move).
+ *  A synced copy found in a NON_NEON repo is reported and, with --write, removed (see below). */
+const NON_NEON = new Set([
+  "flashlearn-ai",
+  "bam-landing-page",
+  "witus-agent-evals",
+  "create-witus",
+  "tour-manager-os",
+  "centenarian-os",
+]);
 
 function git(repo, args) {
   return execFileSync("git", args, { cwd: repo, encoding: "utf8" }).trim();
@@ -38,7 +49,8 @@ function gitQuiet(repo, args) {
 }
 
 const manifest = JSON.parse(readFileSync(join(ROOT, "docs/ecosystem-repos.json"), "utf8"));
-const targets = [...manifest.targets, ROOT].filter((r) => !NON_NEON.has(basename(r)));
+const allRepos = [...manifest.targets, ROOT];
+const targets = allRepos.filter((r) => !NON_NEON.has(basename(r)));
 const template = readFileSync(TEMPLATE, "utf8");
 
 const changed = [];
@@ -63,9 +75,14 @@ for (const repo of targets) {
   changed.push([repo, name, current === null ? "added" : "updated"]);
 }
 
+// A NON_NEON repo that still carries the synced workflow gets it removed, so a wrongly synced copy cannot linger.
+for (const repo of allRepos.filter((r) => NON_NEON.has(basename(r)))) {
+  if (existsSync(repo) && existsSync(join(repo, REL))) changed.push([repo, basename(repo), "removed"]);
+}
+
 console.log(`\n=== Neon preview-cleanup workflow (${WRITE ? "writing" : "dry-run"}) ===`);
 for (const [, name, how] of changed) console.log(`  ->> ${how.padEnd(8)} ${name}`);
-console.log(`\n${changed.length} repo(s) would change, ${upToDate.length} up-to-date, ${skipped.length} skipped.`);
+console.log(`\n${changed.length} repo(s) would change (add/update/remove), ${upToDate.length} up-to-date, ${skipped.length} skipped.`);
 if (!WRITE) {
   for (const [n, why] of skipped) console.log(`  - skipped ${n}: ${why}`);
   console.log("\nPreview only. Re-run with --write to write the file AND branch/commit/push each changed repo.");
@@ -73,7 +90,7 @@ if (!WRITE) {
 }
 
 const pushed = [];
-for (const [repo, name] of changed) {
+for (const [repo, name, how] of changed) {
   const cur = git(repo, ["rev-parse", "--abbrev-ref", "HEAD"]);
   const onOlderUpdateBranch = cur.startsWith("chore/update-shared-rules-") && cur !== BRANCH;
   const onSafeBase = cur === "main" || cur === "master" || cur === BRANCH || onOlderUpdateBranch;
@@ -94,15 +111,21 @@ for (const [repo, name] of changed) {
       continue;
     }
   }
-  mkdirSync(dirname(join(repo, REL)), { recursive: true });
-  writeFileSync(join(repo, REL), template);
-  const add = gitQuiet(repo, ["add", REL]);
+  const removing = how === "removed";
+  if (removing) {
+    unlinkSync(join(repo, REL));
+  } else {
+    mkdirSync(dirname(join(repo, REL)), { recursive: true });
+    writeFileSync(join(repo, REL), template);
+  }
+  const add = gitQuiet(repo, removing ? ["add", "-A", "--", REL] : ["add", REL]);
   if (!add.ok) {
     skipped.push([name, `git add failed: ${add.out}`]);
     continue;
   }
-  const msg =
-    "chore: Neon preview cleanup v2, sweep merged and deleted branches (ecosystem preview-branch cleanup rule)\n\nv1 ran only when a pull request closed, so branches merged from the command line kept their\npreview databases. v2 runs on push to the default branch, branch deletion, PR close, daily and on\ndemand. Canonical copy: gemini/witus .github/templates/neon-preview-cleanup.yml.\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>";
+  const msg = removing
+    ? "chore(ci): remove neon-preview-cleanup workflow\n\nThis repo has no Neon database (see NON_NEON in witus scripts/sync-preview-cleanup-workflow.mjs), so the workflow fails on every push. The witus sync now skips it.\n\nCo-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>"
+    : "chore: Neon preview cleanup v2, sweep merged and deleted branches (ecosystem preview-branch cleanup rule)\n\nv1 ran only when a pull request closed, so branches merged from the command line kept their\npreview databases. v2 runs on push to the default branch, branch deletion, PR close, daily and on\ndemand. Canonical copy: gemini/witus .github/templates/neon-preview-cleanup.yml.\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>";
   const commit = gitQuiet(repo, ["commit", "-m", msg]);
   if (!commit.ok) {
     skipped.push([name, `commit failed: ${commit.out}`]);
