@@ -109,7 +109,7 @@ export type DoraOverview =
   | { tokenSet: false }
   | { tokenSet: true; readAt: string; apps: AppDora[]; needsActions: boolean };
 
-const vercelContext = (repoName: string) => (c: { context: string }) => c.context === "Vercel" || c.context === `Vercel – ${repoName}`;
+const vercelContext = (repoName: string) => (c: { context: string }) => c.context === "Vercel" || c.context === `Vercel \u2013 ${repoName}`;
 
 /** Deployments and history for one repo, paginated until each reaches its window or page cap. */
 async function readRepoGraph(repo: string, branch: string, token: string, now: number) {
@@ -131,7 +131,7 @@ async function readRepoGraph(repo: string, branch: string, token: string, now: n
     const variables: Record<string, unknown> = {
       owner,
       name,
-      envs: ["Production", `Production – ${name}`],
+      envs: ["Production", `Production \u2013 ${name}`],
       since,
       branch: `refs/heads/${branch}`,
       dAfter,
