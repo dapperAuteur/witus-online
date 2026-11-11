@@ -98,7 +98,9 @@ export type AppDora = {
   /** Post-deploy workflow names found; null when the workflows could not be read. */
   workflows: string[] | null;
   actions: ActionsAccess;
-  /** Nothing GitHub said could be read for this repo (the row shows it; metrics are blank). */
+  /** False when GitHub's deployments and history could not be read (the row's metrics are blank). */
+  readOk: boolean;
+  /** What could not be read, in a sentence for the page. */
   error: string | null;
   notes: string[];
 };
@@ -247,6 +249,7 @@ async function loadAppDora(app: { slug: string; name: string; branch: string }, 
       timeline: EMPTY,
       workflows: null,
       actions: "error",
+      readOk: false,
       error: permission ? "The token cannot read deployments or commits on this repo (Deployments and Contents: Read-only)." : explainGithubError(graph.error, repo),
       notes: [],
     };
@@ -266,7 +269,7 @@ async function loadAppDora(app: { slug: string; name: string; branch: string }, 
   if (source === "mixed") notes.push("Older deploys read from Vercel's commit status on main (GitHub deployments were off then).");
   if (!graph.statusReadable) notes.push("The token cannot read commit statuses, so deploys from before GitHub deployments were on are missing.");
   if (graph.truncated) notes.push(`Main's history was read to ${HISTORY_PAGES * 100} commits; the oldest ranges may be short.`);
-  return { ...base, source, timeline, workflows: runs.workflows, actions: runs.access, error: runs.error, notes };
+  return { ...base, source, timeline, workflows: runs.workflows, actions: runs.access, readOk: true, error: runs.error, notes };
 }
 
 async function assembleDoraOverview(): Promise<DoraOverview> {
