@@ -208,6 +208,7 @@ Expected output ends with `[✓] migrations applied successfully!`. Re-run the r
 | `0008_claude_usage_responses.sql` | `claude_usage_responses` archive plus two indexes | Yes |
 | `0009_operator_tasks.sql` | `operator_task`, `operator_task_event` (admin tasks) plus two indexes | Yes |
 | `0010_library_epub.sql` | `library_document.epub`, `epub_bytes` (nullable; EPUB download on /admin/library) | Yes |
+| `0011_dora_alarms.sql` | `dora_alarms` (failed-deploy alarm sends, /admin/dora) plus one index | Yes |
 
 ## Operator task sync (a laptop command, not a post-deploy step)
 
@@ -247,3 +248,66 @@ without a commit. One GraphQL query per 100 branches (`Ref.compare` against `mai
 minutes under the same tag as Deploys. It needs only Contents and Metadata read on
 `GITHUB_ROADMAP_TOKEN`. It is read-only: each row links to GitHub's compare page, and merging stays
 there.
+
+## DORA metrics and the failed-deploy alarm (/admin/dora)
+
+The page computes deployment frequency, lead time (authoring and merge wait), change fail rate,
+recovery time, rework rate and credits per change for every registry repo over 30 and 90 days.
+Full definitions: `docs/02-dora-metrics.md`. It reads GitHub with `GITHUB_ROADMAP_TOKEN` (one
+cached entry, five minutes, expired by **Refresh now**) and the usage archive from the app database.
+
+Token permissions: Contents, Metadata, Deployments and Commit statuses read (as Deploys), plus
+**Actions: Read-only** for the post-deploy workflow runs (task 159). Without Actions read the page
+says "needs Actions read on the token" and computes everything else from deployment statuses.
+
+### The alarm
+
+`.github/workflows/dora-alarm.yml` runs hourly (minute 17) and on **Run workflow**. It POSTs to
+`https://www.witus.online/api/cron/dora-alarm` with `Authorization: Bearer $WITUS_CRON_SECRET`.
+The route emails `ADMIN_EMAIL` through Mailgun once per failure open more than 60 minutes, records
+it in `dora_alarms`, and marks rows resolved when the app is green again (the Deploys tab banner
+reads the unresolved rows). It needs, on the site, `CRON_SECRET`, `GITHUB_ROADMAP_TOKEN`,
+`MAILGUN_API_KEY`, `MAILGUN_DOMAIN`, `ADMIN_EMAIL` and `EMAIL_FROM`; in GitHub, the repository
+secret `WITUS_CRON_SECRET` with the same value as `CRON_SECRET`.
+
+Answers (JSON `{ ok, data }` or `{ ok: false, error, code }`):
+
+| HTTP | Meaning |
+| --- | --- |
+| 200 | Ran. `data.alarms` open failures past an hour, `sent` emailed now, `alreadySent`, `resolved` |
+| 401 | Wrong or missing bearer: the two secrets differ |
+| 502 | Ran, but a send or a row save failed (`mail_not_configured` or `partial_failure`); the next hour retries |
+| 503 | `cron_secret_missing` (set CRON_SECRET on Vercel, redeploy), `github_token_missing`, or `no_table` (migration 0011 has not run) |
+
+### Set the secret (once)
+
+One generated value, piped to both places and to the login keychain (for the manual fallback), in
+one terminal, never pasted:
+
+```sh
+cd /Users/bam/Code_NOiCloud/ai-builds/gemini/witus
+v="$(openssl rand -hex 32)"
+vercel env rm CRON_SECRET production --yes 2>/dev/null   # only if an older value exists
+printf %s "$v" | vercel env add CRON_SECRET production
+printf %s "$v" | gh secret set WITUS_CRON_SECRET --repo dapperAuteur/witus-online
+security add-generic-password -U -a "$USER" -s witus-cron-secret -w "$v"
+unset v
+vercel redeploy www.witus.online --target production
+```
+
+The daily cost-snapshot cron uses the same `CRON_SECRET`; Vercel sends the current value, so it
+keeps working.
+
+### Manual fallback (run the alarm check from the laptop)
+
+First choice: GitHub, witus-online, Actions, "DORA failed-deploy alarm", **Run workflow**. From the
+laptop, with the value from the keychain (never typed; the header goes through stdin, so it is not
+in the process list or the shell history):
+
+```sh
+printf 'Authorization: Bearer %s\n' "$(security find-generic-password -s witus-cron-secret -w)" \
+  | curl -sS -X POST -H @- https://www.witus.online/api/cron/dora-alarm | jq .
+```
+
+Expected when nothing is failing: `{"ok":true,"data":{"alarms":0,"sent":0,"alreadySent":0,"resolved":0,"errors":[]}}`.
+A run is safe to repeat: an alarm already emailed is counted in `alreadySent` and never sent again.
