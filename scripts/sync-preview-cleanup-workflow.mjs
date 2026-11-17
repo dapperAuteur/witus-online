@@ -22,6 +22,9 @@ const WRITE = process.argv.includes("--write");
 const TEMPLATE = join(ROOT, ".github", "templates", "neon-preview-cleanup.yml");
 const REL = join(".github", "workflows", "neon-preview-cleanup.yml");
 const BRANCH = `chore/update-shared-rules-${new Date().toISOString().slice(0, 10)}`;
+/** One line on what this sync changes; it goes into every target repo's commit message. Edit it per sync. */
+const CHANGE_NOTE =
+  "v3 (2026-11-16): skip pull-request events raised by Dependabot, which run with no repository secrets, so the guard no longer fails on every Dependabot PR close (seen on witus-learn PR #29).";
 /** Repos in the manifest that have no Neon database (MongoDB, Supabase, no DB, or docs-only). Keep in
  *  step with docs/shared-rules.md "Preview-branch cleanup rule" and plans/ecosystem/db-usage.md.
  *  tour-manager-os and centenarian-os are on Supabase (db-usage.md), so the workflow fails there for
@@ -125,7 +128,7 @@ for (const [repo, name, how] of changed) {
   }
   const msg = removing
     ? "chore(ci): remove neon-preview-cleanup workflow\n\nThis repo has no Neon database (see NON_NEON in witus scripts/sync-preview-cleanup-workflow.mjs), so the workflow fails on every push. The witus sync now skips it.\n\nCo-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>"
-    : "chore: Neon preview cleanup v2, sweep merged and deleted branches (ecosystem preview-branch cleanup rule)\n\nv1 ran only when a pull request closed, so branches merged from the command line kept their\npreview databases. v2 runs on push to the default branch, branch deletion, PR close, daily and on\ndemand. Canonical copy: gemini/witus .github/templates/neon-preview-cleanup.yml.\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>";
+    : `chore(ci): sync the Neon preview cleanup workflow from witus\n\n${CHANGE_NOTE}\n\nCanonical copy: gemini/witus/.github/templates/neon-preview-cleanup.yml, written by scripts/sync-preview-cleanup-workflow.mjs. Do not edit this copy by hand. Rule: witus docs/shared-rules.md "Preview-branch cleanup rule".`;
   const commit = gitQuiet(repo, ["commit", "-m", msg]);
   if (!commit.ok) {
     skipped.push([name, `commit failed: ${commit.out}`]);

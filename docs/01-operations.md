@@ -262,6 +262,13 @@ CentenarianOS received the workflow and showed one red "Cleanup Neon preview bra
 BAM noticed on 2026-11-10 (witus task 158). Since that fix the script reports, and with `--write` removes, a synced copy
 found in a NON_NEON repo, so a wrong entry shows up in the dry run instead of as a red run in someone else's Actions tab.
 
+A second kind of red run, found 2026-11-16 on witus-learn: a `pull_request: closed` event raised by Dependabot (its PR
+for Next 16.4.5 closed when `main` got the same bump) failed the guard step although the repo had both
+`NEON_PROJECT_ID` and `NEON_API_KEY`. GitHub runs Dependabot-raised pull_request workflows with no repository secrets
+(only Dependabot secrets), so the key was empty. Template v3 skips that one case with an `if:` on the job; the push to
+`main`, the branch deletion and the daily schedule sweep the same branch. If a guard failure shows an empty `API_KEY`
+but a filled `PROJECT_ID`, check the run's event and actor before setting anything.
+
 Run it without `--write` first and read the summary line (`N repo(s) would change (add/update/remove), N up-to-date,
 N skipped`). Keep `NON_NEON` in step with `plans/ecosystem/db-usage.md`; the durable fix is a `database` field per repo
 in `docs/ecosystem-repos.json` that both this script and `scripts/check-registries.mjs` read (follow-up, not built).
